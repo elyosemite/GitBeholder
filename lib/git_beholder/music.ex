@@ -4,6 +4,6 @@ defmodule GitBeholder.Music do
   end
 
   def create("error") do
-    {:error, "error while creating music"}
+    {:error, "error while creating music on my platform"}
   end
 end
