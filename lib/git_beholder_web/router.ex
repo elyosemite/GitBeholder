@@ -8,7 +8,7 @@ defmodule GitBeholderWeb.Router do
   scope "/api", GitBeholderWeb do
     pipe_through :api
 
-    get "/", MusicController, :index
+    get "/git/status", GitStatusController, :status
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
