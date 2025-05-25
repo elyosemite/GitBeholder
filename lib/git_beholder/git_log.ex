@@ -6,8 +6,8 @@ defmodule GitBeholder.GitLog do
       args = [
         "log",
         "-n",
-        "#{limit}",
-        "--pretty=format:'%H|%an|%ad|%s'",
+        Integer.to_string(limit),
+        "--pretty=format:%H|%an|%ad|%s",
         "--date=short"
       ]
 
