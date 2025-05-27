@@ -10,7 +10,7 @@ defmodule GitBeholderWeb.Router do
 
     get  "/git/status", GitStatusController, :status
     post "/git/commit", GitCommitController, :create
-    get "/git/log", GitLogController, :index
+    get  "/git/log", GitLogController, :index
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

@@ -1,5 +1,5 @@
 defmodule GitBeholderWeb.GitLogController do
-  use GitbeholderWeb, :controller
+  use GitBeholderWeb, :controller
   alias GitBeholder.GitLog
 
   def index(conn, %{"repo_path" => path} = params) do

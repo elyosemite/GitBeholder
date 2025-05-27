@@ -1,7 +1,7 @@
 defmodule GitBeholder.GitLog do
   @default_limit 10
 
-  def list_logs(repo_path, limit \\ @default_limit) do
+  def list_commits(repo_path, limit \\ @default_limit) do
     if File.dir?(Path.join(repo_path, ".git")) do
       args = [
         "log",
