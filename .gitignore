@@ -25,4 +25,13 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 git_beholder-*.tar
 
+# Ignore the setting for vs code 
+.vscode/
+
+# Ignore the setting for exlixir-ls
+.elixir_ls/
+
+# Ignore setting for asdf 
+.tool-versions
+
 /http
