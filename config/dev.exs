@@ -15,7 +15,10 @@ config :git_beholder, GitBeholderWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 4000],
-  check_origin: false,
+  # check_origin defaults to true, rejecting requests whose Origin header
+  # doesn't match this endpoint's host — GitBeholder is a local, single-user
+  # companion process (ADR 001) and is never meant to be reachable by
+  # arbitrary web pages open in the developer's browser.
   code_reloader: true,
   debug_errors: true,
   secret_key_base: "Yxd6Vt1TCo8SrHjljDhn+C+rD/M7P984hBLA1cOL1cxCy6KyEwYX32lQpBflm6nN",
