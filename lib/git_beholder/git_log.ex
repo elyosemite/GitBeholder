@@ -1,8 +1,10 @@
 defmodule GitBeholder.GitLog do
+  alias GitBeholder.Git.CommandRunner
+
   @default_limit 10
 
   def list_commits(repo_path, limit \\ @default_limit) do
-    if File.dir?(Path.join(repo_path, ".git")) do
+    CommandRunner.with_valid_repo(repo_path, fn ->
       args = [
         "log",
         "-n",
@@ -11,8 +13,8 @@ defmodule GitBeholder.GitLog do
         "--date=short"
       ]
 
-      case System.cmd("git", args, cd: repo_path, stderr_to_stdout: true) do
-        {output, 0} ->
+      case CommandRunner.run(args, repo_path) do
+        {:ok, output} ->
           commits =
             output
             |> String.trim()
@@ -30,11 +32,9 @@ defmodule GitBeholder.GitLog do
 
           {:ok, commits}
 
-        {error_msg, _exit_code} ->
-          {:error, error_msg}
+        error ->
+          error
       end
-    else
-      {:error, "Not a valid Git repository"}
-    end
+    end)
   end
 end

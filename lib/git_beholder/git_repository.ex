@@ -1,4 +1,6 @@
 defmodule GitBeholder.GitRepository do
+  alias GitBeholder.Git.CommandRunner
+
   def root_path do
     try do
       loader = Application.get_env(:git_beholder, :property_loader, GitBeholder.PropertyLoader)
@@ -9,13 +11,14 @@ defmodule GitBeholder.GitRepository do
         |> File.ls!()
         |> Enum.map(&Path.join(root_dir, &1))
         |> Enum.filter(&File.dir?/1)
-        |> Enum.filter(fn dir -> File.dir?(Path.join(dir, ".git")) end)
+        |> Enum.filter(&CommandRunner.git_repo?/1)
         |> Enum.map(&Path.basename/1)
 
       {:ok, repos, root_dir}
     rescue
       e in File.Error ->
         {:error, "File system error: #{Exception.message(e)}"}
+
       e ->
         {:error, "Unknown error: #{Exception.message(e)}"}
     end

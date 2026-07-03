@@ -42,6 +42,6 @@ config :phoenix, :json_library, Jason
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
 
-#define root directory of repositories
+# define root directory of repositories
 config :git_beholder,
   rootDirectory: "/"

@@ -1,20 +1,18 @@
 defmodule GitBeholderWeb.GitCommitController do
   use GitBeholderWeb, :controller
+  import GitBeholderWeb.ControllerHelpers
+
   alias GitBeholder.GitCommit
 
   def create(conn, %{"repo_path" => repo_path, "file_path" => file_path, "message" => message}) do
-    case GitCommit.commit_file(repo_path, file_path, message) do
-      {:ok, output} ->
-        json(conn, %{status: "ok", message: output})
-
-      {:error, error_msg} ->
-        conn
-        |> put_status(:bad_request)
-        |> json(%{status: "error", message: error_msg})
-    end
+    respond_with_result(conn, GitCommit.commit_file(repo_path, file_path, message))
   end
 
   def create(conn, %{"repo_path" => repo_path, "file_path" => file_path}) do
-    create(conn, %{"repo_path" => repo_path, "file_path" => file_path, "message" => "Commit via Gitbehodler API"})
+    create(conn, %{
+      "repo_path" => repo_path,
+      "file_path" => file_path,
+      "message" => "Commit via Gitbehodler API"
+    })
   end
 end

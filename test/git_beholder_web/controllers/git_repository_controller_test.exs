@@ -37,6 +37,7 @@ defmodule GitBeholderWeb.GitRepositoryControllerTest do
 
   test "GET /repositories lists only git repositories", %{conn: conn} do
     conn = get(conn, "/api/git/repositories")
+
     assert json_response(conn, 200) == %{
              "status" => "ok",
              "repositories" => ["repo1", "repo2"]

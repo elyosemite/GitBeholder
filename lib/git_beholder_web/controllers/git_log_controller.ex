@@ -1,5 +1,7 @@
 defmodule GitBeholderWeb.GitLogController do
   use GitBeholderWeb, :controller
+  import GitBeholderWeb.ControllerHelpers
+
   alias GitBeholder.GitLog
 
   def index(conn, %{"repo_path" => path} = params) do
@@ -9,10 +11,8 @@ defmodule GitBeholderWeb.GitLogController do
       {:ok, commits} ->
         json(conn, commits)
 
-      {:error, reason} ->
-        conn
-        |> put_status(400)
-        |> json(%{error: reason})
+      error ->
+        respond_with_result(conn, error)
     end
   end
 end

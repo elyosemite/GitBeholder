@@ -1,5 +1,6 @@
 defmodule GitBeholderWeb.GitRepositoryController do
   use GitBeholderWeb, :controller
+  import GitBeholderWeb.ControllerHelpers
 
   alias GitBeholder.GitRepository
 
@@ -8,10 +9,8 @@ defmodule GitBeholderWeb.GitRepositoryController do
       {:ok, repos, _root_dir} ->
         json(conn, %{status: "ok", repositories: repos})
 
-      {:error, error_msg} ->
-        conn
-        |> put_status(:internal_server_error)
-        |> json(%{status: "error", message: error_msg})
+      error ->
+        respond_with_result(conn, error, :internal_server_error)
     end
   end
 end

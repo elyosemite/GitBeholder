@@ -1,4 +1,6 @@
 defmodule GitBeholder.GitCommit do
+  alias GitBeholder.Git.CommandRunner
+
   def commit_file(repo_path, file_path, message \\ "Commit from BitBeholder API") do
     full_path = Path.join(repo_path, file_path)
 
@@ -7,12 +9,10 @@ defmodule GitBeholder.GitCommit do
         {:error, "File does not exist: #{full_path}"}
 
       true ->
-        with {_, 0} <- System.cmd("git", ["add", file_path], cd: repo_path, stderr_to_stdout: true),
-            {commit_output, 0} <- System.cmd("git", ["commit", "-m", message], cd: repo_path, stderr_to_stdout: true) do
+        with {:ok, _} <- CommandRunner.run(["add", file_path], repo_path),
+             {:ok, commit_output} <- CommandRunner.run(["commit", "-m", message], repo_path) do
           {:ok, commit_output}
-        else
-          {error_output, _} -> {:error, error_output}
-      end
+        end
     end
   end
 end
