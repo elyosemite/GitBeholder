@@ -10,9 +10,11 @@ GitBeholder is a modern Git backend designed to simplify and enhance your workfl
 
 > **Status:** GitBeholder is backend-only right now. There is no bundled UI yet — you interact with it as a JSON API (see [API Documentation](#api-documentation)).
 
+[API Docs](docs/Getting%20Started.md) · [Architecture Decision Records](docs/architecture-decision-records) · [DeepWiki](https://deepwiki.com/elyosemite/GitBeholder) · [Roadmap](#roadmap) · [Contributing](#contributing)
+
 ## Table of Contents
 
-- [Features](#features)
+- [Highlights](#highlights)
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Running Tests](#running-tests)
@@ -21,16 +23,16 @@ GitBeholder is a modern Git backend designed to simplify and enhance your workfl
 - [Architecture Decision Records](#architecture-decision-records)
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
+- [Star History](#star-history)
 
-## Features
+## Highlights
 
-- Visual Git history navigation
-- Create and manage commits
-- Push to remote repositories
-- View commit details (`git show fd2ec6d62ef7e8c1c2ecd437b1a305439815b372`)
-- Inline and side-by-side file diffs (`git diff`)
-- File change tracking
-- Interactive staging and unstaging
+- **Visual Git history navigation** — walk commit history without leaving your editor.
+- **Commit management** — create, view, and inspect commits (`git show fd2ec6d62ef7e8c1c2ecd437b1a305439815b372`).
+- **Push to remote repositories** — send local commits upstream via the API.
+- **Diff viewer** — inline and side-by-side file diffs (`git diff`).
+- **File change tracking** — see modified, untracked, and deleted files at a glance.
+- **Interactive staging** — stage and unstage files through simple HTTP calls.
 
 ## Tech Stack
 
@@ -115,6 +117,12 @@ Pull requests are welcome! For major changes, please open an issue first to disc
 3. Commit your changes (`git commit -m 'Add awesome feature'`)
 4. Push to the branch (`git push origin feature/awesome-feature`)
 5. Open a pull request
+
+Bugs and feature requests: use the [issue tracker](https://github.com/elyosemite/GitBeholder/issues).
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=elyosemite/GitBeholder&type=date)](https://www.star-history.com/#elyosemite/GitBeholder&type=date)
 
 ---
 Made with 💙 using Elixir + Git
