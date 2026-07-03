@@ -1,5 +1,11 @@
 # GitBeholder
 
+[![GitHub last commit](https://img.shields.io/github/last-commit/elyosemite/GitBeholder)](https://github.com/elyosemite/GitBeholder/commits/main)
+[![GitHub issues](https://img.shields.io/github/issues/elyosemite/GitBeholder)](https://github.com/elyosemite/GitBeholder/issues)
+[![GitHub stars](https://img.shields.io/github/stars/elyosemite/GitBeholder?style=social)](https://github.com/elyosemite/GitBeholder/stargazers)
+[![Top language](https://img.shields.io/github/languages/top/elyosemite/GitBeholder)](mix.exs)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
+
 GitBeholder is a modern Git backend designed to simplify and enhance your workflow. Built with Elixir and Phoenix, with a separate frontend application planned (*coming as soon as possible*), it allows users to perform key Git operations like `commits`, `pushes`, viewing `diffs`, exploring `commit history`, and more — all through a user-friendly interface.
 
 > **Status:** GitBeholder is backend-only right now. There is no bundled UI yet — you interact with it as a JSON API (see [API Documentation](#api-documentation)).
