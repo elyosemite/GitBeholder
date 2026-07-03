@@ -1,0 +1,52 @@
+defmodule GitBeholderWeb.RepositoryControllerTest do
+  use GitBeholderWeb.ConnCase, async: true
+
+  alias GitBeholder.Repositories
+
+  setup do
+    {:ok, workspace} = Repositories.create_workspace(%{name: "Engineering"})
+    %{workspace: workspace}
+  end
+
+  describe "POST /api/v1/workspaces/:workspace_id/repositories" do
+    test "registers a repository at the workspace root", %{conn: conn, workspace: workspace} do
+      conn =
+        post(conn, "/api/v1/workspaces/#{workspace.id}/repositories", %{
+          "name" => "payment_service",
+          "path" => "/repos/payment_service"
+        })
+
+      assert %{
+               "id" => id,
+               "name" => "payment_service",
+               "path" => "/repos/payment_service",
+               "workspace_id" => workspace_id,
+               "folder_id" => nil
+             } = json_response(conn, 201)
+
+      assert is_integer(id)
+      assert workspace_id == workspace.id
+    end
+
+    test "registers a repository inside a folder", %{conn: conn, workspace: workspace} do
+      {:ok, folder} = Repositories.create_folder(%{name: "Backend", workspace_id: workspace.id})
+
+      conn =
+        post(conn, "/api/v1/workspaces/#{workspace.id}/repositories", %{
+          "name" => "payment_service",
+          "path" => "/repos/payment_service",
+          "folder_id" => folder.id
+        })
+
+      assert %{"folder_id" => folder_id} = json_response(conn, 201)
+      assert folder_id == folder.id
+    end
+
+    test "returns 422 without a path", %{conn: conn, workspace: workspace} do
+      conn =
+        post(conn, "/api/v1/workspaces/#{workspace.id}/repositories", %{"name" => "x"})
+
+      assert %{"errors" => %{"path" => ["can't be blank"]}} = json_response(conn, 422)
+    end
+  end
+end
