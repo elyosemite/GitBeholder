@@ -2,10 +2,10 @@ defmodule GitBeholderWeb.GitLogController do
   use GitBeholderWeb, :controller
   alias GitBeholder.GitLog
 
-  def index(conn, %{"repo_path" => path} = params) do
+  def index(conn, params) do
     limit = Map.get(params, "limit", "10") |> String.to_integer()
 
-    case GitLog.list_commits(path, limit) do
+    case GitLog.list_commits(conn.assigns.repository.path, limit) do
       {:ok, commits} ->
         json(conn, commits)
 
