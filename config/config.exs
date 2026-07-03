@@ -42,6 +42,8 @@ config :phoenix, :json_library, Jason
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
 
-#define root directory of repositories
+# Define root directory of repositories.
+# SECURITY: This MUST be a restricted path — never set to "/" or any
+# system directory. Use an environment variable in production.
 config :git_beholder,
-  rootDirectory: "/"
+  rootDirectory: "./repos"

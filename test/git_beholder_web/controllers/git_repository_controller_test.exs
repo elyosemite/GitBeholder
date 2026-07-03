@@ -5,7 +5,7 @@ defmodule GitBeholder.PropertyLoaderMock do
 end
 
 defmodule GitBeholderWeb.GitRepositoryControllerTest do
-  use GitBeholderWeb.ConnCase, async: true
+  use GitBeholderWeb.ConnCase, async: false
 
   @test_root Path.expand("./test_repos", __DIR__)
 
