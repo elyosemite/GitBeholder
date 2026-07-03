@@ -8,6 +8,38 @@ defmodule GitBeholderWeb.RepositoryControllerTest do
     %{workspace: workspace}
   end
 
+  describe "GET /api/v1/workspaces/:workspace_id/repositories" do
+    test "lists only repositories belonging to the workspace", %{conn: conn, workspace: workspace} do
+      {:ok, repository} =
+        Repositories.create_repository(%{
+          name: "payment_service",
+          path: "/repos/payment_service",
+          workspace_id: workspace.id
+        })
+
+      {:ok, other_workspace} = Repositories.create_workspace(%{name: "Sales"})
+
+      {:ok, _other} =
+        Repositories.create_repository(%{
+          name: "pricing_service",
+          path: "/repos/pricing_service",
+          workspace_id: other_workspace.id
+        })
+
+      conn = get(conn, "/api/v1/workspaces/#{workspace.id}/repositories")
+
+      assert %{"repositories" => repositories} = json_response(conn, 200)
+      assert [%{"id" => id, "name" => "payment_service"}] = repositories
+      assert id == repository.id
+    end
+
+    test "returns 400 for a non-numeric workspace id", %{conn: conn} do
+      conn = get(conn, "/api/v1/workspaces/abc/repositories")
+
+      assert json_response(conn, 400)
+    end
+  end
+
   describe "POST /api/v1/workspaces/:workspace_id/repositories" do
     test "registers a repository at the workspace root", %{conn: conn, workspace: workspace} do
       conn =

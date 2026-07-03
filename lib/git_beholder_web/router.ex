@@ -9,19 +9,16 @@ defmodule GitBeholderWeb.Router do
     plug GitBeholderWeb.Plugs.FetchRepository
   end
 
-  scope "/api", GitBeholderWeb do
-    pipe_through :api
-
-    get "/git/repositories", GitRepositoryController, :index
-  end
-
   scope "/api/v1", GitBeholderWeb do
     pipe_through :api
 
     get  "/workspaces", WorkspaceController, :index
     post "/workspaces", WorkspaceController, :create
 
+    get  "/workspaces/:workspace_id/folders", FolderController, :index
     post "/workspaces/:workspace_id/folders", FolderController, :create
+
+    get  "/workspaces/:workspace_id/repositories", RepositoryController, :index
     post "/workspaces/:workspace_id/repositories", RepositoryController, :create
   end
 

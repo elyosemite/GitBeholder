@@ -8,6 +8,26 @@ defmodule GitBeholderWeb.FolderControllerTest do
     %{workspace: workspace}
   end
 
+  describe "GET /api/v1/workspaces/:workspace_id/folders" do
+    test "lists only folders belonging to the workspace", %{conn: conn, workspace: workspace} do
+      {:ok, folder} = Repositories.create_folder(%{name: "Backend", workspace_id: workspace.id})
+      {:ok, other_workspace} = Repositories.create_workspace(%{name: "Sales"})
+      {:ok, _other} = Repositories.create_folder(%{name: "Pricing", workspace_id: other_workspace.id})
+
+      conn = get(conn, "/api/v1/workspaces/#{workspace.id}/folders")
+
+      assert %{"folders" => folders} = json_response(conn, 200)
+      assert [%{"id" => id, "name" => "Backend"}] = folders
+      assert id == folder.id
+    end
+
+    test "returns 400 for a non-numeric workspace id", %{conn: conn} do
+      conn = get(conn, "/api/v1/workspaces/abc/folders")
+
+      assert json_response(conn, 400)
+    end
+  end
+
   describe "POST /api/v1/workspaces/:workspace_id/folders" do
     test "creates a top-level folder", %{conn: conn, workspace: workspace} do
       conn =
