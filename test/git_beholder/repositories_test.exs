@@ -3,6 +3,18 @@ defmodule GitBeholder.RepositoriesTest do
 
   alias GitBeholder.Repositories
 
+  describe "list_workspaces/0" do
+    test "returns all workspaces" do
+      {:ok, workspace_a} = Repositories.create_workspace(%{name: "Engineering"})
+      {:ok, workspace_b} = Repositories.create_workspace(%{name: "Sales"})
+
+      ids = Repositories.list_workspaces() |> Enum.map(& &1.id)
+
+      assert workspace_a.id in ids
+      assert workspace_b.id in ids
+    end
+  end
+
   describe "create_workspace/1" do
     test "creates a workspace with a valid name" do
       assert {:ok, workspace} = Repositories.create_workspace(%{name: "Engineering"})

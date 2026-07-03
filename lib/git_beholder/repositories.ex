@@ -10,6 +10,13 @@ defmodule GitBeholder.Repositories do
   alias GitBeholder.Repositories.{Workspace, Folder, Repository}
 
   @doc """
+  Lists all Workspaces.
+  """
+  def list_workspaces do
+    Repo.all(Workspace)
+  end
+
+  @doc """
   Creates a Workspace.
   """
   def create_workspace(attrs) do

@@ -15,6 +15,16 @@ defmodule GitBeholderWeb.Router do
     get "/git/repositories", GitRepositoryController, :index
   end
 
+  scope "/api/v1", GitBeholderWeb do
+    pipe_through :api
+
+    get  "/workspaces", WorkspaceController, :index
+    post "/workspaces", WorkspaceController, :create
+
+    post "/workspaces/:workspace_id/folders", FolderController, :create
+    post "/workspaces/:workspace_id/repositories", RepositoryController, :create
+  end
+
   scope "/api/v1/workspaces/:workspace_id/repositories/:repository_id", GitBeholderWeb do
     pipe_through [:api, :repository]
 
