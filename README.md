@@ -6,9 +6,9 @@
 [![Top language](https://img.shields.io/github/languages/top/elyosemite/GitBeholder)](mix.exs)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
 
-GitBeholder is a modern Git backend designed to simplify and enhance your workflow. Built with Elixir and Phoenix, with a separate frontend application planned (*coming as soon as possible*), it allows users to perform key Git operations like `commits`, `pushes`, viewing `diffs`, exploring `commit history`, and more — all through a user-friendly interface.
+GitBeholder is a modern Git backend designed to simplify and enhance your workflow. Built with Elixir and Phoenix, paired with a desktop app (`app/`, Tauri + React + TypeScript) living in this same repository, it allows users to perform key Git operations like `commits`, `pushes`, viewing `diffs`, exploring `commit history`, and more — all through a user-friendly interface.
 
-> **Status:** GitBeholder is backend-only right now. There is no bundled UI yet — you interact with it as a JSON API (see [API Documentation](#api-documentation)).
+> **Status:** The desktop app is early and being built incrementally — right now it can list workspaces/repositories and show a repository's commit log. Everything else is still consumed as a JSON API directly (see [API Documentation](#api-documentation)).
 
 [API Docs](docs/Getting%20Started.md) · [Architecture Decision Records](docs/architecture-decision-records) · [DeepWiki](https://deepwiki.com/elyosemite/GitBeholder) · [Roadmap](#roadmap) · [Contributing](#contributing)
 
@@ -37,7 +37,7 @@ GitBeholder is a modern Git backend designed to simplify and enhance your workfl
 ## Tech Stack
 
 - **Backend:** Elixir and Phoenix
-- **Frontend:** Planned, to be built in React/Electron
+- **Frontend:** Desktop app in `app/`, built with Tauri + React + TypeScript
 - **Git Integration:** Native Git CLI operations via Elixir
 - **API Communication:** RESTful JSON endpoints
 
@@ -66,6 +66,18 @@ mix phx.server
 
 The API will be available at `http://localhost:4000`.
 
+### Setup Desktop App (Tauri)
+
+Prerequisites: Rust (`cargo`/`rustc`), Node.js, and `pnpm`.
+
+```bash
+cd app
+pnpm install
+pnpm tauri dev
+```
+
+The app expects the Phoenix API to be running at `http://127.0.0.1:4000` (see [Setup Backend](#setup-backend-phoenix) above).
+
 ## Running Tests
 
 Run the full automated suite (controller tests + unit tests):
@@ -88,10 +100,17 @@ mix test test/git_beholder_web/controllers/git_repository_controller_test.exs:12
 
 ### Testing the API manually
 
-With the server running (`mix phx.server`), exercise an endpoint directly with `curl`:
+With the server running (`mix phx.server`), register a workspace and a repository, then query its status:
 
 ```bash
-curl "http://localhost:4000/api/git/status?path=/path/to/a/git/repo"
+curl -X POST http://127.0.0.1:4000/api/v1/workspaces \
+  -H "Content-Type: application/json" -d '{"name": "Engineering"}'
+
+curl -X POST http://127.0.0.1:4000/api/v1/workspaces/1/repositories \
+  -H "Content-Type: application/json" \
+  -d '{"name": "my-repo", "path": "/path/to/a/git/repo"}'
+
+curl http://127.0.0.1:4000/api/v1/workspaces/1/repositories/1/status
 ```
 
 See [`docs/Getting Started.md`](docs/Getting%20Started.md) for the full endpoint reference with request/response examples.
@@ -104,15 +123,23 @@ Full endpoint reference with request/response examples: [`docs/Getting Started.m
 
 ```
 lib/
-├── git_beholder/          # Core domain logic (Git operations via CLI)
+├── git_beholder/          # Core domain logic (Git operations via CLI, Workspace/Folder/Repository)
 │   ├── git_commit.ex
 │   ├── git_log.ex
-│   ├── git_repository.ex
-│   └── git_status.ex
+│   ├── git_status.ex
+│   ├── repo.ex            # Ecto.Repo (SQLite)
+│   └── repositories.ex    # Workspace/Folder/Repository context
 └── git_beholder_web/       # Phoenix web layer
     ├── controllers/        # JSON API controllers
+    ├── plugs/              # FetchRepository — resolves + validates repository paths
     ├── endpoint.ex
     └── router.ex
+
+app/                       # Desktop app (Tauri + React + TypeScript)
+├── src/
+│   ├── api/                # Fetch client for the GitBeholder API
+│   └── components/
+└── src-tauri/               # Rust/Tauri shell
 ```
 
 ## Architecture Decision Records
