@@ -26,12 +26,26 @@ defmodule GitBeholder.Repositories do
   end
 
   @doc """
+  Lists all Folders belonging to a Workspace.
+  """
+  def list_folders(workspace_id) do
+    Repo.all(from f in Folder, where: f.workspace_id == ^workspace_id)
+  end
+
+  @doc """
   Creates a Folder inside a Workspace, optionally nested under a parent Folder.
   """
   def create_folder(attrs) do
     %Folder{}
     |> Folder.changeset(attrs)
     |> Repo.insert()
+  end
+
+  @doc """
+  Lists all Repositories belonging to a Workspace.
+  """
+  def list_repositories(workspace_id) do
+    Repo.all(from r in Repository, where: r.workspace_id == ^workspace_id)
   end
 
   @doc """

@@ -54,6 +54,22 @@ defmodule GitBeholder.RepositoriesTest do
     end
   end
 
+  describe "list_folders/1" do
+    test "returns only folders belonging to the given workspace" do
+      {:ok, workspace_a} = Repositories.create_workspace(%{name: "Engineering"})
+      {:ok, workspace_b} = Repositories.create_workspace(%{name: "Sales"})
+
+      {:ok, folder_a} =
+        Repositories.create_folder(%{name: "Backend", workspace_id: workspace_a.id})
+
+      {:ok, _folder_b} =
+        Repositories.create_folder(%{name: "Pricing", workspace_id: workspace_b.id})
+
+      assert [%{id: id}] = Repositories.list_folders(workspace_a.id)
+      assert id == folder_a.id
+    end
+  end
+
   describe "create_repository/1" do
     setup do
       {:ok, workspace} = Repositories.create_workspace(%{name: "Engineering"})
@@ -69,6 +85,30 @@ defmodule GitBeholder.RepositoriesTest do
                })
 
       assert repository.folder_id == nil
+    end
+  end
+
+  describe "list_repositories/1" do
+    test "returns only repositories belonging to the given workspace" do
+      {:ok, workspace_a} = Repositories.create_workspace(%{name: "Engineering"})
+      {:ok, workspace_b} = Repositories.create_workspace(%{name: "Sales"})
+
+      {:ok, repository_a} =
+        Repositories.create_repository(%{
+          name: "payment_service",
+          path: "/tmp/payment_service",
+          workspace_id: workspace_a.id
+        })
+
+      {:ok, _repository_b} =
+        Repositories.create_repository(%{
+          name: "pricing_service",
+          path: "/tmp/pricing_service",
+          workspace_id: workspace_b.id
+        })
+
+      assert [%{id: id}] = Repositories.list_repositories(workspace_a.id)
+      assert id == repository_a.id
     end
   end
 
