@@ -68,9 +68,33 @@ The API will be available at `http://localhost:4000`.
 
 ## Running Tests
 
+Run the full automated suite (controller tests + unit tests):
+
 ```bash
 mix test
 ```
+
+Run a single test file:
+
+```bash
+mix test test/git_beholder_web/controllers/git_repository_controller_test.exs
+```
+
+Run a single test by line number:
+
+```bash
+mix test test/git_beholder_web/controllers/git_repository_controller_test.exs:12
+```
+
+### Testing the API manually
+
+With the server running (`mix phx.server`), exercise an endpoint directly with `curl`:
+
+```bash
+curl "http://localhost:4000/api/git/status?path=/path/to/a/git/repo"
+```
+
+See [`docs/Getting Started.md`](docs/Getting%20Started.md) for the full endpoint reference with request/response examples.
 
 ## API Documentation
 
