@@ -5,13 +5,22 @@ defmodule GitBeholderWeb.Router do
     plug :accepts, ["json"]
   end
 
+  pipeline :repository do
+    plug GitBeholderWeb.Plugs.FetchRepository
+  end
+
   scope "/api", GitBeholderWeb do
     pipe_through :api
 
-    get  "/git/status", GitStatusController, :status
-    post "/git/commit", GitCommitController, :create
-    get  "/git/log", GitLogController, :index
-    get  "/git/repositories", GitRepositoryController, :index
+    get "/git/repositories", GitRepositoryController, :index
+  end
+
+  scope "/api/v1/workspaces/:workspace_id/repositories/:repository_id", GitBeholderWeb do
+    pipe_through [:api, :repository]
+
+    get "/status", GitStatusController, :status
+    post "/commit", GitCommitController, :create
+    get "/log", GitLogController, :index
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
