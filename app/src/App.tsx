@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Header } from "./components/Header";
 import { WorkspaceList } from "./components/WorkspaceList";
 import { RepositoryList } from "./components/RepositoryList";
 import { CommitLog } from "./components/CommitLog";
@@ -16,10 +17,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <span className="app-header__title">GitBeholder</span>
-        {repository && <span className="app-header__repo">{repository.name}</span>}
-      </header>
+      <Header workspaceName={workspace?.name} repositoryName={repository?.name} />
       <div className="app-body">
         <aside className="app-sidebar">
           <WorkspaceList selectedId={workspace?.id ?? null} onSelect={selectWorkspace} />
