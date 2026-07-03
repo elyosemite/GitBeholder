@@ -19,11 +19,15 @@ GitBeholder is a modern Git backend designed to simplify and enhance your workfl
 - **Git Integration:** Native Git CLI operations via Elixir
 - **API Communication:** RESTful JSON endpoints
 
+> **Note:** GitBeholder is currently backend-only. There is no bundled UI yet — after starting the server you interact with it as a JSON API (see [API Documentation](#api-documentation) below).
+
 ## Installation
 
 ### Prerequisites
 
-- Elixir & Erlang installed
+- Elixir `~> 1.14` (see [`mix.exs`](mix.exs))
+- Erlang/OTP installed
+  - ⚠️ Erlang/OTP **28.0** ships with a known Hex compatibility bug (`:re.import/1` undefined) that breaks `mix deps.get`. Use **28.1+** or **27.x** instead.
 - Git installed and available in the system path
 
 ### Clone the Repository
@@ -31,7 +35,7 @@ GitBeholder is a modern Git backend designed to simplify and enhance your workfl
 ```bash
 git clone https://github.com/elyosemite/GitBeholder.git
 cd GitBeholder
-````
+```
 
 ### Setup Backend (Phoenix)
 
@@ -39,6 +43,23 @@ cd GitBeholder
 mix deps.get
 mix phx.server
 ```
+
+The API will be available at `http://localhost:4000`.
+
+### Running Tests
+
+```bash
+mix test
+```
+
+## API Documentation
+
+Full endpoint reference with request/response examples: [`docs/Getting Started.md`](docs/Getting%20Started.md)
+
+## Architecture Decision Records
+
+Design decisions behind the project are documented in [`docs/architecture-decision-records`](docs/architecture-decision-records).
+
 ## Roadmap
 
 * Commit history viewer with author, date, and message
