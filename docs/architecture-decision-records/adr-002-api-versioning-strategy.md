@@ -1,6 +1,6 @@
 # ADR 002 - API Versioning Strategy
 
-**Status**: `Approved`
+**Status**: `Approved` — the "namespace" concept described in Context below is superseded by the Workspace/Folder/Repository model in [ADR 005](adr-005-workspace-folder-repository-hierarchy.md). The versioning decision itself remains in effect and is implemented as part of [ADR 007](adr-007-repository-context-and-plug.md).
 
 ## Context
 
