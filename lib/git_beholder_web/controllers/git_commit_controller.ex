@@ -15,6 +15,12 @@ defmodule GitBeholderWeb.GitCommitController do
   end
 
   def create(conn, %{"repo_path" => repo_path, "file_path" => file_path}) do
-    create(conn, %{"repo_path" => repo_path, "file_path" => file_path, "message" => "Commit via Gitbehodler API"})
+    create(conn, %{"repo_path" => repo_path, "file_path" => file_path, "message" => "Commit via GitBeholder API"})
+  end
+
+  def create(conn, _params) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{status: "error", message: "Missing required parameters: repo_path, file_path"})
   end
 end

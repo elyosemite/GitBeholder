@@ -7,8 +7,16 @@ defmodule GitBeholderWeb.GitStatusController do
       {:ok, output} ->
         json(conn, %{status: "ok", output: output})
 
-        {:error, error_output} ->
-          json(conn, %{status: "error", output: error_output})
+      {:error, error_output} ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{status: "error", message: error_output})
     end
+  end
+
+  def status(conn, _params) do
+    conn
+    |> put_status(:bad_request)
+    |> json(%{status: "error", message: "Missing required parameter: path"})
   end
 end

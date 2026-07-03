@@ -17,15 +17,14 @@ defmodule GitBeholder.GitLog do
             output
             |> String.trim()
             |> String.split("\n", trim: true)
-            |> Enum.map(fn line ->
-              [hash, author, date, message] = String.split(line, "|", parts: 4)
+            |> Enum.flat_map(fn line ->
+              case String.split(line, "|", parts: 4) do
+                [hash, author, date, message] ->
+                  [%{hash: hash, author: author, date: date, message: message}]
 
-              %{
-                hash: hash,
-                author: author,
-                date: date,
-                message: message
-              }
+                _ ->
+                  []
+              end
             end)
 
           {:ok, commits}

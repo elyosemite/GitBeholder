@@ -26,13 +26,13 @@ defmodule GitBeholder.PropertyLoaderTest do
 
   test "get_property/1 returns value from properties.json" do
     File.write!(@test_json_path, ~s({"rootDirectory": "/tmp/test_repos", "foo": "bar"}))
-    assert PropertyLoader.get_property("rootDirectory") == "/tmp/test_repos"
-    assert PropertyLoader.get_property("foo") == "bar"
+    assert PropertyLoader.get_property("rootDirectory") == {:ok, "/tmp/test_repos"}
+    assert PropertyLoader.get_property("foo") == {:ok, "bar"}
   end
 
-  test "get_property/1 returns nil if key does not exist" do
+  test "get_property/1 returns {:ok, nil} if key does not exist" do
     File.write!(@test_json_path, ~s({"rootDirectory": "/tmp/test_repos"}))
-    assert PropertyLoader.get_property("not_exist") == nil
+    assert PropertyLoader.get_property("not_exist") == {:ok, nil}
   end
 
   test "get_root_directory returns value from properties.json if present" do

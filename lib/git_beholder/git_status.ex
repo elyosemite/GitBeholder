@@ -1,10 +1,17 @@
 defmodule GitBeholder.GitStatus do
   def git_status(path) do
-    {output, exit_code} = System.cmd("git", ["status"], cd: path, stderr_to_stdout: true)
+    cond do
+      !File.dir?(path) ->
+        {:error, "Directory does not exist: #{path}"}
 
-    case exit_code do
-      0 -> {:ok, output}
-      _ -> {:error, output}
+      !File.dir?(Path.join(path, ".git")) ->
+        {:error, "Not a valid Git repository: #{path}"}
+
+      true ->
+        case System.cmd("git", ["status"], cd: path, stderr_to_stdout: true) do
+          {output, 0} -> {:ok, output}
+          {output, _} -> {:error, output}
+        end
     end
   end
 end
