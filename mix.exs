@@ -34,6 +34,8 @@ defmodule GitBeholder.MixProject do
     [
       {:phoenix, "~> 1.7.21"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
+      {:ecto_sql, "~> 3.10"},
+      {:ecto_sqlite3, "~> 0.15"},
       {:swoosh, "~> 1.5"},
       {:finch, "~> 0.13"},
       {:telemetry_metrics, "~> 1.0"},
@@ -54,7 +56,10 @@ defmodule GitBeholder.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get"]
+      setup: ["deps.get", "ecto.setup"],
+      "ecto.setup": ["ecto.create", "ecto.migrate"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
   end
 end

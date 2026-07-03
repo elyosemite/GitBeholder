@@ -1,5 +1,10 @@
 import Config
 
+config :git_beholder, GitBeholder.Repo,
+  database: Path.expand("../git_beholder_test.db", __DIR__),
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: 1
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :git_beholder, GitBeholderWeb.Endpoint,

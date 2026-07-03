@@ -8,6 +8,7 @@
 import Config
 
 config :git_beholder,
+  ecto_repos: [GitBeholder.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint

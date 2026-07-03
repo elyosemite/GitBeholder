@@ -9,6 +9,7 @@ defmodule GitBeholder.Application do
   def start(_type, _args) do
     children = [
       GitBeholderWeb.Telemetry,
+      GitBeholder.Repo,
       {DNSCluster, query: Application.get_env(:git_beholder, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: GitBeholder.PubSub},
       # Start the Finch HTTP client for sending emails

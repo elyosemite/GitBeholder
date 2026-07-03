@@ -31,7 +31,12 @@ git_beholder-*.tar
 # Ignore the setting for exlixir-ls
 .elixir_ls/
 
-# Ignore setting for asdf 
+# Ignore setting for asdf
 .tool-versions
 
 /http
+
+# SQLite database files (dev/test)
+*.db
+*.db-shm
+*.db-wal
