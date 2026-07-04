@@ -1,19 +1,42 @@
 :root {
-  --bg: #0b0e14;
-  --panel: #0f131b;
-  --surface: #141922;
-  --surface2: #1b212c;
-  --line: rgba(255, 255, 255, 0.07);
-  --line2: rgba(255, 255, 255, 0.12);
-  --text: #e8ecf3;
-  --muted: #9aa4b2;
-  --faint: #5f6a78;
-  --blue: #5b9dff;
-  --green: #3fb950;
-  --red: #f85149;
+  /* backgrounds */
+  --color-bg-canvas: #0b0e14;
+  --color-bg-panel: #0f131b;
+  --color-bg-surface: #141922;
+  --color-bg-surface-hover: #1b212c;
+  --color-bg-header-start: #10151e;
+  --color-bg-header-end: #0d1119;
 
-  color: var(--text);
-  background-color: var(--bg);
+  /* borders */
+  --color-border-subtle: rgba(255, 255, 255, 0.07);
+  --color-border-default: rgba(255, 255, 255, 0.12);
+
+  /* text */
+  --color-text-primary: #e8ecf3;
+  --color-text-secondary: #9aa4b2;
+  --color-text-faint: #5f6a78;
+  --color-text-on-accent: #0b0e14;
+
+  /* accent (interactive / brand) */
+  --color-accent: #5b9dff;
+  --color-accent-soft: rgba(91, 157, 255, 0.14);
+  --color-accent-gradient-start: #6ba6ff;
+  --color-accent-gradient-end: #4c8bf5;
+  --color-accent-glow: rgba(76, 139, 245, 0.35);
+  --color-brand-gradient-start: #5b9dff;
+  --color-brand-gradient-end: #bc8cff;
+  --color-brand-glow: rgba(91, 157, 255, 0.35);
+
+  /* status */
+  --color-success: #3fb950;
+  --color-danger: #f85149;
+
+  /* overlays */
+  --color-overlay-hover: rgba(255, 255, 255, 0.03);
+  --color-shadow-ambient: rgba(0, 0, 0, 0.35);
+
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-canvas);
   font-family:
     "IBM Plex Sans",
     system-ui,
@@ -37,7 +60,7 @@ body,
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: var(--bg);
+  background: var(--color-bg-canvas);
 }
 
 .app-body {
@@ -49,8 +72,8 @@ body,
 .app-sidebar {
   width: 240px;
   flex: 0 0 240px;
-  background: var(--panel);
-  border-right: 1px solid var(--line);
+  background: var(--color-bg-panel);
+  border-right: 1px solid var(--color-border-subtle);
   overflow-y: auto;
   padding: 12px 8px;
 }
@@ -70,7 +93,7 @@ body,
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--color-text-faint);
   padding: 4px 8px;
 }
 
@@ -84,7 +107,7 @@ body,
   padding: 6px 9px;
   margin: 1px 0;
   font-size: 12.5px;
-  color: var(--text);
+  color: var(--color-text-primary);
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
@@ -93,35 +116,35 @@ body,
 }
 
 .sidebar-item:hover {
-  background: var(--surface);
+  background: var(--color-bg-surface);
 }
 
 .sidebar-item--active {
-  background: rgba(91, 157, 255, 0.14);
-  color: var(--blue);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
   font-weight: 600;
 }
 
 .sidebar-hint,
 .sidebar-error {
   font-size: 11.5px;
-  color: var(--faint);
+  color: var(--color-text-faint);
   padding: 4px 9px;
 }
 
 .sidebar-error {
-  color: var(--red);
+  color: var(--color-danger);
 }
 
 .empty-state {
   padding: 24px 16px;
-  color: var(--faint);
+  color: var(--color-text-faint);
   font-size: 12.5px;
   text-align: center;
 }
 
 .empty-state--error {
-  color: var(--red);
+  color: var(--color-danger);
 }
 
 .commit-log {
@@ -135,18 +158,18 @@ body,
   gap: 14px;
   height: 40px;
   padding: 0 16px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 .commit-row:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--color-overlay-hover);
 }
 
 .commit-row__hash {
   flex: 0 0 70px;
   font-family: "IBM Plex Mono", monospace;
   font-size: 11.5px;
-  color: var(--faint);
+  color: var(--color-text-faint);
 }
 
 .commit-row__message {
@@ -161,7 +184,7 @@ body,
 .commit-row__author {
   flex: 0 0 140px;
   font-size: 12px;
-  color: var(--muted);
+  color: var(--color-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -171,6 +194,6 @@ body,
   flex: 0 0 96px;
   text-align: right;
   font-size: 11.5px;
-  color: var(--faint);
+  color: var(--color-text-faint);
   font-family: "IBM Plex Mono", monospace;
 }
