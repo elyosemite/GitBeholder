@@ -35,6 +35,7 @@
   --color-overlay-hover: rgba(255, 255, 255, 0.03);
   --color-shadow-ambient: rgba(0, 0, 0, 0.35);
 
+  color-scheme: dark;
   color: var(--color-text-primary);
   background-color: var(--color-bg-canvas);
   font-family:
@@ -42,6 +43,48 @@
     system-ui,
     sans-serif;
   font-size: 13px;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* backgrounds */
+    --color-bg-canvas: #f6f8fb;
+    --color-bg-panel: #ffffff;
+    --color-bg-surface: #eef1f5;
+    --color-bg-surface-hover: #e2e6ec;
+    --color-bg-header-start: #ffffff;
+    --color-bg-header-end: #f3f5f8;
+
+    /* borders */
+    --color-border-subtle: rgba(15, 23, 42, 0.06);
+    --color-border-default: rgba(15, 23, 42, 0.12);
+
+    /* text */
+    --color-text-primary: #1a2028;
+    --color-text-secondary: #5b6572;
+    --color-text-faint: #8b93a1;
+    --color-text-on-accent: #ffffff;
+
+    /* accent (interactive / brand) */
+    --color-accent: #2f6fed;
+    --color-accent-soft: rgba(47, 111, 237, 0.12);
+    --color-accent-gradient-start: #4c8bf5;
+    --color-accent-gradient-end: #2f6fed;
+    --color-accent-glow: rgba(47, 111, 237, 0.25);
+    --color-brand-gradient-start: #2f6fed;
+    --color-brand-gradient-end: #9b6bff;
+    --color-brand-glow: rgba(47, 111, 237, 0.25);
+
+    /* status */
+    --color-success: #1a7f37;
+    --color-danger: #cf222e;
+
+    /* overlays */
+    --color-overlay-hover: rgba(15, 23, 42, 0.04);
+    --color-shadow-ambient: rgba(15, 23, 42, 0.12);
+
+    color-scheme: light;
+  }
 }
 
 * {
