@@ -16,10 +16,10 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
+    <div className="flex flex-col h-screen bg-canvas">
       <Header workspaceName={workspace?.name} repositoryName={repository?.name} />
-      <div className="app-body">
-        <aside className="app-sidebar">
+      <div className="flex-1 flex min-h-0">
+        <aside className="w-60 flex-none bg-panel border-r border-line-subtle overflow-y-auto py-3 px-2">
           <WorkspaceList selectedId={workspace?.id ?? null} onSelect={selectWorkspace} />
           <RepositoryList
             workspaceId={workspace?.id ?? null}
@@ -27,7 +27,7 @@ function App() {
             onSelect={setRepository}
           />
         </aside>
-        <main className="app-main">
+        <main className="flex-1 min-w-0 overflow-y-auto">
           <CommitLog
             workspaceId={workspace?.id ?? null}
             repositoryId={repository?.id ?? null}
