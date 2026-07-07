@@ -40,3 +40,5 @@ git_beholder-*.tar
 *.db
 *.db-shm
 *.db-wal
+
+temp
