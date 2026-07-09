@@ -15,11 +15,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { useSession } from "@/features/session"
-import { REPOSITORIES } from "@/mocks/git-data"
+import { useRepositories } from "@/features/repositories"
 
 export function RepositoryBlock() {
   const [open, setOpen] = React.useState(false)
   const { repository, selectRepository } = useSession()
+  const { data: repositories, error } = useRepositories()
 
   return (
     <div className="w-52 shrink-0">
@@ -49,9 +50,11 @@ export function RepositoryBlock() {
           <Command>
             <CommandInput placeholder="Search repository…" />
             <CommandList>
-              <CommandEmpty>No repository found.</CommandEmpty>
+              <CommandEmpty>
+                {error ? "Erro ao carregar repositórios." : "Nenhum repositório encontrado."}
+              </CommandEmpty>
               <CommandGroup>
-                {REPOSITORIES.map((repo) => (
+                {(repositories ?? []).map((repo) => (
                   <CommandItem
                     key={repo.id}
                     value={repo.name}
