@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Check, GitBranch, Monitor, Tag } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { COMMITS, type MockCommit, type MockCommitRef } from "@/mocks/git-data";
+import { useCommits, type Commit, type CommitRef } from "@/features/commits";
 import { PlatformIcon } from "@/components/icons/brand-icons";
 
 // Graph keeps a fixed width: dragging either of its edges shifts the whole
@@ -30,7 +30,7 @@ function authorInitials(author: string) {
 
 // At the minimum zone width the badge collapses into a square with a single
 // centered icon: tag > local > platform > current > generic branch.
-function IconOnlyBadge({ commitRef }: { commitRef: MockCommitRef }) {
+function IconOnlyBadge({ commitRef }: { commitRef: CommitRef }) {
   let icon;
   if (commitRef.type === "tag") {
     icon = <Tag aria-hidden="true" size={11} className="text-amber-400" />;
@@ -56,7 +56,7 @@ function IconOnlyBadge({ commitRef }: { commitRef: MockCommitRef }) {
 
 // The four-part ref badge: [check if HEAD] [name — always] [monitor if local] [platform icon].
 // When the ref zone is narrow only one of the two trailing icons fits: local wins.
-function RefBadge({ commitRef, compact }: { commitRef: MockCommitRef; compact: boolean }) {
+function RefBadge({ commitRef, compact }: { commitRef: CommitRef; compact: boolean }) {
   const showLocal = commitRef.local;
   const showPlatform = commitRef.platform && (!compact || !commitRef.local);
 
@@ -87,7 +87,7 @@ function CommitRow({
   last,
   refWidth,
 }: {
-  commit: MockCommit;
+  commit: Commit;
   first: boolean;
   last: boolean;
   refWidth: number;
@@ -164,6 +164,8 @@ function ResizeHandle({ left, onDrag }: { left: number; onDrag: (dx: number) => 
 
 export function CommitsColumn() {
   const [refWidth, setRefWidth] = useState(208);
+  const { data: commits } = useCommits();
+  const rows = commits ?? [];
 
   function resizeRefZone(dx: number) {
     setRefWidth((width) => Math.min(MAX_REF_WIDTH, Math.max(MIN_REF_WIDTH, width + dx)));
@@ -186,12 +188,12 @@ export function CommitsColumn() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          {COMMITS.map((commit, index) => (
+          {rows.map((commit, index) => (
             <CommitRow
               key={commit.hash}
               commit={commit}
               first={index === 0}
-              last={index === COMMITS.length - 1}
+              last={index === rows.length - 1}
               refWidth={refWidth}
             />
           ))}
