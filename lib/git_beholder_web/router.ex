@@ -34,7 +34,7 @@ defmodule GitBeholderWeb.Router do
   scope "/api/v1/workspaces/:workspace_id/repositories/:repository_id", GitBeholderWeb do
     pipe_through [:api, :repository]
 
-    get "/status", GitStatusController, :status
+    get "/status", GitStatusController, :index
     post "/commit", GitCommitController, :create
     get "/log", GitLogController, :index
     get "/branches", GitBranchController, :index
