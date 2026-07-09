@@ -28,13 +28,13 @@ const operations = [
 
 export function HeaderGitOperationBlock() {
   return (
-    <div className="flex items-center gap-1 rounded-lg bg-muted/40 p-1">
+    <div className="flex items-center gap-1">
       {operations.map(({ label, icon: Icon }) => (
         <Button
           key={label}
           variant="ghost"
           size="sm"
-          className="gap-1.5 font-normal text-muted-foreground hover:text-foreground"
+          className="gap-icon font-normal text-muted-foreground hover:text-foreground"
         >
           <Icon aria-hidden="true" size={16} />
           {label}

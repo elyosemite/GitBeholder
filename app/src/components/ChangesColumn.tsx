@@ -22,7 +22,7 @@ const STAGED_FILES: { path: string; status: FileStatus }[] = [
 
 function FileRow({ path, status }: { path: string; status: FileStatus }) {
   return (
-    <div className="flex items-center gap-2 text-[12.5px]">
+    <div className="flex items-center gap-icon text-row">
       <span className={"w-3.5 flex-none text-center font-mono font-semibold " + STATUS_STYLES[status]}>
         {status}
       </span>
@@ -54,16 +54,16 @@ export function ChangesColumn() {
             </div>
           </PanelSection>
 
-          <div className="mt-auto px-4 py-3">
+          <div className="mt-auto px-panel-x py-panel-y">
             <textarea
               disabled
               rows={3}
               placeholder="Mensagem do commit…"
-              className="w-full resize-none rounded-lg border border-line-default bg-surface px-2.5 py-2 text-[12.5px] text-ink placeholder:text-ink-faint outline-none disabled:opacity-60"
+              className="w-full resize-none rounded-lg border border-line-default bg-surface px-2 py-2 text-row text-ink placeholder:text-ink-faint outline-none disabled:opacity-60"
             />
             <button
               disabled
-              className="mt-2 w-full rounded-lg bg-accent-soft px-2.5 py-1.5 text-[12.5px] font-semibold text-accent disabled:opacity-50"
+              className="mt-2 w-full rounded-lg bg-accent-soft px-2 py-2 text-row font-semibold text-accent disabled:opacity-50"
             >
               Commit
             </button>

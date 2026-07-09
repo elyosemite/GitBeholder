@@ -24,22 +24,22 @@ export function HeaderBranchBlock() {
   const SelectedIcon = selected?.origin ? Cloud : GitBranch
 
   return (
-    <div className="flex w-40 shrink-0 flex-col gap-1">
-      <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-        Branch
-      </span>
+    <div className="w-52 shrink-0">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           role="combobox"
           aria-expanded={open}
           aria-label="Branch"
-          className="flex h-7 w-full items-center justify-between gap-1.5 rounded-[min(var(--radius-md),10px)] border border-input bg-transparent px-2.5 text-sm font-normal outline-none transition-colors select-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50"
+          className="flex h-7 w-full items-center justify-between gap-icon rounded-md border border-input bg-transparent px-2 text-sm font-normal outline-none transition-colors select-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50"
         >
-          <span className="flex min-w-0 items-center gap-1.5">
+          <span className="flex min-w-0 items-center gap-icon">
             <SelectedIcon
               aria-hidden="true"
               className={`size-4 shrink-0 ${selected?.origin ? "text-sky-500" : "text-muted-foreground"}`}
             />
+            <span className="flex-none text-meta font-medium uppercase tracking-wide text-muted-foreground">
+              Branch
+            </span>
             <span className="truncate">{value}</span>
           </span>
           <ChevronsUpDown

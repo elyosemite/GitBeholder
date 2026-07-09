@@ -68,7 +68,7 @@ function RefBadge({ commitRef, compact }: { commitRef: MockCommitRef; compact: b
       {commitRef.current && (
         <Check aria-label="branch atual" size={11} className="flex-none text-success" />
       )}
-      <span className="truncate text-[10.5px] text-ink-secondary" title={commitRef.name}>
+      <span className="truncate text-meta text-ink-secondary" title={commitRef.name}>
         {commitRef.name}
       </span>
       {showLocal && (
@@ -96,7 +96,7 @@ function CommitRow({
   const railPosition = first ? "top-1/2 bottom-0" : last ? "top-0 bottom-1/2" : "inset-y-0";
 
   return (
-    <div className="flex h-8 items-center border-b border-line-subtle px-3 hover:bg-overlay-hover">
+    <div className="flex h-8 items-center border-b border-line-subtle px-row-x hover:bg-overlay-hover">
       <div className="flex min-w-0 flex-none items-center" style={{ width: refWidth }}>
         {hasRefs && (
           <>
@@ -120,20 +120,20 @@ function CommitRow({
         <Avatar size="sm" className="z-10 ring-2 ring-primary" title={commit.author}>
           <AvatarImage src="/avatar.png" alt={commit.author} />
           <AvatarFallback
-            className={"text-[9px] font-semibold " + (AUTHOR_COLORS[commit.author] ?? "")}
+            className={"text-micro font-semibold " + (AUTHOR_COLORS[commit.author] ?? "")}
           >
             {authorInitials(commit.author)}
           </AvatarFallback>
         </Avatar>
       </div>
 
-      <div className="min-w-0 flex-1 px-3">
-        <span className="block truncate text-[12.5px] text-ink" title={commit.message}>
+      <div className="min-w-0 flex-1 px-row-x">
+        <span className="block truncate text-row text-ink" title={commit.message}>
           {commit.message}
         </span>
       </div>
 
-      <div className={TIME_ZONE_WIDTH + " flex-none text-right font-mono text-[10.5px] text-ink-faint"}>
+      <div className={TIME_ZONE_WIDTH + " flex-none text-right font-mono text-meta text-ink-faint"}>
         {commit.timestamp}
       </div>
     </div>
@@ -174,14 +174,14 @@ export function CommitsColumn() {
       {/* <ColumnHeader title="Commits" /> */}
 
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <div className="flex flex-none items-center border-b border-line-subtle bg-panel px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.08em] text-ink-faint">
+        <div className="flex flex-none items-center border-b border-line-subtle bg-panel px-row-x py-1 text-meta font-bold uppercase tracking-[0.08em] text-ink-faint">
           <div className="flex-none truncate" style={{ width: refWidth }}>
             Branch / Tag
           </div>
           <div className="flex-none text-center" style={{ width: GRAPH_WIDTH }}>
             Graph
           </div>
-          <div className="flex-1 px-3">Commit</div>
+          <div className="flex-1 px-row-x">Commit</div>
           <div className={TIME_ZONE_WIDTH + " flex-none text-right"}>Timestamp</div>
         </div>
 
