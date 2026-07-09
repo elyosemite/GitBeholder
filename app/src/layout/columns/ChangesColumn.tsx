@@ -1,6 +1,5 @@
-import { PanelSection } from "@/components/panel-primitives";
-
-type FileStatus = "M" | "A" | "D" | "U";
+import { PanelEmpty, PanelSection } from "@/components/panel-primitives";
+import { useStatus, type FileStatus } from "@/features/staging";
 
 const STATUS_STYLES: Record<FileStatus, string> = {
   M: "text-accent",
@@ -8,17 +7,6 @@ const STATUS_STYLES: Record<FileStatus, string> = {
   D: "text-danger",
   U: "text-ink-faint",
 };
-
-const UNSTAGED_FILES: { path: string; status: FileStatus }[] = [
-  { path: "src/components/Header.tsx", status: "M" },
-  { path: "src/App.css", status: "M" },
-  { path: "src/lib/utils.ts", status: "U" },
-];
-
-const STAGED_FILES: { path: string; status: FileStatus }[] = [
-  { path: "src/components/RepositoryOverviewColumn.tsx", status: "A" },
-  { path: "src/components/ChangesColumn.tsx", status: "A" },
-];
 
 function FileRow({ path, status }: { path: string; status: FileStatus }) {
   return (
@@ -34,24 +22,37 @@ function FileRow({ path, status }: { path: string; status: FileStatus }) {
 }
 
 export function ChangesColumn() {
+  const { data: files } = useStatus();
+  const rows = files ?? [];
+  const unstagedFiles = rows.filter((file) => !file.staged);
+  const stagedFiles = rows.filter((file) => file.staged);
+
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-panel">
       {/* <ColumnHeader title="Changes" /> */}
       <div className="flex flex-1 flex-col">
           <PanelSection title="Unstaged Files">
-            <div className="flex flex-col gap-1.5">
-              {UNSTAGED_FILES.map((file) => (
-                <FileRow key={file.path} {...file} />
-              ))}
-            </div>
+            {unstagedFiles.length > 0 ? (
+              <div className="flex flex-col gap-1.5">
+                {unstagedFiles.map((file) => (
+                  <FileRow key={file.path} path={file.path} status={file.status} />
+                ))}
+              </div>
+            ) : (
+              <PanelEmpty>Nenhuma alteração.</PanelEmpty>
+            )}
           </PanelSection>
 
           <PanelSection title="Staged Files">
-            <div className="flex flex-col gap-1.5">
-              {STAGED_FILES.map((file) => (
-                <FileRow key={file.path} {...file} />
-              ))}
-            </div>
+            {stagedFiles.length > 0 ? (
+              <div className="flex flex-col gap-1.5">
+                {stagedFiles.map((file) => (
+                  <FileRow key={file.path} path={file.path} status={file.status} />
+                ))}
+              </div>
+            ) : (
+              <PanelEmpty>Nada staged.</PanelEmpty>
+            )}
           </PanelSection>
 
           <div className="mt-auto px-panel-x py-panel-y">
