@@ -1,8 +1,13 @@
+import { SessionProvider } from "./features/session";
 import { AppShell } from "./layout/AppShell";
 import "./App.css";
 
 function App() {
-  return <AppShell />;
+  return (
+    <SessionProvider>
+      <AppShell />
+    </SessionProvider>
+  );
 }
 
 export default App;
