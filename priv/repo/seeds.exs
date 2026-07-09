@@ -4,6 +4,8 @@
 #
 # Seeds a single workspace/folder/repository so the desktop app has
 # something to select while real repository registration isn't built yet.
+# Points at this checkout itself, since the git-backed endpoints
+# (branches/log/status) need a real .git directory to shell out against.
 
 alias GitBeholder.Repositories
 
@@ -13,7 +15,7 @@ alias GitBeholder.Repositories
 {:ok, _repository} =
   Repositories.create_repository(%{
     name: "GitBeholder",
-    path: "C:/test",
+    path: File.cwd!(),
     workspace_id: workspace.id,
     folder_id: folder.id
   })
