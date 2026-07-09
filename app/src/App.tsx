@@ -1,41 +1,24 @@
-import { useState } from "react";
 import { Header } from "./components/Header";
-import { RepositoryActions } from "./components/RepositoryActions";
-import { WorkspaceList } from "./components/WorkspaceList";
-import { RepositoryList } from "./components/RepositoryList";
-import { CommitLog } from "./components/CommitLog";
-import type { Repository, Workspace } from "./api/types";
+import { RepositoryOverviewColumn } from "./components/RepositoryOverviewColumn";
+import { CommitsColumn } from "./components/CommitsColumn";
+import { ChangesColumn } from "./components/ChangesColumn";
 import "./App.css";
 
 function App() {
-  const [workspace, setWorkspace] = useState<Workspace | null>(null);
-  const [repository, setRepository] = useState<Repository | null>(null);
-
-  function selectWorkspace(next: Workspace) {
-    setWorkspace(next);
-    setRepository(null);
-  }
-
   return (
     <div className="flex flex-col h-screen bg-canvas">
-      <Header workspaceName={workspace?.name} repositoryName={repository?.name} />
-      <div className="flex-1 flex min-h-0">
-        <aside className="w-60 flex-none bg-panel border-r border-line-subtle overflow-y-auto py-3 px-2">
-          <RepositoryActions />
-          <WorkspaceList selectedId={workspace?.id ?? null} onSelect={selectWorkspace} />
-          <RepositoryList
-            workspaceId={workspace?.id ?? null}
-            selectedId={repository?.id ?? null}
-            onSelect={setRepository}
-          />
-        </aside>
-        <main className="flex-1 min-w-0 overflow-y-auto">
-          <CommitLog
-            workspaceId={workspace?.id ?? null}
-            repositoryId={repository?.id ?? null}
-          />
-        </main>
-      </div>
+      <Header />
+      <main className="flex-1 flex min-w-0 min-h-0">
+        <div className="w-72 flex-none h-full">
+          <RepositoryOverviewColumn />
+        </div>
+        <div className="flex-1 min-w-0 h-full">
+          <CommitsColumn workspaceId={null} repositoryId={null} />
+        </div>
+        <div className="w-72 flex-none h-full">
+          <ChangesColumn />
+        </div>
+      </main>
     </div>
   );
 }
