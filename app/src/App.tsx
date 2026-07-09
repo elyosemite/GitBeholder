@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Header } from "./components/Header";
+import { RepositoryActions } from "./components/RepositoryActions";
 import { WorkspaceList } from "./components/WorkspaceList";
 import { RepositoryList } from "./components/RepositoryList";
 import { CommitLog } from "./components/CommitLog";
@@ -20,6 +21,7 @@ function App() {
       <Header workspaceName={workspace?.name} repositoryName={repository?.name} />
       <div className="flex-1 flex min-h-0">
         <aside className="w-60 flex-none bg-panel border-r border-line-subtle overflow-y-auto py-3 px-2">
+          <RepositoryActions />
           <WorkspaceList selectedId={workspace?.id ?? null} onSelect={selectWorkspace} />
           <RepositoryList
             workspaceId={workspace?.id ?? null}
