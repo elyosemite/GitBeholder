@@ -5,8 +5,6 @@ export function listWorkspaces(): Promise<{ workspaces: Workspace[] }> {
   return request("/workspaces");
 }
 
-export function listRepositories(
-  workspaceId: number,
-): Promise<{ repositories: Repository[] }> {
+export function listRepositories(workspaceId: number): Promise<Repository[]> {
   return request(`/workspaces/${workspaceId}/repositories`);
 }
