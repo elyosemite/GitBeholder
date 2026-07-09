@@ -1,2 +1,3 @@
 export { listCommits } from "./api";
-export type { Commit } from "./types";
+export { useCommits } from "./hooks/useCommits";
+export type { Commit, CommitRef, Platform } from "./types";

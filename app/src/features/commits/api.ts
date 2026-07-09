@@ -4,9 +4,9 @@ import type { Commit } from "./types";
 export function listCommits(
   workspaceId: number,
   repositoryId: number,
-  limit = 20,
+  branch: string,
 ): Promise<Commit[]> {
   return request(
-    `/workspaces/${workspaceId}/repositories/${repositoryId}/log?limit=${limit}`,
+    `/workspaces/${workspaceId}/repositories/${repositoryId}/commits?branch=${encodeURIComponent(branch)}`,
   );
 }
