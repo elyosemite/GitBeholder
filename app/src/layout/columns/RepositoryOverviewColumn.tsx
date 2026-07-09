@@ -19,7 +19,6 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import {
-  BRANCHES,
   INTEGRATIONS,
   ISSUES,
   PULL_REQUESTS,
@@ -28,8 +27,6 @@ import {
   TEAMS,
 } from "@/mocks/git-data"
 import { useBranches } from "@/features/branches"
-
-const REMOTE_BRANCHES = BRANCHES.filter((branch) => branch.origin)
 
 function initials(name: string) {
   return name
@@ -99,7 +96,9 @@ function BranchRow({
 }
 
 export function RepositoryOverviewColumn() {
-  const { data: localBranches } = useBranches()
+  const { data: branches } = useBranches()
+  const localBranches = branches ?? []
+  const remoteBranches = localBranches.filter((branch) => branch.origin)
 
   return (
     <div className="flex h-full flex-col overflow-y-auto border-r border-line-subtle bg-panel">
@@ -188,14 +187,14 @@ export function RepositoryOverviewColumn() {
           ))}
         </Section>
 
-        <Section value="local-branches" title="Branches locais" count={(localBranches ?? []).length}>
-          {(localBranches ?? []).map((branch) => (
+        <Section value="local-branches" title="Branches locais" count={localBranches.length}>
+          {localBranches.map((branch) => (
             <BranchRow key={branch.name} name={branch.name} current={branch.current} />
           ))}
         </Section>
 
-        <Section value="remote-branches" title="Branches remotas" count={REMOTE_BRANCHES.length}>
-          {REMOTE_BRANCHES.map((branch) => (
+        <Section value="remote-branches" title="Branches remotas" count={remoteBranches.length}>
+          {remoteBranches.map((branch) => (
             <BranchRow key={branch.name} name={branch.name} remote />
           ))}
         </Section>

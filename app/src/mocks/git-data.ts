@@ -1,66 +1,6 @@
 // Mock data shared by the Header pickers and the Overview column while the
 // real git/integration backends aren't wired up yet.
 
-export interface MockBranch {
-  name: string
-  origin: boolean
-}
-
-export const BRANCHES: MockBranch[] = [
-  { name: "main", origin: true },
-  { name: "develop", origin: true },
-  { name: "staging", origin: true },
-  { name: "production", origin: true },
-  { name: "release/v1.0.0", origin: true },
-  { name: "release/v1.1.0", origin: true },
-  { name: "release/v2.0.0-beta", origin: false },
-  { name: "hotfix/payment-timeout", origin: true },
-  { name: "hotfix/login-crash", origin: false },
-  { name: "feature/user-onboarding", origin: true },
-  { name: "feature/dark-mode", origin: true },
-  { name: "feature/notifications-center", origin: false },
-  { name: "feature/search-autocomplete", origin: true },
-  { name: "feature/billing-v2", origin: false },
-  { name: "feature/oauth-google", origin: true },
-  { name: "feature/oauth-github", origin: true },
-  { name: "feature/export-csv", origin: false },
-  { name: "feature/import-wizard", origin: false },
-  { name: "feature/multi-tenant", origin: true },
-  { name: "feature/audit-log", origin: false },
-  { name: "feature/rate-limiting", origin: true },
-  { name: "feature/webhooks", origin: false },
-  { name: "feature/2fa-support", origin: true },
-  { name: "feature/team-invites", origin: false },
-  { name: "feature/sso-saml", origin: true },
-  { name: "bugfix/24234-null-pointer", origin: false },
-  { name: "bugfix/24567-race-condition", origin: true },
-  { name: "bugfix/25012-memory-leak", origin: false },
-  { name: "bugfix/25089-timezone-offset", origin: true },
-  { name: "bugfix/25190-broken-pagination", origin: false },
-  { name: "chore/upgrade-deps", origin: true },
-  { name: "chore/eslint-config", origin: false },
-  { name: "chore/ci-pipeline", origin: true },
-  { name: "chore/docker-optimize", origin: false },
-  { name: "refactor/auth-module", origin: true },
-  { name: "refactor/api-client", origin: false },
-  { name: "refactor/state-management", origin: true },
-  { name: "refactor/design-tokens", origin: false },
-  { name: "docs/api-reference", origin: true },
-  { name: "docs/contributing-guide", origin: false },
-  { name: "test/e2e-checkout", origin: true },
-  { name: "test/unit-coverage", origin: false },
-  { name: "spike/graphql-migration", origin: false },
-  { name: "spike/edge-functions", origin: false },
-  { name: "perf/image-lazy-load", origin: true },
-  { name: "perf/bundle-splitting", origin: false },
-  { name: "security/dependency-audit", origin: true },
-  { name: "security/csp-headers", origin: false },
-  { name: "i18n/pt-br-support", origin: true },
-  { name: "i18n/es-support", origin: false },
-]
-
-export const CURRENT_BRANCH = "main"
-
 export interface MockTag {
   name: string
   date: string
