@@ -14,13 +14,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { BRANCHES as branches } from "@/mocks/git-data"
+import { useSession } from "@/features/session"
+import { useBranches } from "@/features/branches"
 
 export function BranchBlock() {
   const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState(branches[0].name)
+  const { repository, branch, setBranch } = useSession()
+  const { data: branches, error } = useBranches()
 
-  const selected = branches.find((branch) => branch.name === value)
+  const selected = (branches ?? []).find((b) => b.name === branch)
   const SelectedIcon = selected?.origin ? Cloud : GitBranch
 
   return (
@@ -30,7 +32,8 @@ export function BranchBlock() {
           role="combobox"
           aria-expanded={open}
           aria-label="Branch"
-          className="flex h-7 w-full items-center justify-between gap-icon rounded-md border border-input bg-transparent px-2 text-sm font-normal outline-none transition-colors select-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50"
+          disabled={!repository}
+          className="flex h-7 w-full items-center justify-between gap-icon rounded-md border border-input bg-transparent px-2 text-sm font-normal outline-none transition-colors select-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 dark:bg-input/30 dark:hover:bg-input/50"
         >
           <span className="flex min-w-0 items-center gap-icon">
             <SelectedIcon
@@ -40,7 +43,7 @@ export function BranchBlock() {
             <span className="flex-none text-meta font-medium uppercase tracking-wide text-muted-foreground">
               Branch
             </span>
-            <span className="truncate">{value}</span>
+            <span className="truncate">{branch ?? "Selecionar…"}</span>
           </span>
           <ChevronsUpDown
             aria-hidden="true"
@@ -51,26 +54,28 @@ export function BranchBlock() {
           <Command>
             <CommandInput placeholder="Search branch…" />
             <CommandList>
-              <CommandEmpty>No branch found.</CommandEmpty>
+              <CommandEmpty>
+                {error ? "Erro ao carregar branches." : "Nenhuma branch encontrada."}
+              </CommandEmpty>
               <CommandGroup>
-                {branches.map((branch) => {
-                  const Icon = branch.origin ? Cloud : GitBranch
+                {(branches ?? []).map((b) => {
+                  const Icon = b.origin ? Cloud : GitBranch
 
                   return (
                     <CommandItem
-                      key={branch.name}
-                      value={branch.name}
-                      data-checked={branch.name === value}
-                      onSelect={(currentValue) => {
-                        setValue(currentValue)
+                      key={b.name}
+                      value={b.name}
+                      data-checked={b.name === branch}
+                      onSelect={() => {
+                        setBranch(b.name)
                         setOpen(false)
                       }}
                     >
                       <Icon
                         aria-hidden="true"
-                        className={branch.origin ? "text-sky-500" : "text-muted-foreground"}
+                        className={b.origin ? "text-sky-500" : "text-muted-foreground"}
                       />
-                      <span className="truncate">{branch.name}</span>
+                      <span className="truncate">{b.name}</span>
                     </CommandItem>
                   )
                 })}
