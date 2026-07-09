@@ -1,40 +1,63 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
 
+/* Palette: "Developer Tool / IDE" slate base (ui-ux-pro-max) with the
+   GitBeholder brand blue (Atlassian family) as accent.
+   Deviations for WCAG 4.5:1 (accessibility outranks style):
+   danger is red-400 instead of #EF4444, which fails as text on this bg. */
 @theme static {
   /* backgrounds */
-  --color-canvas: #0b0e14;
-  --color-panel: #0f131b;
-  --color-surface: #141922;
-  --color-surface-hover: #1b212c;
-  --color-header-start: #10151e;
-  --color-header-end: #0d1119;
+  --color-canvas: #0f172a;
+  --color-panel: #1b2336;
+  --color-surface: #272f42;
+  --color-surface-hover: #323d57;
+  --color-header-start: #1b2336;
+  --color-header-end: #141c2e;
 
   /* borders */
-  --color-line-subtle: rgba(255, 255, 255, 0.07);
-  --color-line-default: rgba(255, 255, 255, 0.12);
+  --color-line-subtle: rgba(148, 163, 184, 0.1);
+  --color-line-default: #475569;
 
   /* text */
-  --color-ink: #e8ecf3;
-  --color-ink-secondary: #9aa4b2;
-  --color-ink-faint: #5f6a78;
-  --color-on-accent: #0b0e14;
+  --color-ink: #f8fafc;
+  --color-ink-secondary: #94a3b8;
+  --color-ink-faint: #64748b;
+  --color-on-accent: #0f172a;
 
-  /* accent (interactive / brand) */
-  --color-accent: #5b9dff;
-  --color-accent-soft: rgba(91, 157, 255, 0.14);
-  --color-accent-from: #6ba6ff;
-  --color-accent-to: #4c8bf5;
-  --color-accent-glow: rgba(76, 139, 245, 0.35);
-  --color-brand-from: #5b9dff;
-  --color-brand-to: #bc8cff;
-  --color-brand-glow: rgba(91, 157, 255, 0.35);
+  /* accent (interactive / brand) — GitBeholder blue, Atlassian family;
+     B400 #579DFF is the dark-mode variant (B700 fails contrast on slate) */
+  --color-accent: #579dff;
+  --color-accent-soft: rgba(87, 157, 255, 0.15);
+  --color-accent-from: #85b8ff;
+  --color-accent-to: #388bff;
+  --color-accent-glow: rgba(87, 157, 255, 0.35);
+  --color-brand-from: #579dff;
+  --color-brand-to: #9f8fef;
+  --color-brand-glow: rgba(87, 157, 255, 0.35);
 
   /* status */
-  --color-success: #3fb950;
-  --color-danger: #f85149;
+  --color-success: #4ade80;
+  --color-danger: #f87171;
 
   /* overlays */
   --color-overlay-hover: rgba(255, 255, 255, 0.03);
+
+  /* spacing vocabulary (4pt grid) — px-bar-x, py-panel-y, gap-icon, … */
+  --spacing-bar-x: 16px;   /* horizontal padding of bars (header, toolbars) */
+  --spacing-bar-y: 4px;    /* vertical padding of bars — compact toolbar rhythm */
+  --spacing-row-x: 12px;   /* horizontal padding of list rows */
+  --spacing-panel-x: 16px; /* horizontal padding of panel sections */
+  --spacing-panel-y: 12px; /* vertical padding of panel sections */
+  --spacing-icon: 8px;     /* gap between an icon and its text */
+
+  /* type scale — text-body, text-row, text-caption, text-meta, text-micro */
+  --text-body: 13px;    /* primary content (names, messages) */
+  --text-row: 12.5px;   /* list row text */
+  --text-caption: 11.5px; /* secondary info (paths, empty states) */
+  --text-meta: 10.5px;  /* metadata, section titles, timestamps */
+  --text-micro: 9.5px;  /* badges, avatar initials */
 
   --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
@@ -43,36 +66,37 @@
 @media (prefers-color-scheme: light) {
   :root {
     /* backgrounds */
-    --color-canvas: #f6f8fb;
+    --color-canvas: #f8fafc;
     --color-panel: #ffffff;
-    --color-surface: #eef1f5;
-    --color-surface-hover: #e2e6ec;
+    --color-surface: #f1f5f9;
+    --color-surface-hover: #e2e8f0;
     --color-header-start: #ffffff;
-    --color-header-end: #f3f5f8;
+    --color-header-end: #f1f5f9;
 
     /* borders */
     --color-line-subtle: rgba(15, 23, 42, 0.06);
-    --color-line-default: rgba(15, 23, 42, 0.12);
+    --color-line-default: #cbd5e1;
 
     /* text */
-    --color-ink: #1a2028;
-    --color-ink-secondary: #5b6572;
-    --color-ink-faint: #8b93a1;
+    --color-ink: #0f172a;
+    --color-ink-secondary: #475569;
+    --color-ink-faint: #64748b;
     --color-on-accent: #ffffff;
 
-    /* accent (interactive / brand) */
-    --color-accent: #2f6fed;
-    --color-accent-soft: rgba(47, 111, 237, 0.12);
-    --color-accent-from: #4c8bf5;
-    --color-accent-to: #2f6fed;
-    --color-accent-glow: rgba(47, 111, 237, 0.25);
-    --color-brand-from: #2f6fed;
-    --color-brand-to: #9b6bff;
-    --color-brand-glow: rgba(47, 111, 237, 0.25);
+    /* accent (interactive / brand) — GitBeholder blue, Atlassian family;
+       B700 #0C66E4 keeps 4.5:1 with white text */
+    --color-accent: #0c66e4;
+    --color-accent-soft: rgba(12, 102, 228, 0.12);
+    --color-accent-from: #1d7afc;
+    --color-accent-to: #0c66e4;
+    --color-accent-glow: rgba(12, 102, 228, 0.25);
+    --color-brand-from: #0c66e4;
+    --color-brand-to: #6e5dc6;
+    --color-brand-glow: rgba(12, 102, 228, 0.25);
 
     /* status */
-    --color-success: #1a7f37;
-    --color-danger: #cf222e;
+    --color-success: #15803d;
+    --color-danger: #dc2626;
 
     /* overlays */
     --color-overlay-hover: rgba(15, 23, 42, 0.04);
@@ -86,6 +110,17 @@
     color-scheme: dark;
   }
 
+  /* ui-ux-pro-max: cursor-pointer on all clickable elements
+     (Tailwind v4 preflight resets buttons to cursor: default) */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="combobox"],
+  [role="option"],
+  label[for],
+  select:not(:disabled) {
+    cursor: pointer;
+  }
+
   html,
   body,
   #root {
@@ -93,6 +128,92 @@
   }
 
   body {
-    @apply bg-canvas text-ink font-sans text-[13px];
+    @apply font-sans text-[13px] bg-background text-foreground;
   }
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: 'Geist Variable', sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  /* no --color-accent mapping here: `accent` utilities resolve to the
+     project token (--color-accent, brand blue) defined in @theme static */
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* shadcn semantic variables sourced from the project token system in
+   @theme static above. The tokens already flip between dark and light via
+   prefers-color-scheme, so these follow the theme with no .dark class. */
+:root {
+  --radius: 0.625rem;
+
+  --background: var(--color-canvas);
+  --foreground: var(--color-ink);
+  --card: var(--color-panel);
+  --card-foreground: var(--color-ink);
+  --popover: var(--color-panel);
+  --popover-foreground: var(--color-ink);
+  --primary: var(--color-accent);
+  --primary-foreground: var(--color-on-accent);
+  --secondary: var(--color-surface);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-surface);
+  --muted-foreground: var(--color-ink-secondary);
+  --destructive: var(--color-danger);
+  --border: var(--color-line-default);
+  --input: var(--color-line-default);
+  --ring: var(--color-accent);
+  --chart-1: var(--color-accent);
+  --chart-2: var(--color-brand-to);
+  --chart-3: var(--color-success);
+  --chart-4: var(--color-danger);
+  --chart-5: var(--color-ink-faint);
+  --sidebar: var(--color-panel);
+  --sidebar-foreground: var(--color-ink);
+  --sidebar-primary: var(--color-accent);
+  --sidebar-primary-foreground: var(--color-on-accent);
+  --sidebar-accent: var(--color-surface);
+  --sidebar-accent-foreground: var(--color-ink);
+  --sidebar-border: var(--color-line-subtle);
+  --sidebar-ring: var(--color-accent);
 }
