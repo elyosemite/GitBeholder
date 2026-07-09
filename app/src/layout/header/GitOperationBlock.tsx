@@ -26,7 +26,7 @@ const operations = [
   },
 ]
 
-export function HeaderGitOperationBlock() {
+export function GitOperationBlock() {
   return (
     <div className="flex items-center gap-1">
       {operations.map(({ label, icon: Icon }) => (

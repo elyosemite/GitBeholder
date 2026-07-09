@@ -3,7 +3,7 @@ import { Check, GitBranch, Monitor, Tag } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { COMMITS, type MockCommit, type MockCommitRef } from "@/mocks/git-data";
-import { PlatformIcon } from "./brand-icons";
+import { PlatformIcon } from "@/components/icons/brand-icons";
 
 // Graph keeps a fixed width: dragging either of its edges shifts the whole
 // zone by resizing the ref zone, so both handles share the same state.

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/popover"
 import { BRANCHES as branches } from "@/mocks/git-data"
 
-export function HeaderBranchBlock() {
+export function BranchBlock() {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState(branches[0].name)
 

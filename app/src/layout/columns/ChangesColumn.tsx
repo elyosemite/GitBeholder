@@ -1,4 +1,4 @@
-import { PanelSection } from "./panel-primitives";
+import { PanelSection } from "@/components/panel-primitives";
 
 type FileStatus = "M" | "A" | "D" | "U";
 

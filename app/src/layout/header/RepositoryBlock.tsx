@@ -68,7 +68,7 @@ const repositories = [
   "sdk-go",
 ]
 
-export function HeaderRepositoryBlock() {
+export function RepositoryBlock() {
   const [open, setOpen] = React.useState(false)
   const [value, setValue] = React.useState(repositories[0])
 

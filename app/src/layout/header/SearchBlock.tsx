@@ -6,7 +6,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 
-export function HeaderSearchBlock() {
+export function SearchBlock() {
   return (
     <InputGroup className="w-64">
       <InputGroupAddon>
