@@ -1,6 +1,69 @@
 // Mock data shared by the Header pickers and the Overview column while the
 // real git/integration backends aren't wired up yet.
 
+import type { Repository } from "@/features/repositories"
+
+const REPOSITORY_NAMES = [
+  "GitBeholder",
+  "api-gateway",
+  "design-system",
+  "mobile-app",
+  "web-dashboard",
+  "auth-service",
+  "billing-service",
+  "notification-service",
+  "analytics-pipeline",
+  "data-warehouse",
+  "search-service",
+  "recommendation-engine",
+  "payments-core",
+  "checkout-flow",
+  "inventory-service",
+  "shipping-service",
+  "customer-support-portal",
+  "admin-console",
+  "marketing-site",
+  "blog-cms",
+  "docs-site",
+  "developer-portal",
+  "graphql-gateway",
+  "rest-api-legacy",
+  "websocket-server",
+  "cron-jobs",
+  "email-templates",
+  "sms-gateway",
+  "push-notifications",
+  "feature-flags-service",
+  "experimentation-platform",
+  "observability-stack",
+  "logging-pipeline",
+  "metrics-collector",
+  "tracing-service",
+  "infra-terraform",
+  "k8s-manifests",
+  "ci-cd-pipelines",
+  "design-tokens",
+  "component-library",
+  "storybook-addons",
+  "testing-utils",
+  "e2e-test-suite",
+  "load-testing-tools",
+  "security-scanner",
+  "compliance-reports",
+  "internal-cli",
+  "sdk-javascript",
+  "sdk-python",
+  "sdk-go",
+]
+
+export const REPOSITORIES: Repository[] = REPOSITORY_NAMES.map((name, index) => ({
+  id: index + 1,
+  name,
+  path: `C:\\Users\\Alfredo\\Projects\\${name}`,
+  workspace_id: 1,
+  folder_id: null,
+}))
+
 export interface MockBranch {
   name: string
   origin: boolean
