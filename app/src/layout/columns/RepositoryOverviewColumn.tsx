@@ -20,7 +20,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import {
   BRANCHES,
-  CURRENT_BRANCH,
   INTEGRATIONS,
   ISSUES,
   PULL_REQUESTS,
@@ -28,8 +27,8 @@ import {
   TAGS,
   TEAMS,
 } from "@/mocks/git-data"
+import { useBranches } from "@/features/branches"
 
-const LOCAL_BRANCHES = BRANCHES
 const REMOTE_BRANCHES = BRANCHES.filter((branch) => branch.origin)
 
 function initials(name: string) {
@@ -69,8 +68,15 @@ function Section({
   )
 }
 
-function BranchRow({ name, remote }: { name: string; remote?: boolean }) {
-  const current = !remote && name === CURRENT_BRANCH
+function BranchRow({
+  name,
+  current,
+  remote,
+}: {
+  name: string
+  current?: boolean
+  remote?: boolean
+}) {
   const Icon = remote ? Cloud : GitBranch
 
   return (
@@ -93,6 +99,8 @@ function BranchRow({ name, remote }: { name: string; remote?: boolean }) {
 }
 
 export function RepositoryOverviewColumn() {
+  const { data: localBranches } = useBranches()
+
   return (
     <div className="flex h-full flex-col overflow-y-auto border-r border-line-subtle bg-panel">
       {/* <ColumnHeader title="Overview" /> */}
@@ -180,9 +188,9 @@ export function RepositoryOverviewColumn() {
           ))}
         </Section>
 
-        <Section value="local-branches" title="Branches locais" count={LOCAL_BRANCHES.length}>
-          {LOCAL_BRANCHES.map((branch) => (
-            <BranchRow key={branch.name} name={branch.name} />
+        <Section value="local-branches" title="Branches locais" count={(localBranches ?? []).length}>
+          {(localBranches ?? []).map((branch) => (
+            <BranchRow key={branch.name} name={branch.name} current={branch.current} />
           ))}
         </Section>
 
