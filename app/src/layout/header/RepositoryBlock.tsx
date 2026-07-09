@@ -14,63 +14,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-
-const repositories = [
-  "GitBeholder",
-  "api-gateway",
-  "design-system",
-  "mobile-app",
-  "web-dashboard",
-  "auth-service",
-  "billing-service",
-  "notification-service",
-  "analytics-pipeline",
-  "data-warehouse",
-  "search-service",
-  "recommendation-engine",
-  "payments-core",
-  "checkout-flow",
-  "inventory-service",
-  "shipping-service",
-  "customer-support-portal",
-  "admin-console",
-  "marketing-site",
-  "blog-cms",
-  "docs-site",
-  "developer-portal",
-  "graphql-gateway",
-  "rest-api-legacy",
-  "websocket-server",
-  "cron-jobs",
-  "email-templates",
-  "sms-gateway",
-  "push-notifications",
-  "feature-flags-service",
-  "experimentation-platform",
-  "observability-stack",
-  "logging-pipeline",
-  "metrics-collector",
-  "tracing-service",
-  "infra-terraform",
-  "k8s-manifests",
-  "ci-cd-pipelines",
-  "design-tokens",
-  "component-library",
-  "storybook-addons",
-  "testing-utils",
-  "e2e-test-suite",
-  "load-testing-tools",
-  "security-scanner",
-  "compliance-reports",
-  "internal-cli",
-  "sdk-javascript",
-  "sdk-python",
-  "sdk-go",
-]
+import { useSession } from "@/features/session"
+import { REPOSITORIES } from "@/mocks/git-data"
 
 export function RepositoryBlock() {
   const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState(repositories[0])
+  const { repository, selectRepository } = useSession()
 
   return (
     <div className="w-52 shrink-0">
@@ -89,7 +38,7 @@ export function RepositoryBlock() {
             <span className="flex-none text-meta font-medium uppercase tracking-wide text-muted-foreground">
               Repo
             </span>
-            <span className="truncate">{value}</span>
+            <span className="truncate">{repository?.name ?? "Selecionar…"}</span>
           </span>
           <ChevronsUpDown
             aria-hidden="true"
@@ -102,13 +51,13 @@ export function RepositoryBlock() {
             <CommandList>
               <CommandEmpty>No repository found.</CommandEmpty>
               <CommandGroup>
-                {repositories.map((repo) => (
+                {REPOSITORIES.map((repo) => (
                   <CommandItem
-                    key={repo}
-                    value={repo}
-                    data-checked={repo === value}
-                    onSelect={(currentValue) => {
-                      setValue(currentValue)
+                    key={repo.id}
+                    value={repo.name}
+                    data-checked={repo.id === repository?.id}
+                    onSelect={() => {
+                      selectRepository(repo)
                       setOpen(false)
                     }}
                   >
@@ -116,7 +65,7 @@ export function RepositoryBlock() {
                       aria-hidden="true"
                       className="text-muted-foreground"
                     />
-                    <span className="truncate">{repo}</span>
+                    <span className="truncate">{repo.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
