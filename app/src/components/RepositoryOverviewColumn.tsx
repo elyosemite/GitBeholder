@@ -28,7 +28,6 @@ import {
   TAGS,
   TEAMS,
 } from "@/mocks/git-data"
-import { ColumnHeader } from "./panel-primitives"
 
 const LOCAL_BRANCHES = BRANCHES
 const REMOTE_BRANCHES = BRANCHES.filter((branch) => branch.origin)
@@ -96,7 +95,7 @@ function BranchRow({ name, remote }: { name: string; remote?: boolean }) {
 export function RepositoryOverviewColumn() {
   return (
     <div className="flex h-full flex-col overflow-y-auto border-r border-line-subtle bg-panel">
-      <ColumnHeader title="Overview" />
+      {/* <ColumnHeader title="Overview" /> */}
 
       <div className="border-b border-line-subtle px-4 py-3">
         <div className="truncate text-[13px] font-medium text-ink">GitBeholder</div>

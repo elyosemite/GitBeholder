@@ -13,7 +13,7 @@ function App() {
           <RepositoryOverviewColumn />
         </div>
         <div className="flex-1 min-w-0 h-full">
-          <CommitsColumn workspaceId={null} repositoryId={null} />
+          <CommitsColumn />
         </div>
         <div className="w-72 flex-none h-full">
           <ChangesColumn />

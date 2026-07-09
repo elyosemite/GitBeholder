@@ -1,4 +1,4 @@
-import { ColumnHeader, PanelSection } from "./panel-primitives";
+import { PanelSection } from "./panel-primitives";
 
 type FileStatus = "M" | "A" | "D" | "U";
 
@@ -36,7 +36,7 @@ function FileRow({ path, status }: { path: string; status: FileStatus }) {
 export function ChangesColumn() {
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-panel">
-      <ColumnHeader title="Changes" />
+      {/* <ColumnHeader title="Changes" /> */}
       <div className="flex flex-1 flex-col">
           <PanelSection title="Unstaged Files">
             <div className="flex flex-col gap-1.5">
