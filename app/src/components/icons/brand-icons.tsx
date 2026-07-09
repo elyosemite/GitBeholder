@@ -1,4 +1,4 @@
-import type { Platform } from "@/mocks/git-data"
+export type Platform = "github" | "gitlab" | "bitbucket" | "azure-devops"
 
 // Brand glyphs (simple-icons paths); lucide dropped its brand icons.
 const PLATFORM_PATHS: Record<Platform, string> = {
