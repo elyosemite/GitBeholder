@@ -26,7 +26,7 @@ defmodule GitBeholder.GitLogTest do
     assert {:error, _reason} = GitLog.list_commits(System.tmp_dir!(), "main")
   end
 
-  test "lists commits on the given branch, newest first, with empty refs", %{
+  test "lists commits newest first, decorating only the branch tip", %{
     repo_path: repo_path
   } do
     commit(repo_path, "first")
@@ -36,7 +36,7 @@ defmodule GitBeholder.GitLogTest do
     assert {:ok, commits} = GitLog.list_commits(repo_path, "master")
 
     assert [
-             %{message: "third", refs: []},
+             %{message: "third", refs: [%{name: "master", type: "branch", current: true, local: true, platform: nil}]},
              %{message: "second", refs: []},
              %{message: "first", refs: []}
            ] = commits

@@ -31,8 +31,10 @@ defmodule GitBeholderWeb.GitLogControllerTest do
         "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commits?branch=#{branch}&limit=3"
       )
 
-    assert [%{"hash" => _, "message" => _, "author" => _, "timestamp" => _, "refs" => []} | _] =
+    assert [%{"hash" => _, "message" => _, "author" => _, "timestamp" => _, "refs" => refs} | _] =
              json_response(conn, 200)
+
+    assert is_list(refs)
   end
 
   test "returns 400 without a branch query param", %{
