@@ -53,7 +53,7 @@ function Section({
       <AccordionTrigger className="px-2 py-2 text-meta font-bold uppercase tracking-[0.08em] text-ink-faint hover:no-underline">
         <span className="flex items-center gap-2">
           {title}
-          <Badge variant="outline" className="h-4 px-1.5 font-mono text-meta font-normal text-ink-faint">
+          <Badge variant="outline" className="h-4 px-1.5 font-mono text-micro font-normal text-ink-faint">
             {count}
           </Badge>
         </span>
