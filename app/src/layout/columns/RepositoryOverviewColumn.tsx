@@ -77,7 +77,7 @@ function BranchRow({
   const Icon = remote ? Cloud : GitBranch
 
   return (
-    <div className="flex items-center gap-icon rounded-md px-1 py-0.5 text-row hover:bg-overlay-hover">
+    <div className="flex items-center gap-icon rounded-md px-1 py-1 text-row hover:bg-overlay-hover">
       <Icon
         aria-hidden="true"
         size={13}
@@ -201,7 +201,7 @@ export function RepositoryOverviewColumn() {
 
         <Section value="tags" title="Tags" count={TAGS.length}>
           {TAGS.map((tag) => (
-            <div key={tag.name} className="flex items-center gap-icon rounded-md px-1 py-0.5 hover:bg-overlay-hover">
+            <div key={tag.name} className="flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
               <Tag aria-hidden="true" size={13} className="flex-none text-ink-faint" />
               <span className="min-w-0 flex-1 truncate font-mono text-row text-ink-secondary">{tag.name}</span>
               <span className="flex-none font-mono text-meta text-ink-faint">{tag.date}</span>
