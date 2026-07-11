@@ -4,6 +4,7 @@ import {
   CircleCheck,
   CircleDot,
   Cloud,
+  FileText,
   GitBranch,
   GitPullRequest,
   GitPullRequestDraft,
@@ -111,11 +112,18 @@ function BranchRow({
   )
 }
 
-function InspectFileRow({ file }: { file: CommitFileChange }) {
+function InspectFileRow({ file, index }: { file: CommitFileChange; index: number }) {
   const { name, dir } = splitPath(file.path)
+  // Stagger the entrance so the list reads top-to-bottom instead of
+  // popping in all at once; caps out so a long list doesn't feel sluggish.
+  const delay = Math.min(index, 8) * 40
 
   return (
-    <div className="flex items-center gap-icon rounded-md px-1 py-1 text-row hover:bg-overlay-hover">
+    <div
+      className="flex animate-in items-center gap-icon rounded-md px-1 py-1 text-row fade-in-0 slide-in-from-top-1 hover:bg-overlay-hover"
+      style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
+    >
+      <FileText aria-hidden="true" size={13} className="flex-none text-ink-faint" />
       <span className="flex min-w-0 flex-1 items-baseline gap-icon" title={file.path}>
         <span className="flex-none text-ink">{name}</span>
         {dir && <span className="min-w-0 flex-1 truncate text-ink-faint">{dir}</span>}
@@ -285,7 +293,9 @@ export function RepositoryOverviewColumn() {
               Clique num commit para ver os arquivos alterados.
             </div>
           ) : commitFileList.length > 0 ? (
-            commitFileList.map((file) => <InspectFileRow key={file.path} file={file} />)
+            commitFileList.map((file, index) => (
+              <InspectFileRow key={file.path} file={file} index={index} />
+            ))
           ) : (
             <div className="text-caption text-ink-faint">Nenhum arquivo alterado.</div>
           )}
