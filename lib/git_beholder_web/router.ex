@@ -31,6 +31,8 @@ defmodule GitBeholderWeb.Router do
     post "/unstage", GitStagingController, :unstage
     get "/commits", GitLogController, :index
     get "/branches", GitBranchController, :index
+    get "/push/status", GitPushController, :status
+    post "/push", GitPushController, :create
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
