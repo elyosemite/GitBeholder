@@ -22,11 +22,11 @@ import {
   INTEGRATIONS,
   ISSUES,
   PULL_REQUESTS,
-  STASHES,
   TAGS,
   TEAMS,
 } from "@/mocks/git-data"
 import { useBranches } from "@/features/branches"
+import { useStashes } from "@/features/stashes"
 
 function initials(name: string) {
   return name
@@ -99,6 +99,9 @@ export function RepositoryOverviewColumn() {
   const { data: branches } = useBranches()
   const localBranches = branches ?? []
   const remoteBranches = localBranches.filter((branch) => branch.origin)
+
+  const { data: stashes } = useStashes()
+  const stashList = stashes ?? []
 
   return (
     <div className="flex h-full flex-col overflow-y-auto border-r border-line-subtle bg-panel">
@@ -209,8 +212,8 @@ export function RepositoryOverviewColumn() {
           ))}
         </Section>
 
-        <Section value="stashes" title="Stashes" count={STASHES.length}>
-          {STASHES.map((stash) => (
+        <Section value="stashes" title="Stashes" count={stashList.length}>
+          {stashList.map((stash) => (
             <div key={stash.index} className="flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
               <Archive aria-hidden="true" size={14} className="mt-0.5 flex-none text-ink-faint" />
               <div className="min-w-0 flex-1">
