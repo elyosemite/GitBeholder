@@ -3,6 +3,7 @@ import { Check, GitBranch, Monitor, Tag } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCommits, type Commit, type CommitRef } from "@/features/commits";
+import { useSession } from "@/features/session";
 import { PlatformIcon } from "@/components/icons/brand-icons";
 
 // Graph keeps a fixed width: dragging either of its edges shifts the whole
@@ -86,11 +87,15 @@ function CommitRow({
   first,
   last,
   refWidth,
+  isSelected,
+  onSelect,
 }: {
   commit: Commit;
   first: boolean;
   last: boolean;
   refWidth: number;
+  isSelected: boolean;
+  onSelect: () => void;
 }) {
   const hasRefs = commit.refs.length > 0;
   // Bleeds 2px into the gap-1 (4px) space between rows on either side, so
@@ -103,7 +108,14 @@ function CommitRow({
       : "-top-0.5 -bottom-0.5";
 
   return (
-    <div className="flex h-6 items-center rounded-md px-row-x hover:bg-overlay-hover">
+    <button
+      type="button"
+      onClick={onSelect}
+      className={
+        "flex h-6 w-full items-center rounded-md px-row-x text-left hover:bg-overlay-hover " +
+        (isSelected ? "bg-accent-soft" : "")
+      }
+    >
       <div className="flex min-w-0 flex-none items-center" style={{ width: refWidth }}>
         {hasRefs && (
           <>
@@ -147,7 +159,7 @@ function CommitRow({
       <div className={TIME_ZONE_WIDTH + " flex-none text-right font-mono text-meta text-ink-faint"}>
         {commit.timestamp}
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -176,6 +188,7 @@ function ResizeHandle({ left, onDrag }: { left: number; onDrag: (dx: number) => 
 export function CommitsColumn() {
   const [refWidth, setRefWidth] = useState(208);
   const { data: commits } = useCommits();
+  const { inspectedCommit, selectCommit } = useSession();
   const rows = commits ?? [];
 
   function resizeRefZone(dx: number) {
@@ -206,6 +219,8 @@ export function CommitsColumn() {
               first={index === 0}
               last={index === rows.length - 1}
               refWidth={refWidth}
+              isSelected={inspectedCommit === commit.hash}
+              onSelect={() => selectCommit(commit.hash)}
             />
           ))}
         </div>
