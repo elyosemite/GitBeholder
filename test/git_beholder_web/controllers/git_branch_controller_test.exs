@@ -16,7 +16,7 @@ defmodule GitBeholderWeb.GitBranchControllerTest do
     %{conn: conn, workspace: workspace, repository: repository}
   end
 
-  test "GET .../branches returns local branches with current/origin flags", %{
+  test "GET .../branches returns local and remote branches with current/local/remote flags", %{
     conn: conn,
     workspace: workspace,
     repository: repository
@@ -29,7 +29,7 @@ defmodule GitBeholderWeb.GitBranchControllerTest do
 
     branches = json_response(conn, 200)
 
-    assert [%{"name" => _, "current" => _, "origin" => _} | _] = branches
+    assert [%{"name" => _, "current" => _, "local" => _, "remote" => _} | _] = branches
     assert Enum.count(branches, & &1["current"]) == 1
   end
 
