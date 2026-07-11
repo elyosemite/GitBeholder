@@ -9,7 +9,7 @@ export function useCreateCommit() {
     async (message: string) => {
       if (!repository) return;
       await createCommit(repository.workspace_id, repository.id, message);
-      invalidate("commits", "status");
+      invalidate("commits", "status", "sync");
     },
     [repository, invalidate],
   );
