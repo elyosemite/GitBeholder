@@ -96,7 +96,7 @@ function CommitRow({
   const railPosition = first ? "top-1/2 bottom-0" : last ? "top-0 bottom-1/2" : "inset-y-0";
 
   return (
-    <div className="flex h-6 items-center border-b border-line-subtle px-row-x hover:bg-overlay-hover">
+    <div className="flex h-6 items-center rounded-md px-row-x hover:bg-overlay-hover">
       <div className="flex min-w-0 flex-none items-center" style={{ width: refWidth }}>
         {hasRefs && (
           <>
@@ -191,7 +191,7 @@ export function CommitsColumn() {
           <div className={TIME_ZONE_WIDTH + " flex-none text-right"}>Timestamp</div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
           {rows.map((commit, index) => (
             <CommitRow
               key={commit.hash}
