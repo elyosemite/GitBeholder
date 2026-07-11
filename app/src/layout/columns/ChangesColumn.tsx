@@ -35,9 +35,9 @@ function FileRow({
       <span className={"w-3.5 flex-none text-center font-mono font-semibold " + STATUS_STYLES[status]}>
         {status}
       </span>
-      <span className="flex min-w-0 flex-1 items-baseline gap-icon truncate" title={path}>
-        <span className="flex-none truncate text-ink">{name}</span>
-        {dir && <span className="truncate text-ink-faint">{dir}</span>}
+      <span className="flex min-w-0 flex-1 items-baseline gap-icon" title={path}>
+        <span className="flex-none text-ink">{name}</span>
+        {dir && <span className="min-w-0 flex-1 truncate text-ink-faint">{dir}</span>}
       </span>
       <button
         type="button"
