@@ -96,7 +96,7 @@ function CommitRow({
   const railPosition = first ? "top-1/2 bottom-0" : last ? "top-0 bottom-1/2" : "inset-y-0";
 
   return (
-    <div className="flex h-7 items-center rounded-md px-row-x hover:bg-overlay-hover">
+    <div className="flex h-5 items-center rounded-md px-row-x hover:bg-overlay-hover">
       <div className="flex min-w-0 flex-none items-center" style={{ width: refWidth }}>
         {hasRefs && (
           <>
@@ -115,9 +115,9 @@ function CommitRow({
         className="relative flex h-full flex-none items-center justify-center"
         style={{ width: GRAPH_WIDTH }}
       >
-        <div className={"absolute left-1/2 w-0.5 -translate-x-1/2 bg-accent/60 " + railPosition} />
+        <div className={"absolute left-1/2 w-0.5 -translate-x-1/2 bg-accent " + railPosition} />
         {hasRefs && <div className="absolute top-1/2 right-1/2 left-0 h-px bg-line-default" />}
-        <Avatar size="xs" className="z-10 ring-2 ring-accent/60" title={commit.author}>
+        <Avatar size="xs" className="z-10 border-2 border-accent" title={commit.author}>
           <AvatarImage src="/avatar.png" alt={commit.author} />
           <AvatarFallback
             className={"text-micro font-semibold " + (AUTHOR_COLORS[commit.author] ?? "")}
