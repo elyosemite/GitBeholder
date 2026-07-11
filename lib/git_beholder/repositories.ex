@@ -86,6 +86,30 @@ defmodule GitBeholder.Repositories do
     end
   end
 
+  @doc """
+  Registers an existing local Git repository by path: derives its `name`
+  from the folder name and validates the path is actually a Git
+  repository before touching the database — unlike `create_repository/1`,
+  whose changeset intentionally accepts any path so clone/init flows can
+  register a repository before its `.git` exists on disk.
+
+  Returns:
+    * `{:ok, %Repository{}}`
+    * `{:error, :invalid_path}` — path doesn't exist or isn't a Git repository
+    * `{:error, %Ecto.Changeset{}}` — path was valid, but insert failed
+  """
+  def open_local_repository(workspace_id, path) do
+    if valid_git_repository?(path) do
+      create_repository(%{
+        name: Path.basename(path),
+        path: path,
+        workspace_id: workspace_id
+      })
+    else
+      {:error, :invalid_path}
+    end
+  end
+
   defp valid_git_repository?(path) do
     File.dir?(path) and File.dir?(Path.join(path, ".git"))
   end

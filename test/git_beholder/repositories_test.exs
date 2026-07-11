@@ -112,6 +112,38 @@ defmodule GitBeholder.RepositoriesTest do
     end
   end
 
+  describe "open_local_repository/2" do
+    setup do
+      {:ok, workspace} = Repositories.create_workspace(%{name: "Engineering"})
+      %{workspace: workspace}
+    end
+
+    test "registers a repository, deriving the name from the folder", %{workspace: workspace} do
+      project_root = File.cwd!()
+
+      assert {:ok, repository} = Repositories.open_local_repository(workspace.id, project_root)
+
+      assert repository.path == project_root
+      assert repository.name == Path.basename(project_root)
+      assert repository.workspace_id == workspace.id
+    end
+
+    test "returns :invalid_path for a folder that isn't a Git repository", %{workspace: workspace} do
+      non_git_dir =
+        Path.join(System.tmp_dir!(), "open_local_repo_test_#{System.unique_integer([:positive])}")
+
+      File.mkdir_p!(non_git_dir)
+      on_exit(fn -> File.rm_rf!(non_git_dir) end)
+
+      assert {:error, :invalid_path} = Repositories.open_local_repository(workspace.id, non_git_dir)
+    end
+
+    test "returns :invalid_path for a path that doesn't exist", %{workspace: workspace} do
+      assert {:error, :invalid_path} =
+               Repositories.open_local_repository(workspace.id, "/nonexistent/path/for/sure")
+    end
+  end
+
   describe "fetch_repository/2" do
     setup do
       {:ok, workspace} = Repositories.create_workspace(%{name: "Engineering"})
