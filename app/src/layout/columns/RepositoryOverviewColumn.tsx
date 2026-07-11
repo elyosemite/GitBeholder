@@ -29,6 +29,9 @@ import {
 } from "@/mocks/git-data"
 import { useBranches, useCheckoutBranch, type Branch } from "@/features/branches"
 import { useStashes } from "@/features/stashes"
+import { useCommitFiles, type CommitFileChange } from "@/features/commits"
+import { useSession } from "@/features/session"
+import { splitPath } from "@/lib/paths"
 
 function initials(name: string) {
   return name
@@ -108,6 +111,23 @@ function BranchRow({
   )
 }
 
+function InspectFileRow({ file }: { file: CommitFileChange }) {
+  const { name, dir } = splitPath(file.path)
+
+  return (
+    <div className="flex items-center gap-icon rounded-md px-1 py-1 text-row hover:bg-overlay-hover">
+      <span className="flex min-w-0 flex-1 items-baseline gap-icon" title={file.path}>
+        <span className="flex-none text-ink">{name}</span>
+        {dir && <span className="min-w-0 flex-1 truncate text-ink-faint">{dir}</span>}
+      </span>
+      <span className="flex flex-none items-center gap-1.5 font-mono text-meta">
+        {file.additions !== null && <span className="text-success">+{file.additions}</span>}
+        {file.deletions !== null && <span className="text-danger">-{file.deletions}</span>}
+      </span>
+    </div>
+  )
+}
+
 export function RepositoryOverviewColumn() {
   const { data: branches } = useBranches()
   const allBranches = branches ?? []
@@ -118,6 +138,10 @@ export function RepositoryOverviewColumn() {
 
   const { data: stashes } = useStashes()
   const stashList = stashes ?? []
+
+  const { inspectedCommit } = useSession()
+  const { data: commitFiles } = useCommitFiles()
+  const commitFileList = commitFiles ?? []
 
   const handleCheckout = async (branch: Branch) => {
     setCheckingOutName(branch.name)
@@ -253,6 +277,18 @@ export function RepositoryOverviewColumn() {
               </div>
             </div>
           ))}
+        </Section>
+
+        <Section value="inspect" title="Inspect" count={commitFileList.length}>
+          {inspectedCommit === null ? (
+            <div className="text-caption text-ink-faint">
+              Clique num commit para ver os arquivos alterados.
+            </div>
+          ) : commitFileList.length > 0 ? (
+            commitFileList.map((file) => <InspectFileRow key={file.path} file={file} />)
+          ) : (
+            <div className="text-caption text-ink-faint">Nenhum arquivo alterado.</div>
+          )}
         </Section>
       </Accordion>
 
