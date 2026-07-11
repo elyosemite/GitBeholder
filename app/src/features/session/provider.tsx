@@ -36,7 +36,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   // doesn't touch our state — catch up whenever the window regains focus
   // instead of polling on a timer.
   useOnWindowFocus(() => {
-    if (state.repository) invalidate("status", "branches", "sync");
+    if (state.repository) invalidate("status", "branches", "sync", "stashes");
   });
 
   const value = useMemo<SessionApi>(
