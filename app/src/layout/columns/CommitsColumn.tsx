@@ -127,10 +127,14 @@ function CommitRow({
         </Avatar>
       </div>
 
-      <div className="min-w-0 flex-1 px-row-x">
-        <span className="block truncate text-row text-ink" title={commit.message}>
-          {commit.message}
-        </span>
+      <div
+        className="flex min-w-0 flex-1 items-baseline gap-icon px-row-x"
+        title={commit.description ? `${commit.message}\n\n${commit.description}` : commit.message}
+      >
+        <span className="flex-none text-row text-ink">{commit.message}</span>
+        {commit.description && (
+          <span className="min-w-0 flex-1 truncate text-row text-ink-faint">{commit.description}</span>
+        )}
       </div>
 
       <div className={TIME_ZONE_WIDTH + " flex-none text-right font-mono text-meta text-ink-faint"}>

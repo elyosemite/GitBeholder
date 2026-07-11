@@ -16,6 +16,7 @@ export interface CommitRef {
 export interface Commit {
   hash: string;
   message: string;
+  description: string;
   author: string;
   timestamp: string;
   refs: CommitRef[];
