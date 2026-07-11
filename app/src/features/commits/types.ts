@@ -21,3 +21,9 @@ export interface Commit {
   timestamp: string;
   refs: CommitRef[];
 }
+
+export interface CommitFileChange {
+  path: string;
+  additions: number | null;
+  deletions: number | null;
+}
