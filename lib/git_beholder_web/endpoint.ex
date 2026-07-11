@@ -1,6 +1,18 @@
 defmodule GitBeholderWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :git_beholder
 
+  # Origins for the Tauri desktop app (app/): the Vite dev server in
+  # development, and the webview's own origin once bundled. Lives here
+  # (rather than in the Router's :api pipeline) so it also answers CORS
+  # preflight OPTIONS requests for paths that only define POST/PUT/DELETE
+  # routes, which never reach a router pipeline since no OPTIONS route
+  # matches them.
+  @cors_origins [
+    "http://localhost:1420",
+    "tauri://localhost",
+    "http://tauri.localhost"
+  ]
+
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
@@ -37,6 +49,7 @@ defmodule GitBeholderWeb.Endpoint do
 
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+  plug CORSPlug, origin: @cors_origins
 
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],

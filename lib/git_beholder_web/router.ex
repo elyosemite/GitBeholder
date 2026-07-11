@@ -1,17 +1,8 @@
 defmodule GitBeholderWeb.Router do
   use GitBeholderWeb, :router
 
-  # Origins for the Tauri desktop app (app/): the Vite dev server in
-  # development, and the webview's own origin once bundled.
-  @cors_origins [
-    "http://localhost:1420",
-    "tauri://localhost",
-    "http://tauri.localhost"
-  ]
-
   pipeline :api do
     plug :accepts, ["json"]
-    plug CORSPlug, origin: @cors_origins
   end
 
   pipeline :repository do
