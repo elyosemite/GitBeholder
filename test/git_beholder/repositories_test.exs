@@ -1,5 +1,5 @@
 defmodule GitBeholder.RepositoriesTest do
-  use GitBeholder.DataCase, async: true
+  use GitBeholder.DataCase, async: false
 
   alias GitBeholder.Repositories
 

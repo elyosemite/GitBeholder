@@ -1,5 +1,5 @@
 defmodule GitBeholderWeb.Plugs.FetchRepositoryTest do
-  use GitBeholder.DataCase, async: true
+  use GitBeholder.DataCase, async: false
 
   import Plug.Test
 
