@@ -10,13 +10,19 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { usePush, usePushStatus } from "@/features/push"
+import { useSession } from "@/features/session"
+import { useStashes } from "@/features/stashes"
 
 export function GitOperationBlock() {
   const { data: pushStatus } = usePushStatus()
   const push = usePush()
   const [isPushing, setIsPushing] = React.useState(false)
 
+  const { data: stashes, loading: isLoadingStashes } = useStashes()
+  const { invalidate } = useSession()
+
   const ahead = pushStatus?.ahead ?? 0
+  const stashCount = stashes?.length ?? 0
 
   const handlePush = async () => {
     setIsPushing(true)
@@ -38,7 +44,14 @@ export function GitOperationBlock() {
       loading: isPushing,
     },
     { label: "Branch", icon: GitBranch },
-    { label: "Stash", icon: Package },
+    {
+      label: "Stash",
+      icon: Package,
+      badge: stashCount > 0 ? stashCount : undefined,
+      onClick: () => invalidate("stashes"),
+      disabled: isLoadingStashes,
+      loading: isLoadingStashes,
+    },
   ]
 
   return (
