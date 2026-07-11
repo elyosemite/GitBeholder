@@ -115,7 +115,7 @@ function CommitRow({
         className="relative flex h-full flex-none items-center justify-center"
         style={{ width: GRAPH_WIDTH }}
       >
-        <div className={"absolute left-1/2 w-px -translate-x-1/2 bg-accent/60 " + railPosition} />
+        <div className={"absolute left-1/2 w-0.5 -translate-x-1/2 bg-accent/60 " + railPosition} />
         {hasRefs && <div className="absolute top-1/2 right-1/2 left-0 h-px bg-line-default" />}
         <Avatar size="xs" className="z-10 ring-1 ring-primary" title={commit.author}>
           <AvatarImage src="/avatar.png" alt={commit.author} />
