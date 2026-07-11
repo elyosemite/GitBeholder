@@ -18,3 +18,14 @@ export function openLocalRepository(
     body: { path },
   });
 }
+
+export function cloneRepository(
+  workspaceId: number,
+  url: string,
+  destination: string,
+): Promise<Repository> {
+  return request(`/workspaces/${workspaceId}/repositories/clone`, {
+    method: "POST",
+    body: { url, destination },
+  });
+}
