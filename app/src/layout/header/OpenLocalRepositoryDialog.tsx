@@ -1,5 +1,6 @@
 import * as React from "react"
 import { FolderOpen } from "lucide-react"
+import { open as openFolderDialog } from "@tauri-apps/plugin-dialog"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -17,6 +18,7 @@ import {
   InputGroupButton,
 } from "@/components/ui/input-group"
 import { Label } from "@/components/ui/label"
+import { useOpenLocalRepository } from "@/features/repositories"
 
 export function OpenLocalRepositoryDialog({
   open,
@@ -26,6 +28,38 @@ export function OpenLocalRepositoryDialog({
   onOpenChange: (open: boolean) => void
 }) {
   const [path, setPath] = React.useState("")
+  const [isOpening, setIsOpening] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+  const openLocalRepository = useOpenLocalRepository()
+
+  React.useEffect(() => {
+    if (open) {
+      setPath("")
+      setError(null)
+    }
+  }, [open])
+
+  const handleOpen = async () => {
+    setIsOpening(true)
+    setError(null)
+    try {
+      await openLocalRepository(path.trim())
+      onOpenChange(false)
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setIsOpening(false)
+    }
+  }
+
+  const handleBrowse = async () => {
+    const selected = await openFolderDialog({
+      directory: true,
+      multiple: false,
+      title: "Selecionar repositório",
+    })
+    if (typeof selected === "string") setPath(selected)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,24 +79,30 @@ export function OpenLocalRepositoryDialog({
               placeholder="C:\Users\você\projetos\meu-repo"
               value={path}
               onChange={(e) => setPath(e.target.value)}
+              disabled={isOpening}
               autoFocus
             />
             <InputGroupAddon align="inline-end">
               <InputGroupButton
                 type="button"
-                // TODO: wire to Tauri's dialog plugin (folder picker) once available.
-                onClick={() => {}}
+                disabled={isOpening}
+                onClick={() => void handleBrowse()}
               >
                 <FolderOpen />
                 Procurar…
               </InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
+          {error && <p className="text-caption text-danger">{error}</p>}
         </div>
 
         <DialogFooter showCloseButton>
-          <Button type="button" disabled={!path.trim()} onClick={() => onOpenChange(false)}>
-            Abrir repositório
+          <Button
+            type="button"
+            disabled={!path.trim() || isOpening}
+            onClick={() => void handleOpen()}
+          >
+            {isOpening ? "Abrindo…" : "Abrir repositório"}
           </Button>
         </DialogFooter>
       </DialogContent>

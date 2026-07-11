@@ -1,4 +1,4 @@
-defmodule GitBeholderWeb.GitBranchControllerTest do
+defmodule GitBeholderWeb.GitStashControllerTest do
   use GitBeholderWeb.ConnCase, async: false
 
   alias GitBeholder.Repositories
@@ -16,25 +16,26 @@ defmodule GitBeholderWeb.GitBranchControllerTest do
     %{conn: conn, workspace: workspace, repository: repository}
   end
 
-  test "GET .../branches returns local and remote branches with current/local/remote flags", %{
+  test "GET .../stashes returns the stash list", %{
     conn: conn,
     workspace: workspace,
     repository: repository
   } do
-    conn =
-      get(
-        conn,
-        "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/branches"
-      )
+    conn = get(conn, "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/stashes")
 
-    branches = json_response(conn, 200)
+    stashes = json_response(conn, 200)
+    assert is_list(stashes)
 
-    assert [%{"name" => _, "current" => _, "local" => _, "remote" => _} | _] = branches
-    assert Enum.count(branches, & &1["current"]) == 1
+    for stash <- stashes do
+      assert %{"index" => index, "branch" => branch, "message" => message} = stash
+      assert is_integer(index)
+      assert is_binary(branch)
+      assert is_binary(message)
+    end
   end
 
   test "returns 404 for an unknown repository", %{conn: conn, workspace: workspace} do
-    conn = get(conn, "/api/v1/workspaces/#{workspace.id}/repositories/999999/branches")
+    conn = get(conn, "/api/v1/workspaces/#{workspace.id}/repositories/999999/stashes")
 
     assert json_response(conn, 404)
   end

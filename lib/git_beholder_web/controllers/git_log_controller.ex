@@ -3,7 +3,7 @@ defmodule GitBeholderWeb.GitLogController do
   alias GitBeholder.GitLog
 
   def index(conn, %{"branch" => branch} = params) do
-    limit = Map.get(params, "limit", "20") |> String.to_integer()
+    limit = Map.get(params, "limit", "200") |> String.to_integer()
 
     case GitLog.list_commits(conn.assigns.repository.path, branch, limit) do
       {:ok, commits} ->

@@ -1,5 +1,6 @@
 import * as React from "react"
 import { FolderOpen } from "lucide-react"
+import { open as openFolderDialog } from "@tauri-apps/plugin-dialog"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/input-group"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useCloneRepository } from "@/features/repositories"
 
 export function CloneRepositoryDialog({
   open,
@@ -28,6 +30,39 @@ export function CloneRepositoryDialog({
 }) {
   const [url, setUrl] = React.useState("")
   const [destination, setDestination] = React.useState("")
+  const [isCloning, setIsCloning] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+  const cloneRepository = useCloneRepository()
+
+  React.useEffect(() => {
+    if (open) {
+      setUrl("")
+      setDestination("")
+      setError(null)
+    }
+  }, [open])
+
+  const handleClone = async () => {
+    setIsCloning(true)
+    setError(null)
+    try {
+      await cloneRepository(url.trim(), destination.trim())
+      onOpenChange(false)
+    } catch (err) {
+      setError(String(err))
+    } finally {
+      setIsCloning(false)
+    }
+  }
+
+  const handleBrowse = async () => {
+    const selected = await openFolderDialog({
+      directory: true,
+      multiple: false,
+      title: "Selecionar pasta de destino",
+    })
+    if (typeof selected === "string") setDestination(selected)
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -46,6 +81,7 @@ export function CloneRepositoryDialog({
             placeholder="https://github.com/usuario/repositorio.git"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
+            disabled={isCloning}
             autoFocus
           />
         </div>
@@ -58,27 +94,29 @@ export function CloneRepositoryDialog({
               placeholder="C:\Users\você\projetos"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
+              disabled={isCloning}
             />
             <InputGroupAddon align="inline-end">
               <InputGroupButton
                 type="button"
-                // TODO: wire to Tauri's dialog plugin (folder picker) once available.
-                onClick={() => {}}
+                disabled={isCloning}
+                onClick={() => void handleBrowse()}
               >
                 <FolderOpen />
                 Procurar…
               </InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
+          {error && <p className="text-caption text-danger">{error}</p>}
         </div>
 
         <DialogFooter showCloseButton>
           <Button
             type="button"
-            disabled={!url.trim() || !destination.trim()}
-            onClick={() => onOpenChange(false)}
+            disabled={!url.trim() || !destination.trim() || isCloning}
+            onClick={() => void handleClone()}
           >
-            Clonar repositório
+            {isCloning ? "Clonando…" : "Clonar repositório"}
           </Button>
         </DialogFooter>
       </DialogContent>

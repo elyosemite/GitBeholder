@@ -1,6 +1,13 @@
 import type { Repository } from "@/features/repositories";
 
-export type DataScope = "commits" | "status" | "branches" | "stashes" | "tags" | "sync";
+export type DataScope =
+  | "commits"
+  | "status"
+  | "branches"
+  | "stashes"
+  | "tags"
+  | "sync"
+  | "repositories";
 
 export interface SessionState {
   repository: Repository | null;

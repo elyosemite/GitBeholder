@@ -7,6 +7,7 @@ defmodule GitBeholder.Repositories do
   import Ecto.Query, warn: false
 
   alias GitBeholder.Repo
+  alias GitBeholder.GitClone
   alias GitBeholder.Repositories.{Workspace, Folder, Repository}
 
   @doc """
@@ -83,6 +84,47 @@ defmodule GitBeholder.Repositories do
         else
           {:error, :path_unavailable}
         end
+    end
+  end
+
+  @doc """
+  Registers an existing local Git repository by path: derives its `name`
+  from the folder name and validates the path is actually a Git
+  repository before touching the database — unlike `create_repository/1`,
+  whose changeset intentionally accepts any path so clone/init flows can
+  register a repository before its `.git` exists on disk.
+
+  Returns:
+    * `{:ok, %Repository{}}`
+    * `{:error, :invalid_path}` — path doesn't exist or isn't a Git repository
+    * `{:error, %Ecto.Changeset{}}` — path was valid, but insert failed
+  """
+  def open_local_repository(workspace_id, path) do
+    if valid_git_repository?(path) do
+      create_repository(%{
+        name: Path.basename(path),
+        path: path,
+        workspace_id: workspace_id
+      })
+    else
+      {:error, :invalid_path}
+    end
+  end
+
+  @doc """
+  Clones `url` into a new folder inside `destination`, then registers it
+  the same way `open_local_repository/2` would (name derived from the
+  resulting folder).
+
+  Returns:
+    * `{:ok, %Repository{}}`
+    * `{:error, reason}` — string reason from `GitClone.clone/2` (bad URL,
+      missing destination, existing target folder, ...)
+    * `{:error, %Ecto.Changeset{}}` — clone succeeded, but insert failed
+  """
+  def clone_repository(workspace_id, url, destination) do
+    with {:ok, target_path} <- GitClone.clone(url, destination) do
+      open_local_repository(workspace_id, target_path)
     end
   end
 
