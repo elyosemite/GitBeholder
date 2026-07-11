@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { PanelEmpty, PanelSection } from "@/components/panel-primitives";
+import { useCreateCommit } from "@/features/commits";
 import { useStagingActions, useStatus, type FileStatus } from "@/features/staging";
 
 const STATUS_STYLES: Record<FileStatus, string> = {
@@ -55,8 +56,12 @@ function FileRow({
 export function ChangesColumn() {
   const { data: files } = useStatus();
   const { stage, unstage } = useStagingActions();
+  const createCommit = useCreateCommit();
   const rows = files ?? [];
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
+  const [message, setMessage] = useState("");
+  const [isCommitting, setIsCommitting] = useState(false);
+  const [commitError, setCommitError] = useState<string | null>(null);
 
   // Once a fresh status list lands, it's the source of truth — drop any
   // optimistic guesses instead of letting them linger past a failed call.
@@ -76,6 +81,20 @@ export function ChangesColumn() {
 
   const unstagedFiles = resolvedRows.filter((file) => !file.staged);
   const stagedFiles = resolvedRows.filter((file) => file.staged);
+  const canCommit = message.trim() !== "" && stagedFiles.length > 0 && !isCommitting;
+
+  const handleCommit = async () => {
+    setIsCommitting(true);
+    setCommitError(null);
+    try {
+      await createCommit(message.trim());
+      setMessage("");
+    } catch (err) {
+      setCommitError(String(err));
+    } finally {
+      setIsCommitting(false);
+    }
+  };
 
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-panel">
@@ -119,13 +138,18 @@ export function ChangesColumn() {
 
           <div className="mt-auto px-panel-x py-panel-y">
             <textarea
-              disabled
+              value={message}
+              onChange={(event) => setMessage(event.target.value)}
+              disabled={isCommitting}
               rows={3}
               placeholder="Mensagem do commit…"
               className="w-full resize-none rounded-lg border border-line-default bg-surface px-2 py-2 text-row text-ink placeholder:text-ink-faint outline-none disabled:opacity-60"
             />
+            {commitError && <p className="mt-1 text-caption text-danger">{commitError}</p>}
             <button
-              disabled
+              type="button"
+              onClick={() => void handleCommit()}
+              disabled={!canCommit}
               className="mt-2 w-full rounded-lg bg-accent-soft px-2 py-2 text-row font-semibold text-accent disabled:opacity-50"
             >
               Commit
