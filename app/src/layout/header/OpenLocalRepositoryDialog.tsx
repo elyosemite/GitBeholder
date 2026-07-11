@@ -1,5 +1,6 @@
 import * as React from "react"
 import { FolderOpen } from "lucide-react"
+import { open as openFolderDialog } from "@tauri-apps/plugin-dialog"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -51,6 +52,15 @@ export function OpenLocalRepositoryDialog({
     }
   }
 
+  const handleBrowse = async () => {
+    const selected = await openFolderDialog({
+      directory: true,
+      multiple: false,
+      title: "Selecionar repositório",
+    })
+    if (typeof selected === "string") setPath(selected)
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -75,8 +85,8 @@ export function OpenLocalRepositoryDialog({
             <InputGroupAddon align="inline-end">
               <InputGroupButton
                 type="button"
-                // TODO: wire to Tauri's dialog plugin (folder picker) once available.
-                onClick={() => {}}
+                disabled={isOpening}
+                onClick={() => void handleBrowse()}
               >
                 <FolderOpen />
                 Procurar…
