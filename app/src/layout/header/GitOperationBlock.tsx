@@ -1,3 +1,4 @@
+import * as React from "react"
 import {
   GitPullRequest,
   Upload,
@@ -6,38 +7,56 @@ import {
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-
-const operations = [
-  {
-    label: "Pull",
-    icon: GitPullRequest,
-  },
-  {
-    label: "Push",
-    icon: Upload,
-  },
-  {
-    label: "Branch",
-    icon: GitBranch,
-  },
-  {
-    label: "Stash",
-    icon: Package,
-  },
-]
+import { Badge } from "@/components/ui/badge"
+import { usePush, usePushStatus } from "@/features/push"
 
 export function GitOperationBlock() {
+  const { data: pushStatus } = usePushStatus()
+  const push = usePush()
+  const [isPushing, setIsPushing] = React.useState(false)
+
+  const ahead = pushStatus?.ahead ?? 0
+
+  const handlePush = async () => {
+    setIsPushing(true)
+    try {
+      await push()
+    } finally {
+      setIsPushing(false)
+    }
+  }
+
+  const operations = [
+    { label: "Pull", icon: GitPullRequest },
+    {
+      label: "Push",
+      icon: Upload,
+      badge: ahead > 0 ? ahead : undefined,
+      onClick: handlePush,
+      disabled: isPushing || ahead === 0,
+    },
+    { label: "Branch", icon: GitBranch },
+    { label: "Stash", icon: Package },
+  ]
+
   return (
     <div className="flex items-center gap-1">
-      {operations.map(({ label, icon: Icon }) => (
+      {operations.map(({ label, icon: Icon, badge, onClick, disabled }) => (
         <Button
           key={label}
           variant="ghost"
           size="sm"
+          onClick={onClick}
+          disabled={disabled}
           className="gap-icon font-normal text-muted-foreground hover:text-foreground"
         >
           <Icon aria-hidden="true" size={16} />
           {label}
+          {badge !== undefined && (
+            <Badge variant="outline" className="h-4 px-1.5 font-mono text-micro font-normal text-accent">
+              {badge}
+            </Badge>
+          )}
         </Button>
       ))}
     </div>
