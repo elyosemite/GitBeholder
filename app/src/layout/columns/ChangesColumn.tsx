@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Minus, Plus } from "lucide-react";
 import { PanelEmpty, PanelSection } from "@/components/panel-primitives";
 import { useStatus, type FileStatus } from "@/features/staging";
 
@@ -8,15 +10,44 @@ const STATUS_STYLES: Record<FileStatus, string> = {
   U: "text-ink-faint",
 };
 
-function FileRow({ path, status }: { path: string; status: FileStatus }) {
+function splitPath(path: string) {
+  const slash = path.lastIndexOf("/");
+  return slash === -1
+    ? { name: path, dir: "" }
+    : { name: path.slice(slash + 1), dir: path.slice(0, slash) };
+}
+
+function FileRow({
+  path,
+  status,
+  staged,
+  onToggleStage,
+}: {
+  path: string;
+  status: FileStatus;
+  staged: boolean;
+  onToggleStage: (path: string) => void;
+}) {
+  const { name, dir } = splitPath(path);
+  const ToggleIcon = staged ? Minus : Plus;
+
   return (
-    <div className="flex items-center gap-icon text-row">
+    <div className="group flex items-center gap-icon rounded-md text-row hover:bg-overlay-hover">
       <span className={"w-3.5 flex-none text-center font-mono font-semibold " + STATUS_STYLES[status]}>
         {status}
       </span>
-      <span className="truncate text-ink-secondary" title={path}>
-        {path}
+      <span className="flex min-w-0 flex-1 items-baseline gap-icon truncate" title={path}>
+        <span className="flex-none truncate text-ink">{name}</span>
+        {dir && <span className="truncate text-ink-faint">{dir}</span>}
       </span>
+      <button
+        type="button"
+        onClick={() => onToggleStage(path)}
+        title={staged ? "Mover para Unstaged" : "Mover para Staged"}
+        className="flex-none rounded-sm p-0.5 text-ink-faint opacity-0 outline-none transition-opacity hover:text-ink focus-visible:opacity-100 group-hover:opacity-100"
+      >
+        <ToggleIcon aria-hidden="true" size={14} />
+      </button>
     </div>
   );
 }
@@ -24,8 +55,22 @@ function FileRow({ path, status }: { path: string; status: FileStatus }) {
 export function ChangesColumn() {
   const { data: files } = useStatus();
   const rows = files ?? [];
-  const unstagedFiles = rows.filter((file) => !file.staged);
-  const stagedFiles = rows.filter((file) => file.staged);
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
+
+  const toggleStage = (path: string) => {
+    const file = rows.find((f) => f.path === path);
+    if (!file) return;
+    const current = overrides[path] ?? file.staged;
+    setOverrides((prev) => ({ ...prev, [path]: !current }));
+  };
+
+  const resolvedRows = rows.map((file) => ({
+    ...file,
+    staged: overrides[file.path] ?? file.staged,
+  }));
+
+  const unstagedFiles = resolvedRows.filter((file) => !file.staged);
+  const stagedFiles = resolvedRows.filter((file) => file.staged);
 
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-panel">
@@ -35,7 +80,13 @@ export function ChangesColumn() {
             {unstagedFiles.length > 0 ? (
               <div className="flex flex-col gap-1.5">
                 {unstagedFiles.map((file) => (
-                  <FileRow key={file.path} path={file.path} status={file.status} />
+                  <FileRow
+                    key={file.path}
+                    path={file.path}
+                    status={file.status}
+                    staged={file.staged}
+                    onToggleStage={toggleStage}
+                  />
                 ))}
               </div>
             ) : (
@@ -47,7 +98,13 @@ export function ChangesColumn() {
             {stagedFiles.length > 0 ? (
               <div className="flex flex-col gap-1.5">
                 {stagedFiles.map((file) => (
-                  <FileRow key={file.path} path={file.path} status={file.status} />
+                  <FileRow
+                    key={file.path}
+                    path={file.path}
+                    status={file.status}
+                    staged={file.staged}
+                    onToggleStage={toggleStage}
+                  />
                 ))}
               </div>
             ) : (
