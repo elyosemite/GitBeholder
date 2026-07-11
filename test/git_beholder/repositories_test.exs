@@ -144,6 +144,62 @@ defmodule GitBeholder.RepositoriesTest do
     end
   end
 
+  describe "clone_repository/3" do
+    setup do
+      {:ok, workspace} = Repositories.create_workspace(%{name: "Engineering"})
+
+      remote_path =
+        Path.join(
+          System.tmp_dir!(),
+          "clone_repository_test_remote_#{System.unique_integer([:positive])}.git"
+        )
+
+      destination =
+        Path.join(
+          System.tmp_dir!(),
+          "clone_repository_test_dest_#{System.unique_integer([:positive])}"
+        )
+
+      File.mkdir_p!(remote_path)
+      System.cmd("git", ["init", "-q", "--bare"], cd: remote_path)
+      File.mkdir_p!(destination)
+
+      on_exit(fn ->
+        File.rm_rf!(remote_path)
+        File.rm_rf!(destination)
+      end)
+
+      %{workspace: workspace, remote_path: remote_path, destination: destination}
+    end
+
+    test "clones and registers the repository", %{
+      workspace: workspace,
+      remote_path: remote_path,
+      destination: destination
+    } do
+      assert {:ok, repository} =
+               Repositories.clone_repository(workspace.id, remote_path, destination)
+
+      assert repository.name == Path.basename(remote_path, ".git")
+      assert repository.path == Path.join(destination, repository.name)
+      assert repository.workspace_id == workspace.id
+    end
+
+    test "returns the GitClone error reason when the destination doesn't exist", %{
+      workspace: workspace,
+      remote_path: remote_path
+    } do
+      missing =
+        Path.join(
+          System.tmp_dir!(),
+          "clone_repository_test_missing_#{System.unique_integer([:positive])}"
+        )
+
+      assert {:error, reason} = Repositories.clone_repository(workspace.id, remote_path, missing)
+      assert is_binary(reason)
+    end
+  end
+
   describe "fetch_repository/2" do
     setup do
       {:ok, workspace} = Repositories.create_workspace(%{name: "Engineering"})

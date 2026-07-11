@@ -7,6 +7,7 @@ defmodule GitBeholder.Repositories do
   import Ecto.Query, warn: false
 
   alias GitBeholder.Repo
+  alias GitBeholder.GitClone
   alias GitBeholder.Repositories.{Workspace, Folder, Repository}
 
   @doc """
@@ -107,6 +108,23 @@ defmodule GitBeholder.Repositories do
       })
     else
       {:error, :invalid_path}
+    end
+  end
+
+  @doc """
+  Clones `url` into a new folder inside `destination`, then registers it
+  the same way `open_local_repository/2` would (name derived from the
+  resulting folder).
+
+  Returns:
+    * `{:ok, %Repository{}}`
+    * `{:error, reason}` — string reason from `GitClone.clone/2` (bad URL,
+      missing destination, existing target folder, ...)
+    * `{:error, %Ecto.Changeset{}}` — clone succeeded, but insert failed
+  """
+  def clone_repository(workspace_id, url, destination) do
+    with {:ok, target_path} <- GitClone.clone(url, destination) do
+      open_local_repository(workspace_id, target_path)
     end
   end
 
