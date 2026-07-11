@@ -24,7 +24,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({
       ...s,
       branch,
-      revisions: bump(s.revisions, "commits", "status", "sync"),
+      revisions: bump(s.revisions, "commits", "status", "sync", "branches"),
     }));
   }, []);
 

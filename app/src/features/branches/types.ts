@@ -1,5 +1,6 @@
 export interface Branch {
   name: string;
-  origin: boolean;
   current: boolean;
+  local: boolean;
+  remote: string | null;
 }
