@@ -10,18 +10,22 @@ import {
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { usePush, usePushStatus } from "@/features/push"
+import { usePull } from "@/features/pull"
 import { useSession } from "@/features/session"
 import { useStashes } from "@/features/stashes"
 
 export function GitOperationBlock() {
   const { data: pushStatus } = usePushStatus()
   const push = usePush()
+  const pull = usePull()
   const [isPushing, setIsPushing] = React.useState(false)
+  const [isPulling, setIsPulling] = React.useState(false)
 
   const { data: stashes, loading: isLoadingStashes } = useStashes()
   const { invalidate } = useSession()
 
   const ahead = pushStatus?.ahead ?? 0
+  const behind = pushStatus?.behind ?? 0
   const stashCount = stashes?.length ?? 0
 
   const handlePush = async () => {
@@ -33,8 +37,24 @@ export function GitOperationBlock() {
     }
   }
 
+  const handlePull = async () => {
+    setIsPulling(true)
+    try {
+      await pull()
+    } finally {
+      setIsPulling(false)
+    }
+  }
+
   const operations = [
-    { label: "Pull", icon: GitPullRequest },
+    {
+      label: "Pull",
+      icon: GitPullRequest,
+      badge: behind > 0 ? behind : undefined,
+      onClick: handlePull,
+      disabled: isPulling || behind === 0,
+      loading: isPulling,
+    },
     {
       label: "Push",
       icon: Upload,
