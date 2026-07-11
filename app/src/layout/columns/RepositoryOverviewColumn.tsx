@@ -111,8 +111,6 @@ function BranchRow({
 export function RepositoryOverviewColumn() {
   const { data: branches } = useBranches()
   const allBranches = branches ?? []
-  const localBranches = allBranches.filter((branch) => branch.local)
-  const remoteBranches = allBranches.filter((branch) => branch.remote !== null)
 
   const checkoutBranch = useCheckoutBranch()
   const [checkingOutName, setCheckingOutName] = useState<string | null>(null)
@@ -144,7 +142,7 @@ export function RepositoryOverviewColumn() {
         </div>
       </div>
 
-      <Accordion defaultValue={["local-branches"]}>
+      <Accordion defaultValue={["branches"]}>
         <Section value="integrations" title="Integrações" count={INTEGRATIONS.length}>
           {INTEGRATIONS.map(({ name, connected }) => (
             <div key={name} className="flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
@@ -220,20 +218,8 @@ export function RepositoryOverviewColumn() {
           ))}
         </Section>
 
-        <Section value="local-branches" title="Branches locais" count={localBranches.length}>
-          {localBranches.map((branch) => (
-            <BranchRow
-              key={branch.name}
-              branch={branch}
-              isCheckingOut={checkingOutName === branch.name}
-              disabled={checkingOutName !== null}
-              onCheckout={() => void handleCheckout(branch)}
-            />
-          ))}
-        </Section>
-
-        <Section value="remote-branches" title="Branches remotas" count={remoteBranches.length}>
-          {remoteBranches.map((branch) => (
+        <Section value="branches" title="Branches" count={allBranches.length}>
+          {allBranches.map((branch) => (
             <BranchRow
               key={branch.name}
               branch={branch}
