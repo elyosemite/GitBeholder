@@ -9,13 +9,15 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<SessionState>({
     repository: null,
     branch: null,
+    inspectedCommit: null,
     revisions: initialRevisions,
   });
 
-  const selectRepository= useCallback((repository: Repository) => {
+  const selectRepository = useCallback((repository: Repository) => {
     setState((s) => ({
       repository,
       branch: null,
+      inspectedCommit: null,
       revisions: bumpAll(s.revisions),
     }));
   }, []);
@@ -24,8 +26,13 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({
       ...s,
       branch,
+      inspectedCommit: null,
       revisions: bump(s.revisions, "commits", "status", "sync", "branches"),
     }));
+  }, []);
+
+  const selectCommit = useCallback((hash: string) => {
+    setState((s) => ({ ...s, inspectedCommit: hash }));
   }, []);
 
   const invalidate = useCallback((...scopes: DataScope[]) => {
@@ -40,8 +47,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   });
 
   const value = useMemo<SessionApi>(
-    () => ({ ...state, selectRepository, setBranch, invalidate }),
-    [state, selectRepository, setBranch, invalidate],
+    () => ({ ...state, selectRepository, setBranch, selectCommit, invalidate }),
+    [state, selectRepository, setBranch, selectCommit, invalidate],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
