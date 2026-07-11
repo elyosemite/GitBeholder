@@ -117,7 +117,7 @@ function CommitRow({
       >
         <div className={"absolute left-1/2 w-0.5 -translate-x-1/2 bg-accent/60 " + railPosition} />
         {hasRefs && <div className="absolute top-1/2 right-1/2 left-0 h-px bg-line-default" />}
-        <Avatar size="xs" className="z-10 ring-1 ring-primary" title={commit.author}>
+        <Avatar size="xs" className="z-10 ring-2 ring-accent/60" title={commit.author}>
           <AvatarImage src="/avatar.png" alt={commit.author} />
           <AvatarFallback
             className={"text-micro font-semibold " + (AUTHOR_COLORS[commit.author] ?? "")}
