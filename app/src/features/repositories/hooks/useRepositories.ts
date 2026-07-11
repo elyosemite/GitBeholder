@@ -1,3 +1,4 @@
+import { useSession } from "@/features/session";
 import { useApiData } from "@/lib/hooks/useApiData";
 import { listRepositories } from "../api";
 
@@ -5,5 +6,7 @@ import { listRepositories } from "../api";
 const WORKSPACE_ID = 1;
 
 export function useRepositories() {
-  return useApiData(() => listRepositories(WORKSPACE_ID), [WORKSPACE_ID]);
+  const { revisions } = useSession();
+
+  return useApiData(() => listRepositories(WORKSPACE_ID), [WORKSPACE_ID, revisions.repositories]);
 }
