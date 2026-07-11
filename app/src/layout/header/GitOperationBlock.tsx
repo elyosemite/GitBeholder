@@ -53,7 +53,10 @@ export function GitOperationBlock() {
           <Icon aria-hidden="true" size={16} />
           {label}
           {badge !== undefined && (
-            <Badge variant="outline" className="h-4 px-1.5 font-mono text-micro font-normal text-accent">
+            <Badge
+              variant="outline"
+              className="-ml-1 h-4 px-1.5 font-mono text-micro font-normal text-accent"
+            >
               {badge}
             </Badge>
           )}
