@@ -96,7 +96,7 @@ function CommitRow({
   const railPosition = first ? "top-1/2 bottom-0" : last ? "top-0 bottom-1/2" : "inset-y-0";
 
   return (
-    <div className="flex h-8 items-center border-b border-line-subtle px-row-x hover:bg-overlay-hover">
+    <div className="flex h-6 items-center border-b border-line-subtle px-row-x hover:bg-overlay-hover">
       <div className="flex min-w-0 flex-none items-center" style={{ width: refWidth }}>
         {hasRefs && (
           <>
