@@ -1,7 +1,7 @@
 defmodule GitBeholder.GitLog do
   alias GitBeholder.GitRefs
 
-  @default_limit 100
+  @default_limit 200
 
   def list_commits(repo_path, branch, limit \\ @default_limit) do
     if File.dir?(Path.join(repo_path, ".git")) do
