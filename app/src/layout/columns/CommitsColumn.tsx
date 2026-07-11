@@ -93,10 +93,17 @@ function CommitRow({
   refWidth: number;
 }) {
   const hasRefs = commit.refs.length > 0;
-  const railPosition = first ? "top-1/2 bottom-0" : last ? "top-0 bottom-1/2" : "inset-y-0";
+  // Bleeds 2px into the gap-1 (4px) space between rows on either side, so
+  // consecutive rows' rails meet in the middle of the gap instead of
+  // stopping dead at the row's own edge.
+  const railPosition = first
+    ? "top-1/2 -bottom-0.5"
+    : last
+      ? "-top-0.5 bottom-1/2"
+      : "-top-0.5 -bottom-0.5";
 
   return (
-    <div className="flex h-5 items-center rounded-md px-row-x hover:bg-overlay-hover">
+    <div className="flex h-6 items-center rounded-md px-row-x hover:bg-overlay-hover">
       <div className="flex min-w-0 flex-none items-center" style={{ width: refWidth }}>
         {hasRefs && (
           <>
@@ -117,7 +124,7 @@ function CommitRow({
       >
         <div className={"absolute left-1/2 w-0.5 -translate-x-1/2 bg-accent " + railPosition} />
         {hasRefs && <div className="absolute top-1/2 right-1/2 left-0 h-px bg-line-default" />}
-        <Avatar size="xs" className="z-10 border-2 border-accent" title={commit.author}>
+        <Avatar size="sm" className="z-10 border-2 border-accent" title={commit.author}>
           <AvatarImage src="/avatar.png" alt={commit.author} />
           <AvatarFallback
             className={"text-micro font-semibold " + (AUTHOR_COLORS[commit.author] ?? "")}
