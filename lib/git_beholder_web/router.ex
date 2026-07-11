@@ -35,6 +35,7 @@ defmodule GitBeholderWeb.Router do
     get "/branches", GitBranchController, :index
     get "/push/status", GitPushController, :status
     post "/push", GitPushController, :create
+    post "/pull", GitPullController, :create
     get "/stashes", GitStashController, :index
   end
 
