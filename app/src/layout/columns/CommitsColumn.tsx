@@ -93,10 +93,17 @@ function CommitRow({
   refWidth: number;
 }) {
   const hasRefs = commit.refs.length > 0;
-  const railPosition = first ? "top-1/2 bottom-0" : last ? "top-0 bottom-1/2" : "inset-y-0";
+  // Bleeds 2px into the gap-1 (4px) space between rows on either side, so
+  // consecutive rows' rails meet in the middle of the gap instead of
+  // stopping dead at the row's own edge.
+  const railPosition = first
+    ? "top-1/2 -bottom-0.5"
+    : last
+      ? "-top-0.5 bottom-1/2"
+      : "-top-0.5 -bottom-0.5";
 
   return (
-    <div className="flex h-8 items-center border-b border-line-subtle px-row-x hover:bg-overlay-hover">
+    <div className="flex h-6 items-center rounded-md px-row-x hover:bg-overlay-hover">
       <div className="flex min-w-0 flex-none items-center" style={{ width: refWidth }}>
         {hasRefs && (
           <>
@@ -115,9 +122,9 @@ function CommitRow({
         className="relative flex h-full flex-none items-center justify-center"
         style={{ width: GRAPH_WIDTH }}
       >
-        <div className={"absolute left-1/2 w-px -translate-x-1/2 bg-line-subtle " + railPosition} />
+        <div className={"absolute left-1/2 w-0.5 -translate-x-1/2 bg-accent " + railPosition} />
         {hasRefs && <div className="absolute top-1/2 right-1/2 left-0 h-px bg-line-default" />}
-        <Avatar size="sm" className="z-10 ring-2 ring-primary" title={commit.author}>
+        <Avatar size="sm" className="z-10 border-2 border-accent" title={commit.author}>
           <AvatarImage src="/avatar.png" alt={commit.author} />
           <AvatarFallback
             className={"text-micro font-semibold " + (AUTHOR_COLORS[commit.author] ?? "")}
@@ -127,10 +134,14 @@ function CommitRow({
         </Avatar>
       </div>
 
-      <div className="min-w-0 flex-1 px-row-x">
-        <span className="block truncate text-row text-ink" title={commit.message}>
-          {commit.message}
-        </span>
+      <div
+        className="flex min-w-0 flex-1 items-baseline gap-icon px-row-x"
+        title={commit.description ? `${commit.message}\n\n${commit.description}` : commit.message}
+      >
+        <span className="flex-none text-row text-ink">{commit.message}</span>
+        {commit.description && (
+          <span className="min-w-0 flex-1 truncate text-row text-ink-faint">{commit.description}</span>
+        )}
       </div>
 
       <div className={TIME_ZONE_WIDTH + " flex-none text-right font-mono text-meta text-ink-faint"}>
@@ -187,7 +198,7 @@ export function CommitsColumn() {
           <div className={TIME_ZONE_WIDTH + " flex-none text-right"}>Timestamp</div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
           {rows.map((commit, index) => (
             <CommitRow
               key={commit.hash}

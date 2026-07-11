@@ -42,10 +42,31 @@ defmodule GitBeholder.GitLogTest do
            ] = commits
 
     for commit <- commits do
-      assert %{hash: hash, author: "Test", timestamp: timestamp} = commit
+      assert %{hash: hash, author: "Test", timestamp: timestamp, description: ""} = commit
       assert String.match?(hash, ~r/^[0-9a-f]+$/)
       assert String.match?(timestamp, ~r/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
     end
+  end
+
+  test "splits a multi-line message into message (subject) and description (body)", %{
+    repo_path: repo_path
+  } do
+    File.write!(Path.join(repo_path, "file.txt"), "content")
+    System.cmd("git", ["add", "file.txt"], cd: repo_path)
+
+    System.cmd("git", [
+      "commit",
+      "-q",
+      "-m",
+      "add file.txt",
+      "-m",
+      "This explains why the change was made,\nacross a couple of lines."
+    ], cd: repo_path)
+
+    assert {:ok, [commit]} = GitLog.list_commits(repo_path, "master")
+
+    assert commit.message == "add file.txt"
+    assert commit.description == "This explains why the change was made, across a couple of lines."
   end
 
   test "respects the limit", %{repo_path: repo_path} do

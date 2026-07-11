@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   Archive,
   CircleCheck,
@@ -6,6 +7,7 @@ import {
   GitBranch,
   GitPullRequest,
   GitPullRequestDraft,
+  Loader2,
   Tag,
 } from "lucide-react"
 import type { ReactNode } from "react"
@@ -25,7 +27,7 @@ import {
   TAGS,
   TEAMS,
 } from "@/mocks/git-data"
-import { useBranches } from "@/features/branches"
+import { useBranches, useCheckoutBranch, type Branch } from "@/features/branches"
 import { useStashes } from "@/features/stashes"
 
 function initials(name: string) {
@@ -66,42 +68,68 @@ function Section({
 }
 
 function BranchRow({
-  name,
-  current,
-  remote,
+  branch,
+  isCheckingOut,
+  disabled,
+  onCheckout,
 }: {
-  name: string
-  current?: boolean
-  remote?: boolean
+  branch: Branch
+  isCheckingOut: boolean
+  disabled: boolean
+  onCheckout: () => void
 }) {
-  const Icon = remote ? Cloud : GitBranch
+  const Icon = branch.local ? GitBranch : Cloud
 
   return (
-    <div className="flex items-center gap-icon rounded-md px-1 py-1 text-row hover:bg-overlay-hover">
-      <Icon
-        aria-hidden="true"
-        size={13}
-        className={"flex-none " + (remote ? "text-sky-500" : current ? "text-accent" : "text-ink-faint")}
-      />
-      <span className={"truncate " + (current ? "font-semibold text-accent" : "text-ink-secondary")}>
-        {remote ? `origin/${name}` : name}
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onCheckout}
+      className="flex w-full items-center gap-icon rounded-md px-1 py-1 text-row hover:bg-overlay-hover disabled:pointer-events-none disabled:opacity-60"
+    >
+      {isCheckingOut ? (
+        <Loader2 aria-hidden="true" size={13} className="flex-none animate-spin text-accent" />
+      ) : (
+        <Icon
+          aria-hidden="true"
+          size={13}
+          className={"flex-none " + (!branch.local ? "text-sky-500" : branch.current ? "text-accent" : "text-ink-faint")}
+        />
+      )}
+      <span className={"truncate " + (branch.current ? "font-semibold text-accent" : "text-ink-secondary")}>
+        {branch.local ? branch.name : `${branch.remote}/${branch.name}`}
       </span>
-      {current && (
+      {branch.current && (
         <Badge variant="outline" className="ml-auto h-4 flex-none px-1.5 text-micro text-ink-faint">
           atual
         </Badge>
       )}
-    </div>
+    </button>
   )
 }
 
 export function RepositoryOverviewColumn() {
   const { data: branches } = useBranches()
-  const localBranches = branches ?? []
-  const remoteBranches = localBranches.filter((branch) => branch.origin)
+  const allBranches = branches ?? []
+
+  const checkoutBranch = useCheckoutBranch()
+  const [checkingOutName, setCheckingOutName] = useState<string | null>(null)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const { data: stashes } = useStashes()
   const stashList = stashes ?? []
+
+  const handleCheckout = async (branch: Branch) => {
+    setCheckingOutName(branch.name)
+    setCheckoutError(null)
+    try {
+      await checkoutBranch(branch.name)
+    } catch (err) {
+      setCheckoutError(String(err))
+    } finally {
+      setCheckingOutName(null)
+    }
+  }
 
   return (
     <div className="flex h-full flex-col overflow-y-auto border-r border-line-subtle bg-panel">
@@ -114,7 +142,7 @@ export function RepositoryOverviewColumn() {
         </div>
       </div>
 
-      <Accordion defaultValue={["local-branches"]}>
+      <Accordion defaultValue={["branches"]}>
         <Section value="integrations" title="Integrações" count={INTEGRATIONS.length}>
           {INTEGRATIONS.map(({ name, connected }) => (
             <div key={name} className="flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
@@ -190,15 +218,15 @@ export function RepositoryOverviewColumn() {
           ))}
         </Section>
 
-        <Section value="local-branches" title="Branches locais" count={localBranches.length}>
-          {localBranches.map((branch) => (
-            <BranchRow key={branch.name} name={branch.name} current={branch.current} />
-          ))}
-        </Section>
-
-        <Section value="remote-branches" title="Branches remotas" count={remoteBranches.length}>
-          {remoteBranches.map((branch) => (
-            <BranchRow key={branch.name} name={branch.name} remote />
+        <Section value="branches" title="Branches" count={allBranches.length}>
+          {allBranches.map((branch) => (
+            <BranchRow
+              key={branch.name}
+              branch={branch}
+              isCheckingOut={checkingOutName === branch.name}
+              disabled={checkingOutName !== null}
+              onCheckout={() => void handleCheckout(branch)}
+            />
           ))}
         </Section>
 
@@ -227,6 +255,12 @@ export function RepositoryOverviewColumn() {
           ))}
         </Section>
       </Accordion>
+
+      {checkoutError && (
+        <div className="border-t border-line-subtle px-panel-x py-2 text-caption text-danger">
+          {checkoutError}
+        </div>
+      )}
     </div>
   )
 }
