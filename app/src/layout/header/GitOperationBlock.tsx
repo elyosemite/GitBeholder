@@ -4,6 +4,7 @@ import {
   Upload,
   GitBranch,
   Package,
+  Loader2,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -34,6 +35,7 @@ export function GitOperationBlock() {
       badge: ahead > 0 ? ahead : undefined,
       onClick: handlePush,
       disabled: isPushing || ahead === 0,
+      loading: isPushing,
     },
     { label: "Branch", icon: GitBranch },
     { label: "Stash", icon: Package },
@@ -41,7 +43,7 @@ export function GitOperationBlock() {
 
   return (
     <div className="flex items-center gap-1">
-      {operations.map(({ label, icon: Icon, badge, onClick, disabled }) => (
+      {operations.map(({ label, icon: Icon, badge, onClick, disabled, loading }) => (
         <Button
           key={label}
           variant="ghost"
@@ -52,13 +54,17 @@ export function GitOperationBlock() {
         >
           <Icon aria-hidden="true" size={16} />
           {label}
-          {badge !== undefined && (
-            <Badge
-              variant="outline"
-              className="-ml-1 h-4 px-1.5 font-mono text-micro font-normal text-accent"
-            >
-              {badge}
-            </Badge>
+          {loading ? (
+            <Loader2 aria-hidden="true" size={12} className="-ml-1 animate-spin text-accent" />
+          ) : (
+            badge !== undefined && (
+              <Badge
+                variant="outline"
+                className="-ml-1 h-4 px-1.5 font-mono text-micro font-normal text-accent"
+              >
+                {badge}
+              </Badge>
+            )
           )}
         </Button>
       ))}
