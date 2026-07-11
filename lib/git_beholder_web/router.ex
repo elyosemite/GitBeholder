@@ -21,6 +21,7 @@ defmodule GitBeholderWeb.Router do
     get  "/workspaces/:workspace_id/repositories", RepositoryController, :index
     post "/workspaces/:workspace_id/repositories", RepositoryController, :create
     post "/workspaces/:workspace_id/repositories/open-local", RepositoryController, :open_local
+    post "/workspaces/:workspace_id/repositories/clone", RepositoryController, :clone
   end
 
   scope "/api/v1/workspaces/:workspace_id/repositories/:repository_id", GitBeholderWeb do

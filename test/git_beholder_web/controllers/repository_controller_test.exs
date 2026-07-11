@@ -120,4 +120,75 @@ defmodule GitBeholderWeb.RepositoryControllerTest do
       assert json_response(conn, 400)
     end
   end
+
+  describe "POST /api/v1/workspaces/:workspace_id/repositories/clone" do
+    setup do
+      remote_path =
+        Path.join(
+          System.tmp_dir!(),
+          "clone_ctrl_test_remote_#{System.unique_integer([:positive])}.git"
+        )
+
+      destination =
+        Path.join(System.tmp_dir!(), "clone_ctrl_test_dest_#{System.unique_integer([:positive])}")
+
+      File.mkdir_p!(remote_path)
+      System.cmd("git", ["init", "-q", "--bare"], cd: remote_path)
+      File.mkdir_p!(destination)
+
+      on_exit(fn ->
+        File.rm_rf!(remote_path)
+        File.rm_rf!(destination)
+      end)
+
+      %{remote_path: remote_path, destination: destination}
+    end
+
+    test "clones and registers the repository", %{
+      conn: conn,
+      workspace: workspace,
+      remote_path: remote_path,
+      destination: destination
+    } do
+      conn =
+        post(conn, "/api/v1/workspaces/#{workspace.id}/repositories/clone", %{
+          "url" => remote_path,
+          "destination" => destination
+        })
+
+      assert %{"name" => name, "path" => path, "workspace_id" => workspace_id} =
+               json_response(conn, 201)
+
+      assert name == Path.basename(remote_path, ".git")
+      assert path == Path.join(destination, name)
+      assert workspace_id == workspace.id
+    end
+
+    test "returns 422 when the destination doesn't exist", %{
+      conn: conn,
+      workspace: workspace,
+      remote_path: remote_path
+    } do
+      missing =
+        Path.join(System.tmp_dir!(), "clone_ctrl_test_missing_#{System.unique_integer([:positive])}")
+
+      conn =
+        post(conn, "/api/v1/workspaces/#{workspace.id}/repositories/clone", %{
+          "url" => remote_path,
+          "destination" => missing
+        })
+
+      assert %{"errors" => %{"url" => [_reason]}} = json_response(conn, 422)
+    end
+
+    test "returns 400 for a non-numeric workspace id", %{conn: conn, remote_path: remote_path, destination: destination} do
+      conn =
+        post(conn, "/api/v1/workspaces/abc/repositories/clone", %{
+          "url" => remote_path,
+          "destination" => destination
+        })
+
+      assert json_response(conn, 400)
+    end
+  end
 end

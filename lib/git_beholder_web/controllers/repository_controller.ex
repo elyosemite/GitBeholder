@@ -57,6 +57,33 @@ defmodule GitBeholderWeb.RepositoryController do
     end
   end
 
+  def clone(conn, %{"workspace_id" => workspace_id, "url" => url, "destination" => destination}) do
+    case Integer.parse(workspace_id) do
+      {workspace_id, ""} ->
+        case Repositories.clone_repository(workspace_id, url, destination) do
+          {:ok, repository} ->
+            conn
+            |> put_status(:created)
+            |> json(repository_json(repository))
+
+          {:error, reason} when is_binary(reason) ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{errors: %{url: [reason]}})
+
+          {:error, changeset} ->
+            conn
+            |> put_status(:unprocessable_entity)
+            |> json(%{errors: GitBeholderWeb.ChangesetJSON.errors(changeset)})
+        end
+
+      _ ->
+        conn
+        |> put_status(:bad_request)
+        |> json(%{error: "invalid workspace id"})
+    end
+  end
+
   defp repository_json(repository) do
     %{
       id: repository.id,
