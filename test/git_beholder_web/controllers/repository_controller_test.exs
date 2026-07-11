@@ -1,5 +1,5 @@
 defmodule GitBeholderWeb.RepositoryControllerTest do
-  use GitBeholderWeb.ConnCase, async: true
+  use GitBeholderWeb.ConnCase, async: false
 
   alias GitBeholder.Repositories
 
@@ -28,8 +28,7 @@ defmodule GitBeholderWeb.RepositoryControllerTest do
 
       conn = get(conn, "/api/v1/workspaces/#{workspace.id}/repositories")
 
-      assert %{"repositories" => repositories} = json_response(conn, 200)
-      assert [%{"id" => id, "name" => "payment_service"}] = repositories
+      assert [%{"id" => id, "name" => "payment_service"}] = json_response(conn, 200)
       assert id == repository.id
     end
 

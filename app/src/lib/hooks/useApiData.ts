@@ -18,14 +18,17 @@ export function useApiData<T>(
 
   useEffect(() => {
     let cancelled = false;
-    setState({ data: null, error: null, loading: true });
+    // Keep the previous data on screen while revalidating instead of
+    // clearing it — a list shouldn't unmount and blank out every time
+    // its dependencies change, only to be repopulated moments later.
+    setState((prev) => ({ ...prev, loading: true }));
 
     fetcher()
       .then((data) => {
         if (!cancelled) setState({ data, error: null, loading: false });
       })
       .catch((err) => {
-        if (!cancelled) setState({ data: null, error: String(err), loading: false });
+        if (!cancelled) setState((prev) => ({ ...prev, error: String(err), loading: false }));
       });
 
     return () => {

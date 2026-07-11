@@ -35,13 +35,13 @@ function IconOnlyBadge({ commitRef }: { commitRef: CommitRef }) {
   if (commitRef.type === "tag") {
     icon = <Tag aria-hidden="true" size={11} className="text-amber-400" />;
   } else if (commitRef.local) {
-    icon = <Monitor aria-hidden="true" size={11} className="text-ink-faint" />;
+    icon = <Monitor aria-hidden="true" size={11} className="text-ink-secondary" />;
   } else if (commitRef.platform) {
-    icon = <PlatformIcon platform={commitRef.platform} className="text-ink-faint" />;
+    icon = <PlatformIcon platform={commitRef.platform} className="text-ink-secondary" />;
   } else if (commitRef.current) {
     icon = <Check aria-hidden="true" size={11} className="text-success" />;
   } else {
-    icon = <GitBranch aria-hidden="true" size={11} className="text-ink-faint" />;
+    icon = <GitBranch aria-hidden="true" size={11} className="text-ink-secondary" />;
   }
 
   return (
@@ -72,10 +72,10 @@ function RefBadge({ commitRef, compact }: { commitRef: CommitRef; compact: boole
         {commitRef.name}
       </span>
       {showLocal && (
-        <Monitor aria-label="branch local" size={11} className="flex-none text-ink-faint" />
+        <Monitor aria-label="branch local" size={11} className="flex-none text-ink-secondary" />
       )}
       {showPlatform && (
-        <PlatformIcon platform={commitRef.platform!} className="flex-none text-ink-faint" />
+        <PlatformIcon platform={commitRef.platform!} className="flex-none text-ink-secondary" />
       )}
     </div>
   );

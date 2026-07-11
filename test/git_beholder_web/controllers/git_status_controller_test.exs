@@ -1,5 +1,5 @@
 defmodule GitBeholderWeb.GitStatusControllerTest do
-  use GitBeholderWeb.ConnCase, async: true
+  use GitBeholderWeb.ConnCase, async: false
 
   alias GitBeholder.Repositories
 
@@ -16,15 +16,22 @@ defmodule GitBeholderWeb.GitStatusControllerTest do
     %{conn: conn, workspace: workspace, repository: repository}
   end
 
-  test "GET .../status returns the repository status", %{
+  test "GET .../status returns file changes", %{
     conn: conn,
     workspace: workspace,
     repository: repository
   } do
     conn = get(conn, "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/status")
 
-    assert %{"status" => "ok", "output" => output} = json_response(conn, 200)
-    assert is_binary(output)
+    changes = json_response(conn, 200)
+    assert is_list(changes)
+
+    for change <- changes do
+      assert %{"path" => path, "status" => status, "staged" => staged} = change
+      assert is_binary(path)
+      assert status in ["M", "A", "D", "U"]
+      assert is_boolean(staged)
+    end
   end
 
   test "returns 404 for an unknown repository", %{conn: conn, workspace: workspace} do

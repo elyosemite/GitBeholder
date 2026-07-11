@@ -1,5 +1,5 @@
 defmodule GitBeholderWeb.WorkspaceControllerTest do
-  use GitBeholderWeb.ConnCase, async: true
+  use GitBeholderWeb.ConnCase, async: false
 
   alias GitBeholder.Repositories
 

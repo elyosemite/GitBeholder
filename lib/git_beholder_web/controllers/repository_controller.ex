@@ -7,7 +7,7 @@ defmodule GitBeholderWeb.RepositoryController do
     case Integer.parse(workspace_id) do
       {workspace_id, ""} ->
         repositories = Enum.map(Repositories.list_repositories(workspace_id), &repository_json/1)
-        json(conn, %{repositories: repositories})
+        json(conn, repositories)
 
       _ ->
         conn

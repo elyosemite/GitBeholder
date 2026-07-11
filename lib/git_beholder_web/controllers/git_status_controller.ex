@@ -2,13 +2,15 @@ defmodule GitBeholderWeb.GitStatusController do
   use GitBeholderWeb, :controller
   alias GitBeholder.GitStatus
 
-  def status(conn, _params) do
-    case GitStatus.git_status(conn.assigns.repository.path) do
-      {:ok, output} ->
-        json(conn, %{status: "ok", output: output})
+  def index(conn, _params) do
+    case GitStatus.list_changes(conn.assigns.repository.path) do
+      {:ok, changes} ->
+        json(conn, changes)
 
-      {:error, error_output} ->
-        json(conn, %{status: "error", output: error_output})
+      {:error, reason} ->
+        conn
+        |> put_status(400)
+        |> json(%{error: reason})
     end
   end
 end

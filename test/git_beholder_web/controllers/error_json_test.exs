@@ -1,5 +1,5 @@
 defmodule GitBeholderWeb.ErrorJSONTest do
-  use GitBeholderWeb.ConnCase, async: true
+  use GitBeholderWeb.ConnCase, async: false
 
   test "renders 404" do
     assert GitBeholderWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}

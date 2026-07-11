@@ -1,5 +1,5 @@
 defmodule GitBeholderWeb.GitCommitControllerTest do
-  use GitBeholderWeb.ConnCase, async: true
+  use GitBeholderWeb.ConnCase, async: false
 
   alias GitBeholder.Repositories
 
@@ -12,6 +12,7 @@ defmodule GitBeholderWeb.GitCommitControllerTest do
     {_, 0} = System.cmd("git", ["config", "user.email", "test@example.com"], cd: repo_path)
     {_, 0} = System.cmd("git", ["config", "user.name", "Test User"], cd: repo_path)
     File.write!(Path.join(repo_path, "file.txt"), "hello")
+    System.cmd("git", ["add", "file.txt"], cd: repo_path)
 
     on_exit(fn -> File.rm_rf!(repo_path) end)
 
@@ -27,7 +28,7 @@ defmodule GitBeholderWeb.GitCommitControllerTest do
     %{conn: conn, workspace: workspace, repository: repository}
   end
 
-  test "POST .../commit commits the given file", %{
+  test "POST .../commit commits whatever is staged", %{
     conn: conn,
     workspace: workspace,
     repository: repository
@@ -36,10 +37,27 @@ defmodule GitBeholderWeb.GitCommitControllerTest do
       post(
         conn,
         "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commit",
-        %{"file_path" => "file.txt", "message" => "Initial commit"}
+        %{"message" => "Initial commit"}
       )
 
     assert %{"status" => "ok"} = json_response(conn, 200)
+  end
+
+  test "POST .../commit returns 400 when nothing is staged", %{
+    conn: conn,
+    workspace: workspace,
+    repository: repository
+  } do
+    System.cmd("git", ["reset"], cd: repository.path)
+
+    conn =
+      post(
+        conn,
+        "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commit",
+        %{"message" => "Nothing to commit"}
+      )
+
+    assert %{"status" => "error"} = json_response(conn, 400)
   end
 
   test "returns 404 for an unknown repository", %{conn: conn, workspace: workspace} do
@@ -47,7 +65,7 @@ defmodule GitBeholderWeb.GitCommitControllerTest do
       post(
         conn,
         "/api/v1/workspaces/#{workspace.id}/repositories/999999/commit",
-        %{"file_path" => "file.txt"}
+        %{"message" => "Initial commit"}
       )
 
     assert json_response(conn, 404)

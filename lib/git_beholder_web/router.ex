@@ -1,17 +1,8 @@
 defmodule GitBeholderWeb.Router do
   use GitBeholderWeb, :router
 
-  # Origins for the Tauri desktop app (app/): the Vite dev server in
-  # development, and the webview's own origin once bundled.
-  @cors_origins [
-    "http://localhost:1420",
-    "tauri://localhost",
-    "http://tauri.localhost"
-  ]
-
   pipeline :api do
     plug :accepts, ["json"]
-    plug CORSPlug, origin: @cors_origins
   end
 
   pipeline :repository do
@@ -34,9 +25,14 @@ defmodule GitBeholderWeb.Router do
   scope "/api/v1/workspaces/:workspace_id/repositories/:repository_id", GitBeholderWeb do
     pipe_through [:api, :repository]
 
-    get "/status", GitStatusController, :status
+    get "/status", GitStatusController, :index
     post "/commit", GitCommitController, :create
-    get "/log", GitLogController, :index
+    post "/stage", GitStagingController, :stage
+    post "/unstage", GitStagingController, :unstage
+    get "/commits", GitLogController, :index
+    get "/branches", GitBranchController, :index
+    get "/push/status", GitPushController, :status
+    post "/push", GitPushController, :create
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
