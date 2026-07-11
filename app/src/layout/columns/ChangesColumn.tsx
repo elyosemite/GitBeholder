@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { PanelEmpty, PanelSection } from "@/components/panel-primitives";
-import { useStatus, type FileStatus } from "@/features/staging";
+import { useStagingActions, useStatus, type FileStatus } from "@/features/staging";
 
 const STATUS_STYLES: Record<FileStatus, string> = {
   M: "text-accent",
@@ -26,7 +25,7 @@ function FileRow({
   path: string;
   status: FileStatus;
   staged: boolean;
-  onToggleStage: (path: string) => void;
+  onToggleStage: (path: string, staged: boolean) => void;
 }) {
   const { name, dir } = splitPath(path);
   const ToggleIcon = staged ? Minus : Plus;
@@ -42,7 +41,7 @@ function FileRow({
       </span>
       <button
         type="button"
-        onClick={() => onToggleStage(path)}
+        onClick={() => onToggleStage(path, staged)}
         title={staged ? "Mover para Unstaged" : "Mover para Staged"}
         className="flex-none rounded-sm p-0.5 text-ink-faint opacity-0 outline-none transition-opacity hover:text-ink focus-visible:opacity-100 group-hover:opacity-100"
       >
@@ -54,23 +53,15 @@ function FileRow({
 
 export function ChangesColumn() {
   const { data: files } = useStatus();
+  const { stage, unstage } = useStagingActions();
   const rows = files ?? [];
-  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 
-  const toggleStage = (path: string) => {
-    const file = rows.find((f) => f.path === path);
-    if (!file) return;
-    const current = overrides[path] ?? file.staged;
-    setOverrides((prev) => ({ ...prev, [path]: !current }));
+  const toggleStage = (path: string, staged: boolean) => {
+    void (staged ? unstage(path) : stage(path));
   };
 
-  const resolvedRows = rows.map((file) => ({
-    ...file,
-    staged: overrides[file.path] ?? file.staged,
-  }));
-
-  const unstagedFiles = resolvedRows.filter((file) => !file.staged);
-  const stagedFiles = resolvedRows.filter((file) => file.staged);
+  const unstagedFiles = rows.filter((file) => !file.staged);
+  const stagedFiles = rows.filter((file) => file.staged);
 
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-panel">
