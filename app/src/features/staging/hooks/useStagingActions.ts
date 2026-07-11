@@ -8,8 +8,11 @@ export function useStagingActions() {
   const stage = useCallback(
     async (path: string) => {
       if (!repository) return;
-      await stageFile(repository.workspace_id, repository.id, path);
-      invalidate("status");
+      try {
+        await stageFile(repository.workspace_id, repository.id, path);
+      } finally {
+        invalidate("status");
+      }
     },
     [repository, invalidate],
   );
@@ -17,8 +20,11 @@ export function useStagingActions() {
   const unstage = useCallback(
     async (path: string) => {
       if (!repository) return;
-      await unstageFile(repository.workspace_id, repository.id, path);
-      invalidate("status");
+      try {
+        await unstageFile(repository.workspace_id, repository.id, path);
+      } finally {
+        invalidate("status");
+      }
     },
     [repository, invalidate],
   );

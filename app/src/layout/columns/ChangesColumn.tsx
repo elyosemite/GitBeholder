@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { PanelEmpty, PanelSection } from "@/components/panel-primitives";
 import { useStagingActions, useStatus, type FileStatus } from "@/features/staging";
@@ -55,13 +56,26 @@ export function ChangesColumn() {
   const { data: files } = useStatus();
   const { stage, unstage } = useStagingActions();
   const rows = files ?? [];
+  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
+
+  // Once a fresh status list lands, it's the source of truth — drop any
+  // optimistic guesses instead of letting them linger past a failed call.
+  useEffect(() => {
+    if (files) setOverrides({});
+  }, [files]);
 
   const toggleStage = (path: string, staged: boolean) => {
+    setOverrides((prev) => ({ ...prev, [path]: !staged }));
     void (staged ? unstage(path) : stage(path));
   };
 
-  const unstagedFiles = rows.filter((file) => !file.staged);
-  const stagedFiles = rows.filter((file) => file.staged);
+  const resolvedRows = rows.map((file) => ({
+    ...file,
+    staged: overrides[file.path] ?? file.staged,
+  }));
+
+  const unstagedFiles = resolvedRows.filter((file) => !file.staged);
+  const stagedFiles = resolvedRows.filter((file) => file.staged);
 
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-panel">
