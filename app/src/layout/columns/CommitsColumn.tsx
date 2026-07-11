@@ -84,6 +84,7 @@ function RefBadge({ commitRef, compact }: { commitRef: CommitRef; compact: boole
 
 function CommitRow({
   commit,
+  index,
   first,
   last,
   refWidth,
@@ -91,6 +92,7 @@ function CommitRow({
   onSelect,
 }: {
   commit: Commit;
+  index: number;
   first: boolean;
   last: boolean;
   refWidth: number;
@@ -106,13 +108,17 @@ function CommitRow({
     : last
       ? "-top-0.5 bottom-1/2"
       : "-top-0.5 -bottom-0.5";
+  // Stagger the entrance so the log reads top-to-bottom instead of
+  // popping in all at once; caps out so a long list doesn't feel sluggish.
+  const delay = Math.min(index, 8) * 40;
 
   return (
     <button
       type="button"
       onClick={onSelect}
+      style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
       className={
-        "flex h-6 w-full items-center rounded-md px-row-x text-left hover:bg-overlay-hover " +
+        "flex h-6 w-full animate-in items-center rounded-md px-row-x text-left fade-in-0 slide-in-from-top-1 hover:bg-overlay-hover " +
         (isSelected ? "bg-accent-soft" : "")
       }
     >
@@ -216,6 +222,7 @@ export function CommitsColumn() {
             <CommitRow
               key={commit.hash}
               commit={commit}
+              index={index}
               first={index === 0}
               last={index === rows.length - 1}
               refWidth={refWidth}
