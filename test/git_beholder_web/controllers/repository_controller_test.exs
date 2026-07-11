@@ -80,4 +80,44 @@ defmodule GitBeholderWeb.RepositoryControllerTest do
       assert %{"errors" => %{"path" => ["can't be blank"]}} = json_response(conn, 422)
     end
   end
+
+  describe "POST /api/v1/workspaces/:workspace_id/repositories/open-local" do
+    test "registers a real Git repository, deriving its name", %{conn: conn, workspace: workspace} do
+      project_root = File.cwd!()
+
+      conn =
+        post(conn, "/api/v1/workspaces/#{workspace.id}/repositories/open-local", %{
+          "path" => project_root
+        })
+
+      assert %{"name" => name, "path" => path, "workspace_id" => workspace_id} =
+               json_response(conn, 201)
+
+      assert name == Path.basename(project_root)
+      assert path == project_root
+      assert workspace_id == workspace.id
+    end
+
+    test "returns 422 for a folder that isn't a Git repository", %{conn: conn, workspace: workspace} do
+      non_git_dir =
+        Path.join(System.tmp_dir!(), "open_local_ctrl_test_#{System.unique_integer([:positive])}")
+
+      File.mkdir_p!(non_git_dir)
+      on_exit(fn -> File.rm_rf!(non_git_dir) end)
+
+      conn =
+        post(conn, "/api/v1/workspaces/#{workspace.id}/repositories/open-local", %{
+          "path" => non_git_dir
+        })
+
+      assert %{"errors" => %{"path" => [_reason]}} = json_response(conn, 422)
+    end
+
+    test "returns 400 for a non-numeric workspace id", %{conn: conn} do
+      conn =
+        post(conn, "/api/v1/workspaces/abc/repositories/open-local", %{"path" => File.cwd!()})
+
+      assert json_response(conn, 400)
+    end
+  end
 end
