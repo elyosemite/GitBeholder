@@ -81,4 +81,70 @@ defmodule GitBeholder.GitDiffTest do
 
     assert {:error, _reason} = GitDiff.file_changes(repo_path, "deadbeef")
   end
+
+  describe "file_diff/3" do
+    test "returns hunk + context/removed/added lines for a modified file", %{
+      repo_path: repo_path
+    } do
+      File.write!(Path.join(repo_path, "file.txt"), "line1\nline2\nline3\n")
+      commit(repo_path, "add file.txt")
+
+      File.write!(Path.join(repo_path, "file.txt"), "line1\nchanged\nline3\nline4\n")
+      hash = commit(repo_path, "edit file.txt")
+
+      assert {:ok, %{binary: false, lines: lines}} = GitDiff.file_diff(repo_path, hash, "file.txt")
+
+      assert [
+               %{type: "hunk"},
+               %{type: "context", old_line: 1, new_line: 1, content: "line1"},
+               %{type: "removed", old_line: 2, new_line: nil, content: "line2"},
+               %{type: "added", old_line: nil, new_line: 2, content: "changed"},
+               %{type: "context", old_line: 3, new_line: 3, content: "line3"},
+               %{type: "added", old_line: nil, new_line: 4, content: "line4"}
+             ] = lines
+    end
+
+    test "returns only added lines for a new file in the root commit", %{repo_path: repo_path} do
+      File.write!(Path.join(repo_path, "file.txt"), "line1\nline2\n")
+      hash = commit(repo_path, "add file.txt")
+
+      assert {:ok, %{binary: false, lines: lines}} = GitDiff.file_diff(repo_path, hash, "file.txt")
+
+      assert [
+               %{type: "hunk"},
+               %{type: "added", new_line: 1, content: "line1"},
+               %{type: "added", new_line: 2, content: "line2"}
+             ] = lines
+    end
+
+    test "returns only removed lines for a deleted file", %{repo_path: repo_path} do
+      File.write!(Path.join(repo_path, "file.txt"), "line1\nline2\n")
+      commit(repo_path, "add file.txt")
+
+      File.rm!(Path.join(repo_path, "file.txt"))
+      hash = commit(repo_path, "delete file.txt")
+
+      assert {:ok, %{binary: false, lines: lines}} = GitDiff.file_diff(repo_path, hash, "file.txt")
+
+      assert [
+               %{type: "hunk"},
+               %{type: "removed", old_line: 1, content: "line1"},
+               %{type: "removed", old_line: 2, content: "line2"}
+             ] = lines
+    end
+
+    test "reports binary files without trying to parse hunks", %{repo_path: repo_path} do
+      File.write!(Path.join(repo_path, "file.bin"), <<0, 1, 2, 3, 0, 4, 5>>)
+      hash = commit(repo_path, "add binary file")
+
+      assert {:ok, %{binary: true, lines: []}} = GitDiff.file_diff(repo_path, hash, "file.bin")
+    end
+
+    test "returns an error for an unknown commit hash", %{repo_path: repo_path} do
+      File.write!(Path.join(repo_path, "file.txt"), "content\n")
+      commit(repo_path, "initial")
+
+      assert {:error, _reason} = GitDiff.file_diff(repo_path, "deadbeef", "file.txt")
+    end
+  end
 end
