@@ -25,11 +25,11 @@ import {
   INTEGRATIONS,
   ISSUES,
   PULL_REQUESTS,
-  TAGS,
   TEAMS,
 } from "@/mocks/git-data"
 import { useBranches, useCheckoutBranch, type Branch } from "@/features/branches"
 import { useStashes } from "@/features/stashes"
+import { useTags } from "@/features/tags"
 import { useCommitFiles, type CommitFileChange } from "@/features/commits"
 import { useSession } from "@/features/session"
 import { splitPath } from "@/lib/paths"
@@ -42,6 +42,14 @@ function initials(name: string) {
     .join("")
     .toUpperCase()
 }
+
+// Stagger the entrance so each list reads top-to-bottom instead of popping
+// in all at once; caps out so a long list doesn't feel sluggish.
+function staggerStyle(index: number) {
+  return { animationDelay: `${Math.min(index, 8) * 40}ms`, animationFillMode: "backwards" as const }
+}
+
+const ROW_ANIMATION = "animate-in fade-in-0 slide-in-from-top-1"
 
 function Section({
   value,
@@ -73,11 +81,13 @@ function Section({
 
 function BranchRow({
   branch,
+  index,
   isCheckingOut,
   disabled,
   onCheckout,
 }: {
   branch: Branch
+  index: number
   isCheckingOut: boolean
   disabled: boolean
   onCheckout: () => void
@@ -89,7 +99,8 @@ function BranchRow({
       type="button"
       disabled={disabled}
       onClick={onCheckout}
-      className="flex w-full items-center gap-icon rounded-md px-1 py-1 text-row hover:bg-overlay-hover disabled:pointer-events-none disabled:opacity-60"
+      style={staggerStyle(index)}
+      className={`flex w-full items-center gap-icon rounded-md px-1 py-1 text-row hover:bg-overlay-hover disabled:pointer-events-none disabled:opacity-60 ${ROW_ANIMATION}`}
     >
       {isCheckingOut ? (
         <Loader2 aria-hidden="true" size={13} className="flex-none animate-spin text-accent" />
@@ -122,16 +133,13 @@ function InspectFileRow({
   onOpenDiff: () => void
 }) {
   const { name, dir } = splitPath(file.path)
-  // Stagger the entrance so the list reads top-to-bottom instead of
-  // popping in all at once; caps out so a long list doesn't feel sluggish.
-  const delay = Math.min(index, 8) * 40
 
   return (
     <button
       type="button"
       onClick={onOpenDiff}
-      className="flex w-full animate-in items-center gap-icon rounded-md px-1 py-1 text-row text-left fade-in-0 slide-in-from-top-1 hover:bg-overlay-hover"
-      style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
+      className={`flex w-full items-center gap-icon rounded-md px-1 py-1 text-row text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
+      style={staggerStyle(index)}
     >
       <FileText aria-hidden="true" size={13} className="flex-none text-ink-faint" />
       <span className="flex min-w-0 flex-1 items-baseline gap-icon" title={file.path}>
@@ -156,6 +164,9 @@ export function RepositoryOverviewColumn() {
 
   const { data: stashes } = useStashes()
   const stashList = stashes ?? []
+
+  const { data: tags } = useTags()
+  const tagList = tags ?? []
 
   const { inspectedCommit, openDiff } = useSession()
   const { data: commitFiles } = useCommitFiles()
@@ -186,8 +197,12 @@ export function RepositoryOverviewColumn() {
 
       <Accordion defaultValue={["branches"]}>
         <Section value="integrations" title="Integrações" count={INTEGRATIONS.length}>
-          {INTEGRATIONS.map(({ name, connected }) => (
-            <div key={name} className="flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
+          {INTEGRATIONS.map(({ name, connected }, index) => (
+            <div
+              key={name}
+              style={staggerStyle(index)}
+              className={`flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+            >
               <Avatar size="sm">
                 <AvatarFallback className="text-micro font-semibold">{initials(name)}</AvatarFallback>
               </Avatar>
@@ -204,10 +219,14 @@ export function RepositoryOverviewColumn() {
         </Section>
 
         <Section value="pull-requests" title="Pull Requests" count={PULL_REQUESTS.length}>
-          {PULL_REQUESTS.map((pr) => {
+          {PULL_REQUESTS.map((pr, index) => {
             const StatusIcon = pr.status === "open" ? GitPullRequest : GitPullRequestDraft
             return (
-              <div key={pr.number} className="flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
+              <div
+                key={pr.number}
+                style={staggerStyle(index)}
+                className={`flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+              >
                 <StatusIcon
                   aria-hidden="true"
                   size={14}
@@ -225,10 +244,14 @@ export function RepositoryOverviewColumn() {
         </Section>
 
         <Section value="issues" title="Issues" count={ISSUES.length}>
-          {ISSUES.map((issue) => {
+          {ISSUES.map((issue, index) => {
             const StateIcon = issue.state === "open" ? CircleDot : CircleCheck
             return (
-              <div key={issue.number} className="flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
+              <div
+                key={issue.number}
+                style={staggerStyle(index)}
+                className={`flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+              >
                 <StateIcon
                   aria-hidden="true"
                   size={14}
@@ -249,8 +272,12 @@ export function RepositoryOverviewColumn() {
         </Section>
 
         <Section value="teams" title="Teams" count={TEAMS.length}>
-          {TEAMS.map((team) => (
-            <div key={team.name} className="flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
+          {TEAMS.map((team, index) => (
+            <div
+              key={team.name}
+              style={staggerStyle(index)}
+              className={`flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+            >
               <Avatar size="sm">
                 <AvatarFallback className="text-micro font-semibold">{initials(team.name)}</AvatarFallback>
               </Avatar>
@@ -261,10 +288,11 @@ export function RepositoryOverviewColumn() {
         </Section>
 
         <Section value="branches" title="Branches" count={allBranches.length}>
-          {allBranches.map((branch) => (
+          {allBranches.map((branch, index) => (
             <BranchRow
               key={branch.name}
               branch={branch}
+              index={index}
               isCheckingOut={checkingOutName === branch.name}
               disabled={checkingOutName !== null}
               onCheckout={() => void handleCheckout(branch)}
@@ -272,12 +300,13 @@ export function RepositoryOverviewColumn() {
           ))}
         </Section>
 
-        <Section value="tags" title="Tags" count={TAGS.length}>
-          {TAGS.map((tag) => (
+        <Section value="tags" title="Tags" count={tagList.length}>
+          {tagList.map((tag, index) => (
             <button
               key={tag.name}
               type="button"
-              className="flex w-full items-center gap-icon rounded-md px-1 py-1 text-left hover:bg-overlay-hover"
+              style={staggerStyle(index)}
+              className={`flex w-full items-center gap-icon rounded-md px-1 py-1 text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
             >
               <Tag aria-hidden="true" size={13} className="flex-none text-ink-faint" />
               <span className="min-w-0 flex-1 truncate font-mono text-row text-ink-secondary">{tag.name}</span>
@@ -287,8 +316,12 @@ export function RepositoryOverviewColumn() {
         </Section>
 
         <Section value="stashes" title="Stashes" count={stashList.length}>
-          {stashList.map((stash) => (
-            <div key={stash.index} className="flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
+          {stashList.map((stash, index) => (
+            <div
+              key={stash.index}
+              style={staggerStyle(index)}
+              className={`flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+            >
               <Archive aria-hidden="true" size={14} className="mt-0.5 flex-none text-ink-faint" />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-row text-ink">
