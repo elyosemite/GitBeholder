@@ -118,7 +118,7 @@ function CommitRow({
       onClick={onSelect}
       style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
       className={
-        "flex h-6 w-full animate-in items-center rounded-md px-row-x text-left fade-in-0 slide-in-from-top-1 " +
+        "flex h-6 w-full animate-in items-center px-row-x text-left fade-in-0 slide-in-from-top-1 " +
         (isSelected ? "bg-accent-soft" : "hover:bg-overlay-hover")
       }
     >

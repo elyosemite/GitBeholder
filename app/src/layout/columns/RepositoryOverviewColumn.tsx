@@ -100,7 +100,7 @@ function BranchRow({
       disabled={disabled}
       onClick={onCheckout}
       style={staggerStyle(index)}
-      className={`flex w-full items-center gap-icon rounded-md px-1 py-1 text-row hover:bg-overlay-hover disabled:pointer-events-none disabled:opacity-60 ${ROW_ANIMATION}`}
+      className={`flex w-full items-center gap-icon px-1 py-1 text-row hover:bg-overlay-hover disabled:pointer-events-none disabled:opacity-60 ${ROW_ANIMATION}`}
     >
       {isCheckingOut ? (
         <Loader2 aria-hidden="true" size={13} className="flex-none animate-spin text-accent" />
@@ -138,7 +138,7 @@ function InspectFileRow({
     <button
       type="button"
       onClick={onOpenDiff}
-      className={`flex w-full items-center gap-icon rounded-md px-1 py-1 text-row text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
+      className={`flex w-full items-center gap-icon px-1 py-1 text-row text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
       style={staggerStyle(index)}
     >
       <FileText aria-hidden="true" size={13} className="flex-none text-ink-faint" />
@@ -201,7 +201,7 @@ export function RepositoryOverviewColumn() {
             <div
               key={name}
               style={staggerStyle(index)}
-              className={`flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+              className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
             >
               <Avatar size="sm">
                 <AvatarFallback className="text-micro font-semibold">{initials(name)}</AvatarFallback>
@@ -225,7 +225,7 @@ export function RepositoryOverviewColumn() {
               <div
                 key={pr.number}
                 style={staggerStyle(index)}
-                className={`flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+                className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
               >
                 <StatusIcon
                   aria-hidden="true"
@@ -250,7 +250,7 @@ export function RepositoryOverviewColumn() {
               <div
                 key={issue.number}
                 style={staggerStyle(index)}
-                className={`flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+                className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
               >
                 <StateIcon
                   aria-hidden="true"
@@ -276,7 +276,7 @@ export function RepositoryOverviewColumn() {
             <div
               key={team.name}
               style={staggerStyle(index)}
-              className={`flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+              className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
             >
               <Avatar size="sm">
                 <AvatarFallback className="text-micro font-semibold">{initials(team.name)}</AvatarFallback>
@@ -306,7 +306,7 @@ export function RepositoryOverviewColumn() {
               key={tag.name}
               type="button"
               style={staggerStyle(index)}
-              className={`flex w-full items-center gap-icon rounded-md px-1 py-1 text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
+              className={`flex w-full items-center gap-icon px-1 py-1 text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
             >
               <Tag aria-hidden="true" size={13} className="flex-none text-ink-faint" />
               <span className="min-w-0 flex-1 truncate font-mono text-row text-ink-secondary">{tag.name}</span>
@@ -320,7 +320,7 @@ export function RepositoryOverviewColumn() {
             <div
               key={stash.index}
               style={staggerStyle(index)}
-              className={`flex items-start gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+              className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
             >
               <Archive aria-hidden="true" size={14} className="mt-0.5 flex-none text-ink-faint" />
               <div className="min-w-0 flex-1">
