@@ -1,5 +1,5 @@
 import { request } from "@/lib/api-client";
-import type { Commit, CommitFileChange } from "./types";
+import type { Commit, CommitFileChange, FileDiff } from "./types";
 
 export function listCommits(
   workspaceId: number,
@@ -18,6 +18,17 @@ export function getCommitFiles(
 ): Promise<CommitFileChange[]> {
   return request(
     `/workspaces/${workspaceId}/repositories/${repositoryId}/commits/${hash}/files`,
+  );
+}
+
+export function getFileDiff(
+  workspaceId: number,
+  repositoryId: number,
+  hash: string,
+  path: string,
+): Promise<FileDiff> {
+  return request(
+    `/workspaces/${workspaceId}/repositories/${repositoryId}/commits/${hash}/diff?path=${encodeURIComponent(path)}`,
   );
 }
 
