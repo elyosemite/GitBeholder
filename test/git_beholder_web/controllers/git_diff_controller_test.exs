@@ -91,7 +91,7 @@ defmodule GitBeholderWeb.GitDiffControllerTest do
       %{conn: conn, workspace: workspace, repository: repository, hash: String.trim(hash)}
     end
 
-    test "returns the parsed diff for a single file", %{
+    test "returns the raw patch for a single file", %{
       conn: conn,
       workspace: workspace,
       repository: repository,
@@ -103,13 +103,10 @@ defmodule GitBeholderWeb.GitDiffControllerTest do
           "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commits/#{hash}/diff?path=file.txt"
         )
 
-      assert %{"binary" => false, "lines" => lines} = json_response(conn, 200)
-
-      assert [
-               %{"type" => "hunk"},
-               %{"type" => "added", "content" => "line1"},
-               %{"type" => "added", "content" => "line2"}
-             ] = lines
+      assert %{"binary" => false, "patch" => patch} = json_response(conn, 200)
+      assert patch =~ "diff --git a/file.txt b/file.txt"
+      assert patch =~ "+line1"
+      assert patch =~ "+line2"
     end
 
     test "returns 400 for an unknown commit hash", %{

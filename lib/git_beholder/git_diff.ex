@@ -40,13 +40,14 @@ defmodule GitBeholder.GitDiff do
   defp parse_count(count), do: String.to_integer(count)
 
   @doc """
-  Returns the unified diff for a single file within a single commit, as a
-  flat, order-preserving list of typed lines — the caller decides how to
-  lay them out (unified, side-by-side, ...).
+  Returns the raw unified diff for a single file within a single commit.
+  The caller (the `@pierre/diffs` frontend library) parses the patch text
+  itself, including for side-by-side rendering.
 
   Returns:
-    * `{:ok, %{binary: false, lines: [%{type: "hunk" | "context" | "added" | "removed", old_line: integer | nil, new_line: integer | nil, content: String.t()}]}}`
-    * `{:ok, %{binary: true, lines: []}}` — git reports "Binary files ... differ"
+    * `{:ok, %{binary: false, patch: String.t()}}` — full `git show` output,
+      starting at the `diff --git` header
+    * `{:ok, %{binary: true, patch: nil}}` — git reports "Binary files ... differ"
     * `{:error, reason}`
   """
   def file_diff(repo_path, hash, path) do
@@ -61,50 +62,9 @@ defmodule GitBeholder.GitDiff do
 
   defp parse_diff(output) do
     if String.contains?(output, "Binary files") do
-      %{binary: true, lines: []}
+      %{binary: true, patch: nil}
     else
-      lines =
-        output
-        |> String.split("\n")
-        |> Enum.drop_while(&(!String.starts_with?(&1, "@@")))
-        |> parse_diff_lines()
-
-      %{binary: false, lines: lines}
-    end
-  end
-
-  defp parse_diff_lines(lines) do
-    {result, _old, _new} = Enum.reduce(lines, {[], 0, 0}, &parse_diff_line/2)
-    Enum.reverse(result)
-  end
-
-  defp parse_diff_line("@@" <> _ = line, {acc, _old, _new}) do
-    {old_start, new_start} = parse_hunk_header(line)
-    {[%{type: "hunk", old_line: nil, new_line: nil, content: line} | acc], old_start, new_start}
-  end
-
-  defp parse_diff_line("-" <> content, {acc, old_line, new_line}) do
-    {[%{type: "removed", old_line: old_line, new_line: nil, content: content} | acc], old_line + 1,
-     new_line}
-  end
-
-  defp parse_diff_line("+" <> content, {acc, old_line, new_line}) do
-    {[%{type: "added", old_line: nil, new_line: new_line, content: content} | acc], old_line,
-     new_line + 1}
-  end
-
-  defp parse_diff_line(" " <> content, {acc, old_line, new_line}) do
-    {[%{type: "context", old_line: old_line, new_line: new_line, content: content} | acc],
-     old_line + 1, new_line + 1}
-  end
-
-  # blank lines and "\ No newline at end of file" trailers carry no content
-  defp parse_diff_line(_line, state), do: state
-
-  defp parse_hunk_header(line) do
-    case Regex.run(~r/^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/, line) do
-      [_, old_start, new_start] -> {String.to_integer(old_start), String.to_integer(new_start)}
-      _ -> {0, 0}
+      %{binary: false, patch: output}
     end
   end
 
