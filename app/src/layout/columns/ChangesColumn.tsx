@@ -3,6 +3,7 @@ import { Minus, Plus } from "lucide-react";
 import { PanelEmpty, PanelSection } from "@/components/panel-primitives";
 import { useCreateCommit } from "@/features/commits";
 import { useStagingActions, useStatus, type FileStatus } from "@/features/staging";
+import { splitPath } from "@/lib/paths";
 
 const STATUS_STYLES: Record<FileStatus, string> = {
   M: "text-accent",
@@ -10,13 +11,6 @@ const STATUS_STYLES: Record<FileStatus, string> = {
   D: "text-danger",
   U: "text-ink-faint",
 };
-
-function splitPath(path: string) {
-  const slash = path.lastIndexOf("/");
-  return slash === -1
-    ? { name: path, dir: "" }
-    : { name: path.slice(slash + 1), dir: path.slice(0, slash) };
-}
 
 function FileRow({
   path,

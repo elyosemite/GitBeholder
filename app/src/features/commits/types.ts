@@ -21,3 +21,23 @@ export interface Commit {
   timestamp: string;
   refs: CommitRef[];
 }
+
+export interface CommitFileChange {
+  path: string;
+  additions: number | null;
+  deletions: number | null;
+}
+
+export type DiffLineType = "hunk" | "context" | "added" | "removed";
+
+export interface DiffLine {
+  type: DiffLineType;
+  old_line: number | null;
+  new_line: number | null;
+  content: string;
+}
+
+export interface FileDiff {
+  binary: boolean;
+  lines: DiffLine[];
+}

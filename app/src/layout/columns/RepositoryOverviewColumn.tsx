@@ -4,6 +4,7 @@ import {
   CircleCheck,
   CircleDot,
   Cloud,
+  FileText,
   GitBranch,
   GitPullRequest,
   GitPullRequestDraft,
@@ -29,6 +30,9 @@ import {
 } from "@/mocks/git-data"
 import { useBranches, useCheckoutBranch, type Branch } from "@/features/branches"
 import { useStashes } from "@/features/stashes"
+import { useCommitFiles, type CommitFileChange } from "@/features/commits"
+import { useSession } from "@/features/session"
+import { splitPath } from "@/lib/paths"
 
 function initials(name: string) {
   return name
@@ -108,6 +112,40 @@ function BranchRow({
   )
 }
 
+function InspectFileRow({
+  file,
+  index,
+  onOpenDiff,
+}: {
+  file: CommitFileChange
+  index: number
+  onOpenDiff: () => void
+}) {
+  const { name, dir } = splitPath(file.path)
+  // Stagger the entrance so the list reads top-to-bottom instead of
+  // popping in all at once; caps out so a long list doesn't feel sluggish.
+  const delay = Math.min(index, 8) * 40
+
+  return (
+    <button
+      type="button"
+      onClick={onOpenDiff}
+      className="flex w-full animate-in items-center gap-icon rounded-md px-1 py-1 text-row text-left fade-in-0 slide-in-from-top-1 hover:bg-overlay-hover"
+      style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
+    >
+      <FileText aria-hidden="true" size={13} className="flex-none text-ink-faint" />
+      <span className="flex min-w-0 flex-1 items-baseline gap-icon" title={file.path}>
+        <span className="flex-none text-ink">{name}</span>
+        {dir && <span className="min-w-0 flex-1 truncate text-ink-faint">{dir}</span>}
+      </span>
+      <span className="flex flex-none items-center gap-1.5 font-mono text-meta">
+        {file.additions !== null && <span className="text-success">+{file.additions}</span>}
+        {file.deletions !== null && <span className="text-danger">-{file.deletions}</span>}
+      </span>
+    </button>
+  )
+}
+
 export function RepositoryOverviewColumn() {
   const { data: branches } = useBranches()
   const allBranches = branches ?? []
@@ -118,6 +156,10 @@ export function RepositoryOverviewColumn() {
 
   const { data: stashes } = useStashes()
   const stashList = stashes ?? []
+
+  const { inspectedCommit, openDiff } = useSession()
+  const { data: commitFiles } = useCommitFiles()
+  const commitFileList = commitFiles ?? []
 
   const handleCheckout = async (branch: Branch) => {
     setCheckingOutName(branch.name)
@@ -253,6 +295,25 @@ export function RepositoryOverviewColumn() {
               </div>
             </div>
           ))}
+        </Section>
+
+        <Section value="inspect" title="Inspect" count={commitFileList.length}>
+          {inspectedCommit === null ? (
+            <div className="text-caption text-ink-faint">
+              Clique num commit para ver os arquivos alterados.
+            </div>
+          ) : commitFileList.length > 0 ? (
+            commitFileList.map((file, index) => (
+              <InspectFileRow
+                key={file.path}
+                file={file}
+                index={index}
+                onOpenDiff={() => openDiff(file.path)}
+              />
+            ))
+          ) : (
+            <div className="text-caption text-ink-faint">Nenhum arquivo alterado.</div>
+          )}
         </Section>
       </Accordion>
 

@@ -9,13 +9,17 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<SessionState>({
     repository: null,
     branch: null,
+    inspectedCommit: null,
+    diffFile: null,
     revisions: initialRevisions,
   });
 
-  const selectRepository= useCallback((repository: Repository) => {
+  const selectRepository = useCallback((repository: Repository) => {
     setState((s) => ({
       repository,
       branch: null,
+      inspectedCommit: null,
+      diffFile: null,
       revisions: bumpAll(s.revisions),
     }));
   }, []);
@@ -24,8 +28,22 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({
       ...s,
       branch,
+      inspectedCommit: null,
+      diffFile: null,
       revisions: bump(s.revisions, "commits", "status", "sync", "branches"),
     }));
+  }, []);
+
+  const selectCommit = useCallback((hash: string) => {
+    setState((s) => ({ ...s, inspectedCommit: hash, diffFile: null }));
+  }, []);
+
+  const openDiff = useCallback((path: string) => {
+    setState((s) => ({ ...s, diffFile: path }));
+  }, []);
+
+  const closeDiff = useCallback(() => {
+    setState((s) => ({ ...s, diffFile: null }));
   }, []);
 
   const invalidate = useCallback((...scopes: DataScope[]) => {
@@ -40,8 +58,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   });
 
   const value = useMemo<SessionApi>(
-    () => ({ ...state, selectRepository, setBranch, invalidate }),
-    [state, selectRepository, setBranch, invalidate],
+    () => ({
+      ...state,
+      selectRepository,
+      setBranch,
+      selectCommit,
+      openDiff,
+      closeDiff,
+      invalidate,
+    }),
+    [state, selectRepository, setBranch, selectCommit, openDiff, closeDiff, invalidate],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;

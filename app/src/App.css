@@ -59,7 +59,6 @@
   --text-meta: 10.5px;  /* metadata, section titles, timestamps */
   --text-micro: 9.5px;  /* badges, avatar initials */
 
-  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
 }
 
@@ -166,6 +165,8 @@
 }
 
 @theme inline {
+  /* This is the sans font actually in effect — it's declared after
+     @theme static above, so it wins for --font-sans. */
   --font-heading: var(--font-sans);
   --font-sans: 'Geist Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
