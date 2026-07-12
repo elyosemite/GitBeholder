@@ -62,4 +62,68 @@ defmodule GitBeholderWeb.GitDiffControllerTest do
 
     assert json_response(conn, 404)
   end
+
+  describe "GET .../commits/:hash/diff" do
+    setup %{conn: conn} do
+      repo_path =
+        Path.join(System.tmp_dir!(), "git_diff_ctrl_test_#{System.unique_integer([:positive])}")
+
+      File.mkdir_p!(repo_path)
+      System.cmd("git", ["init", "-q"], cd: repo_path)
+      System.cmd("git", ["config", "user.email", "test@test.com"], cd: repo_path)
+      System.cmd("git", ["config", "user.name", "Test"], cd: repo_path)
+      File.write!(Path.join(repo_path, "file.txt"), "line1\nline2\n")
+      System.cmd("git", ["add", "-A"], cd: repo_path)
+      System.cmd("git", ["commit", "-q", "-m", "add file.txt"], cd: repo_path)
+      {hash, 0} = System.cmd("git", ["rev-parse", "HEAD"], cd: repo_path)
+
+      on_exit(fn -> File.rm_rf!(repo_path) end)
+
+      {:ok, workspace} = Repositories.create_workspace(%{name: "Scratch"})
+
+      {:ok, repository} =
+        Repositories.create_repository(%{
+          name: "scratch_repo",
+          path: repo_path,
+          workspace_id: workspace.id
+        })
+
+      %{conn: conn, workspace: workspace, repository: repository, hash: String.trim(hash)}
+    end
+
+    test "returns the parsed diff for a single file", %{
+      conn: conn,
+      workspace: workspace,
+      repository: repository,
+      hash: hash
+    } do
+      conn =
+        get(
+          conn,
+          "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commits/#{hash}/diff?path=file.txt"
+        )
+
+      assert %{"binary" => false, "lines" => lines} = json_response(conn, 200)
+
+      assert [
+               %{"type" => "hunk"},
+               %{"type" => "added", "content" => "line1"},
+               %{"type" => "added", "content" => "line2"}
+             ] = lines
+    end
+
+    test "returns 400 for an unknown commit hash", %{
+      conn: conn,
+      workspace: workspace,
+      repository: repository
+    } do
+      conn =
+        get(
+          conn,
+          "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commits/deadbeef/diff?path=file.txt"
+        )
+
+      assert json_response(conn, 400)
+    end
+  end
 end
