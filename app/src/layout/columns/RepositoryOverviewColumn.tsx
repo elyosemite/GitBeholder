@@ -274,11 +274,15 @@ export function RepositoryOverviewColumn() {
 
         <Section value="tags" title="Tags" count={TAGS.length}>
           {TAGS.map((tag) => (
-            <div key={tag.name} className="flex items-center gap-icon rounded-md px-1 py-1 hover:bg-overlay-hover">
+            <button
+              key={tag.name}
+              type="button"
+              className="flex w-full items-center gap-icon rounded-md px-1 py-1 text-left hover:bg-overlay-hover"
+            >
               <Tag aria-hidden="true" size={13} className="flex-none text-ink-faint" />
               <span className="min-w-0 flex-1 truncate font-mono text-row text-ink-secondary">{tag.name}</span>
               <span className="flex-none font-mono text-meta text-ink-faint">{tag.date}</span>
-            </div>
+            </button>
           ))}
         </Section>
 
