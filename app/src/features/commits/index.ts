@@ -7,8 +7,6 @@ export type {
   Commit,
   CommitRef,
   CommitFileChange,
-  DiffLine,
-  DiffLineType,
   FileDiff,
   Platform,
 } from "./types";
