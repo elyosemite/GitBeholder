@@ -118,8 +118,8 @@ function CommitRow({
       onClick={onSelect}
       style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
       className={
-        "flex h-6 w-full animate-in items-center rounded-md px-row-x text-left fade-in-0 slide-in-from-top-1 hover:bg-overlay-hover " +
-        (isSelected ? "bg-accent-soft" : "")
+        "flex h-6 w-full animate-in items-center rounded-md px-row-x text-left fade-in-0 slide-in-from-top-1 " +
+        (isSelected ? "bg-accent-soft" : "hover:bg-overlay-hover")
       }
     >
       <div className="flex min-w-0 flex-none items-center" style={{ width: refWidth }}>
