@@ -40,6 +40,7 @@ defmodule GitBeholderWeb.Router do
     post "/push", GitPushController, :create
     post "/pull", GitPullController, :create
     get "/stashes", GitStashController, :index
+    get "/tags", GitTagController, :index
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development

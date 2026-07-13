@@ -30,7 +30,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       branch,
       inspectedCommit: null,
       diffFile: null,
-      revisions: bump(s.revisions, "commits", "status", "sync", "branches"),
+      revisions: bump(s.revisions, "commits", "status", "sync", "branches", "tags"),
     }));
   }, []);
 
@@ -54,7 +54,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   // doesn't touch our state — catch up whenever the window regains focus
   // instead of polling on a timer.
   useOnWindowFocus(() => {
-    if (state.repository) invalidate("status", "branches", "sync", "stashes");
+    if (state.repository) invalidate("status", "branches", "sync", "stashes", "tags");
   });
 
   const value = useMemo<SessionApi>(

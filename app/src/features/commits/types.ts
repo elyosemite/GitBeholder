@@ -28,16 +28,8 @@ export interface CommitFileChange {
   deletions: number | null;
 }
 
-export type DiffLineType = "hunk" | "context" | "added" | "removed";
-
-export interface DiffLine {
-  type: DiffLineType;
-  old_line: number | null;
-  new_line: number | null;
-  content: string;
-}
-
 export interface FileDiff {
   binary: boolean;
-  lines: DiffLine[];
+  /** Raw unified diff text (starting at `diff --git`); null for binary files. */
+  patch: string | null;
 }

@@ -27,7 +27,7 @@ function FileRow({
   const ToggleIcon = staged ? Minus : Plus;
 
   return (
-    <div className="group flex items-center gap-icon rounded-md text-row hover:bg-overlay-hover">
+    <div className="group flex items-center gap-icon text-row hover:bg-overlay-hover">
       <span className={"w-3.5 flex-none text-center font-mono font-semibold " + STATUS_STYLES[status]}>
         {status}
       </span>
