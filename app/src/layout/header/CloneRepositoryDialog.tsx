@@ -59,7 +59,7 @@ export function CloneRepositoryDialog({
     const selected = await openFolderDialog({
       directory: true,
       multiple: false,
-      title: "Selecionar pasta de destino",
+      title: "Select destination folder",
     })
     if (typeof selected === "string") setDestination(selected)
   }
@@ -68,17 +68,17 @@ export function CloneRepositoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Clonar repositório remoto</DialogTitle>
+          <DialogTitle>Clone remote repository</DialogTitle>
           <DialogDescription>
-            Informe a URL do repositório remoto e onde a cópia local deve ser criada.
+            Enter the remote repository URL and where the local copy should be created.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="clone-url">URL do repositório</Label>
+          <Label htmlFor="clone-url">Repository URL</Label>
           <Input
             id="clone-url"
-            placeholder="https://github.com/usuario/repositorio.git"
+            placeholder="https://github.com/user/repository.git"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             disabled={isCloning}
@@ -87,11 +87,11 @@ export function CloneRepositoryDialog({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="clone-destination">Pasta de destino</Label>
+          <Label htmlFor="clone-destination">Destination folder</Label>
           <InputGroup>
             <InputGroupInput
               id="clone-destination"
-              placeholder="C:\Users\você\projetos"
+              placeholder="C:\Users\you\projects"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
               disabled={isCloning}
@@ -103,7 +103,7 @@ export function CloneRepositoryDialog({
                 onClick={() => void handleBrowse()}
               >
                 <FolderOpen />
-                Procurar…
+                Browse…
               </InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
@@ -116,7 +116,7 @@ export function CloneRepositoryDialog({
             disabled={!url.trim() || !destination.trim() || isCloning}
             onClick={() => void handleClone()}
           >
-            {isCloning ? "Clonando…" : "Clonar repositório"}
+            {isCloning ? "Cloning…" : "Clone repository"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -38,7 +38,7 @@ function FileRow({
       <button
         type="button"
         onClick={() => onToggleStage(path, staged)}
-        title={staged ? "Mover para Unstaged" : "Mover para Staged"}
+        title={staged ? "Move to Unstaged" : "Move to Staged"}
         className="flex-none rounded-sm p-0.5 text-ink-faint opacity-0 outline-none transition-opacity hover:text-ink focus-visible:opacity-100 group-hover:opacity-100"
       >
         <ToggleIcon aria-hidden="true" size={14} />
@@ -108,7 +108,7 @@ export function ChangesColumn() {
                 ))}
               </div>
             ) : (
-              <PanelEmpty>Nenhuma alteração.</PanelEmpty>
+              <PanelEmpty>No changes.</PanelEmpty>
             )}
           </PanelSection>
 
@@ -126,7 +126,7 @@ export function ChangesColumn() {
                 ))}
               </div>
             ) : (
-              <PanelEmpty>Nada staged.</PanelEmpty>
+              <PanelEmpty>Nothing staged.</PanelEmpty>
             )}
           </PanelSection>
 
@@ -136,7 +136,7 @@ export function ChangesColumn() {
               onChange={(event) => setMessage(event.target.value)}
               disabled={isCommitting}
               rows={3}
-              placeholder="Mensagem do commit…"
+              placeholder="Commit message…"
               className="w-full resize-none rounded-lg border border-line-default bg-surface px-2 py-2 text-row text-ink placeholder:text-ink-faint outline-none disabled:opacity-60"
             />
             {commitError && <p className="mt-1 text-caption text-danger">{commitError}</p>}

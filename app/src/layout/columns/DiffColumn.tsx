@@ -25,7 +25,7 @@ export function DiffColumn() {
         <button
           type="button"
           onClick={closeDiff}
-          title="Fechar diff (Esc)"
+          title="Close diff (Esc)"
           className="flex-none rounded-sm p-1 text-ink-faint hover:bg-overlay-hover hover:text-ink"
         >
           <X aria-hidden="true" size={14} />
@@ -35,7 +35,7 @@ export function DiffColumn() {
       <div className="flex-1 overflow-auto">
         {diff == null ? null : diff.binary || diff.patch == null ? (
           <div className="px-4 py-6 text-center text-caption text-ink-faint">
-            Arquivo binário — sem preview de diff.
+            Binary file — no diff preview.
           </div>
         ) : (
           <PatchDiff patch={diff.patch} options={{ diffStyle: "split" }} className="h-full" />

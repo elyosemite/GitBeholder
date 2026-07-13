@@ -56,7 +56,7 @@ export function OpenLocalRepositoryDialog({
     const selected = await openFolderDialog({
       directory: true,
       multiple: false,
-      title: "Selecionar repositório",
+      title: "Select repository",
     })
     if (typeof selected === "string") setPath(selected)
   }
@@ -65,18 +65,18 @@ export function OpenLocalRepositoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Abrir repositório local</DialogTitle>
+          <DialogTitle>Open local repository</DialogTitle>
           <DialogDescription>
-            Selecione a pasta de um repositório Git já existente na sua máquina.
+            Select the folder of an existing Git repository on your machine.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="open-local-path">Caminho da pasta</Label>
+          <Label htmlFor="open-local-path">Folder path</Label>
           <InputGroup>
             <InputGroupInput
               id="open-local-path"
-              placeholder="C:\Users\você\projetos\meu-repo"
+              placeholder="C:\Users\you\projects\my-repo"
               value={path}
               onChange={(e) => setPath(e.target.value)}
               disabled={isOpening}
@@ -89,7 +89,7 @@ export function OpenLocalRepositoryDialog({
                 onClick={() => void handleBrowse()}
               >
                 <FolderOpen />
-                Procurar…
+                Browse…
               </InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
@@ -102,7 +102,7 @@ export function OpenLocalRepositoryDialog({
             disabled={!path.trim() || isOpening}
             onClick={() => void handleOpen()}
           >
-            {isOpening ? "Abrindo…" : "Abrir repositório"}
+            {isOpening ? "Opening…" : "Open repository"}
           </Button>
         </DialogFooter>
       </DialogContent>

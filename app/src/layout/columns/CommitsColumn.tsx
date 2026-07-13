@@ -67,13 +67,13 @@ function RefBadge({ commitRef, compact }: { commitRef: CommitRef; compact: boole
         <Tag aria-hidden="true" size={10} className="flex-none text-amber-400" />
       )}
       {commitRef.current && (
-        <Check aria-label="branch atual" size={11} className="flex-none text-success" />
+        <Check aria-label="current branch" size={11} className="flex-none text-success" />
       )}
       <span className="truncate text-meta text-ink-secondary" title={commitRef.name}>
         {commitRef.name}
       </span>
       {showLocal && (
-        <Monitor aria-label="branch local" size={11} className="flex-none text-ink-secondary" />
+        <Monitor aria-label="local branch" size={11} className="flex-none text-ink-secondary" />
       )}
       {showPlatform && (
         <PlatformIcon platform={commitRef.platform!} className="flex-none text-ink-secondary" />
@@ -100,14 +100,14 @@ function CommitRow({
   onSelect: () => void;
 }) {
   const hasRefs = commit.refs.length > 0;
-  // Bleeds 2px into the gap-1 (4px) space between rows on either side, so
+  // Bleeds 3px into the gap-[6px] space between rows on either side, so
   // consecutive rows' rails meet in the middle of the gap instead of
   // stopping dead at the row's own edge.
   const railPosition = first
-    ? "top-1/2 -bottom-0.5"
+    ? "top-1/2 -bottom-[3px]"
     : last
-      ? "-top-0.5 bottom-1/2"
-      : "-top-0.5 -bottom-0.5";
+      ? "-top-[3px] bottom-1/2"
+      : "-top-[3px] -bottom-[3px]";
   // Stagger the entrance so the log reads top-to-bottom instead of
   // popping in all at once; caps out so a long list doesn't feel sluggish.
   const delay = Math.min(index, 8) * 40;
@@ -217,7 +217,7 @@ export function CommitsColumn() {
           <div className={TIME_ZONE_WIDTH + " flex-none text-right"}>Timestamp</div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
+        <div className="flex min-h-0 flex-1 flex-col gap-[6px] overflow-y-auto">
           {rows.map((commit, index) => (
             <CommitRow
               key={commit.hash}

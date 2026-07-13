@@ -76,7 +76,7 @@ export function RepositoryBlock() {
             <span className="flex-none text-meta font-medium uppercase tracking-wide text-muted-foreground">
               Repo
             </span>
-            <span className="truncate">{repository?.name ?? "Selecionar…"}</span>
+            <span className="truncate">{repository?.name ?? "Select…"}</span>
           </span>
           <ChevronsUpDown
             aria-hidden="true"
@@ -90,17 +90,17 @@ export function RepositoryBlock() {
             <div className="flex flex-col gap-0.5 p-1">
               <RepositoryActionButton
                 icon={FolderOpen}
-                label="Abrir repositório local…"
+                label="Open local repository…"
                 onClick={() => openDialog("open")}
               />
               <RepositoryActionButton
                 icon={DownloadCloud}
-                label="Clonar repositório remoto…"
+                label="Clone remote repository…"
                 onClick={() => openDialog("clone")}
               />
               <RepositoryActionButton
                 icon={FolderPlus}
-                label="Inicializar novo repositório…"
+                label="Initialize new repository…"
                 onClick={() => openDialog("init")}
               />
             </div>
@@ -109,9 +109,9 @@ export function RepositoryBlock() {
 
             <CommandList>
               <CommandEmpty>
-                {error ? "Erro ao carregar repositórios." : "Nenhum repositório encontrado."}
+                {error ? "Failed to load repositories." : "No repositories found."}
               </CommandEmpty>
-              <CommandGroup heading="Repositórios">
+              <CommandGroup heading="Repositories">
                 {(repositories ?? []).map((repo) => (
                   <CommandItem
                     key={repo.id}

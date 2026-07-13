@@ -63,7 +63,7 @@ export function BranchBlock() {
             <span className="flex-none text-meta font-medium uppercase tracking-wide text-muted-foreground">
               Branch
             </span>
-            <span className="truncate">{branch ?? "Selecionar…"}</span>
+            <span className="truncate">{branch ?? "Select…"}</span>
           </span>
           <ChevronsUpDown
             aria-hidden="true"
@@ -75,7 +75,7 @@ export function BranchBlock() {
             <CommandInput placeholder="Search branch…" />
             <CommandList>
               <CommandEmpty>
-                {loadError ? "Erro ao carregar branches." : "Nenhuma branch encontrada."}
+                {loadError ? "Failed to load branches." : "No branches found."}
               </CommandEmpty>
               <CommandGroup>
                 {(branches ?? []).map((b) => {

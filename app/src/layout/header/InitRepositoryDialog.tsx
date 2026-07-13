@@ -33,17 +33,17 @@ export function InitRepositoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Inicializar novo repositório</DialogTitle>
+          <DialogTitle>Initialize new repository</DialogTitle>
           <DialogDescription>
-            Crie um repositório Git do zero em uma nova pasta local.
+            Create a Git repository from scratch in a new local folder.
           </DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="init-name">Nome do repositório</Label>
+          <Label htmlFor="init-name">Repository name</Label>
           <Input
             id="init-name"
-            placeholder="meu-novo-repositorio"
+            placeholder="my-new-repository"
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus
@@ -51,11 +51,11 @@ export function InitRepositoryDialog({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="init-location">Local</Label>
+          <Label htmlFor="init-location">Location</Label>
           <InputGroup>
             <InputGroupInput
               id="init-location"
-              placeholder="C:\Users\você\projetos"
+              placeholder="C:\Users\you\projects"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
             />
@@ -66,7 +66,7 @@ export function InitRepositoryDialog({
                 onClick={() => {}}
               >
                 <FolderOpen />
-                Procurar…
+                Browse…
               </InputGroupButton>
             </InputGroupAddon>
           </InputGroup>
@@ -78,7 +78,7 @@ export function InitRepositoryDialog({
             disabled={!name.trim() || !location.trim()}
             onClick={() => onOpenChange(false)}
           >
-            Criar repositório
+            Create repository
           </Button>
         </DialogFooter>
       </DialogContent>

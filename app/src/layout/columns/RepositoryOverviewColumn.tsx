@@ -116,7 +116,7 @@ function BranchRow({
       </span>
       {branch.current && (
         <Badge variant="outline" className="ml-auto h-4 flex-none px-1.5 text-micro text-ink-faint">
-          atual
+          current
         </Badge>
       )}
     </button>
@@ -196,7 +196,7 @@ export function RepositoryOverviewColumn() {
       </div>
 
       <Accordion defaultValue={["branches"]}>
-        <Section value="integrations" title="Integrações" count={INTEGRATIONS.length}>
+        <Section value="integrations" title="Integrations" count={INTEGRATIONS.length}>
           {INTEGRATIONS.map(({ name, connected }, index) => (
             <div
               key={name}
@@ -209,10 +209,10 @@ export function RepositoryOverviewColumn() {
               <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">{name}</span>
               {connected ? (
                 <Badge variant="outline" className="h-4 flex-none px-1.5 text-micro text-success">
-                  Conectado
+                  Connected
                 </Badge>
               ) : (
-                <span className="flex-none text-meta text-ink-faint">Não conectado</span>
+                <span className="flex-none text-meta text-ink-faint">Not connected</span>
               )}
             </div>
           ))}
@@ -235,7 +235,7 @@ export function RepositoryOverviewColumn() {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-row text-ink">{pr.title}</div>
                   <div className="text-meta text-ink-faint">
-                    #{pr.number} por {pr.author}
+                    #{pr.number} by {pr.author}
                   </div>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export function RepositoryOverviewColumn() {
                 <AvatarFallback className="text-micro font-semibold">{initials(team.name)}</AvatarFallback>
               </Avatar>
               <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">{team.name}</span>
-              <span className="flex-none text-meta text-ink-faint">{team.members} membros</span>
+              <span className="flex-none text-meta text-ink-faint">{team.members} members</span>
             </div>
           ))}
         </Section>
@@ -328,7 +328,7 @@ export function RepositoryOverviewColumn() {
                   <span className="font-mono text-caption text-ink-faint">stash@{"{"}{stash.index}{"}"}</span>{" "}
                   {stash.message}
                 </div>
-                <div className="truncate text-meta text-ink-faint">em {stash.branch}</div>
+                <div className="truncate text-meta text-ink-faint">on {stash.branch}</div>
               </div>
             </div>
           ))}
@@ -337,7 +337,7 @@ export function RepositoryOverviewColumn() {
         <Section value="inspect" title="Inspect" count={commitFileList.length}>
           {inspectedCommit === null ? (
             <div className="text-caption text-ink-faint">
-              Clique num commit para ver os arquivos alterados.
+              Click a commit to see its changed files.
             </div>
           ) : commitFileList.length > 0 ? (
             commitFileList.map((file, index) => (
@@ -349,7 +349,7 @@ export function RepositoryOverviewColumn() {
               />
             ))
           ) : (
-            <div className="text-caption text-ink-faint">Nenhum arquivo alterado.</div>
+            <div className="text-caption text-ink-faint">No files changed.</div>
           )}
         </Section>
       </Accordion>
