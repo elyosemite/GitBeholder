@@ -44,6 +44,11 @@ defmodule GitBeholder.GitDiff do
   The caller (the `@pierre/diffs` frontend library) parses the patch text
   itself, including for side-by-side rendering.
 
+  Uses `-m --first-parent` so merge commits diff against their first parent
+  instead of git's default combined-diff history simplification, which
+  silently omits the diff entirely whenever the path is identical to *any*
+  one parent — the common case for most files in a clean merge.
+
   Returns:
     * `{:ok, %{binary: false, patch: String.t()}}` — full `git show` output,
       starting at the `diff --git` header
@@ -51,7 +56,7 @@ defmodule GitBeholder.GitDiff do
     * `{:error, reason}`
   """
   def file_diff(repo_path, hash, path) do
-    case System.cmd("git", ["show", "--format=", hash, "--", path],
+    case System.cmd("git", ["show", "--format=", "-m", "--first-parent", hash, "--", path],
            cd: repo_path,
            stderr_to_stdout: true
          ) do

@@ -138,5 +138,35 @@ defmodule GitBeholder.GitDiffTest do
 
       assert {:error, _reason} = GitDiff.file_diff(repo_path, "deadbeef", "file.txt")
     end
+
+    test "returns the first-parent patch for a file unchanged by the merge itself", %{
+      repo_path: repo_path
+    } do
+      File.write!(Path.join(repo_path, "file.txt"), "base\n")
+      commit(repo_path, "base")
+
+      System.cmd("git", ["checkout", "-q", "-b", "feature"], cd: repo_path)
+      File.write!(Path.join(repo_path, "file.txt"), "feature change\n")
+      commit(repo_path, "feature change")
+
+      System.cmd("git", ["checkout", "-q", "-"], cd: repo_path)
+      commit(repo_path, "unrelated commit on main")
+
+      System.cmd("git", ["checkout", "-q", "feature"], cd: repo_path)
+      System.cmd("git", ["merge", "-q", "--no-ff", "-m", "merge", "-"], cd: repo_path)
+
+      {hash_output, 0} = System.cmd("git", ["rev-parse", "HEAD"], cd: repo_path)
+      merge_hash = String.trim(hash_output)
+
+      # file.txt equals the feature-branch parent exactly (no conflict), so
+      # git's default merge-diff simplification shows nothing for it — this
+      # is the case that used to produce an empty patch.
+      assert {:ok, %{binary: false, patch: patch}} =
+               GitDiff.file_diff(repo_path, merge_hash, "file.txt")
+
+      assert patch =~ "diff --git a/file.txt b/file.txt"
+      assert patch =~ "-base"
+      assert patch =~ "+feature change"
+    end
   end
 end
