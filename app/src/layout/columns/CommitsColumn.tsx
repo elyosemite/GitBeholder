@@ -156,9 +156,9 @@ function CommitRow({
         className="flex min-w-0 flex-1 items-baseline gap-icon px-row-x"
         title={commit.description ? `${commit.message}\n\n${commit.description}` : commit.message}
       >
-        <span className="flex-none text-row text-ink">{commit.message}</span>
+        <span className="min-w-0 flex-[3] truncate text-row text-ink">{commit.message}</span>
         {commit.description && (
-          <span className="min-w-0 flex-1 truncate text-row text-ink-faint">{commit.description}</span>
+          <span className="min-w-0 flex-[2] truncate text-row text-ink-faint">{commit.description}</span>
         )}
       </div>
 
