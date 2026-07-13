@@ -100,6 +100,12 @@
     /* overlays */
     --color-overlay-hover: rgba(15, 23, 42, 0.04);
 
+    /* @pierre/diffs theme bridge — light-mode half of the pair in the
+       shadcn :root block below; keep in sync with --color-canvas/--color-ink
+       above. */
+    --diffs-light-bg: #f8fafc;
+    --diffs-light: #0f172a;
+
     color-scheme: light;
   }
 }
@@ -244,4 +250,14 @@
   --sidebar-accent-foreground: var(--color-ink);
   --sidebar-border: var(--color-line-subtle);
   --sidebar-ring: var(--color-accent);
+
+  /* @pierre/diffs theme bridge (DiffColumn's <PatchDiff>) — its `:host`
+     resolves these through CSS `light-dark()`, so both slots must hold
+     literal, always-on values rather than `var(--color-canvas)` (which
+     only ever holds "whichever mode is active right now"). Every other
+     diffs background (context, gutter, separator) is `color-mix`'d from
+     this pair, so keep these in sync with --color-canvas/--color-ink's
+     dark-mode hex in @theme static above. */
+  --diffs-dark-bg: #0f172a;
+  --diffs-dark: #f8fafc;
 }
