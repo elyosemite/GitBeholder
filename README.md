@@ -8,7 +8,7 @@
 
 GitBeholder is a modern Git backend designed to simplify and enhance your workflow. Built with Elixir and Phoenix, paired with a desktop app (`app/`, Tauri + React + TypeScript) living in this same repository, it allows users to perform key Git operations like `commits`, `pushes`, viewing `diffs`, exploring `commit history`, and more — all through a user-friendly interface.
 
-> **Status:** The desktop app is early and being built incrementally — right now it can list workspaces/repositories and show a repository's commit log. Everything else is still consumed as a JSON API directly (see [API Documentation](#api-documentation)).
+> **Status:** The desktop app is being built incrementally. It now covers the daily Git loop end-to-end — browsing workspaces/repositories, staging, committing, pushing/pulling, branch switching, stashes, tags, and diffing — through a resizable, zoomable UI. Anything not yet wired into the UI is still reachable as a JSON API directly (see [API Documentation](#api-documentation)).
 
 [API Docs](docs/Getting%20Started.md) · [Architecture Decision Records](docs/architecture-decision-records) · [DeepWiki](https://deepwiki.com/elyosemite/GitBeholder) · [Roadmap](#roadmap) · [Contributing](#contributing)
 
@@ -27,12 +27,16 @@ GitBeholder is a modern Git backend designed to simplify and enhance your workfl
 
 ## Highlights
 
-- **Visual Git history navigation** — walk commit history without leaving your editor.
-- **Commit management** — create, view, and inspect commits (`git show fd2ec6d62ef7e8c1c2ecd437b1a305439815b372`).
-- **Push to remote repositories** — send local commits upstream via the API.
-- **Diff viewer** — inline and side-by-side file diffs (`git diff`).
+- **Visual Git history navigation** — walk commit history without leaving the app, including merge commits (diffed against their first parent).
+- **Commit management** — stage/unstage, write a message, and create commits from the UI.
+- **Push & pull** — send local commits upstream and bring remote changes down, with push status tracking.
+- **Branch management** — list and switch branches.
+- **Stashes & tags** — browse stashes and tags for the current repository.
+- **Diff viewer** — inline file diffs per commit, with a resizable changes panel.
 - **File change tracking** — see modified, untracked, and deleted files at a glance.
-- **Interactive staging** — stage and unstage files through simple HTTP calls.
+- **Multi-workspace/repository browsing** — organize repositories into workspaces and folders; clone, open-local, or init a repo from the UI.
+- **Remote platform detection** — recognizes GitHub, GitLab, Bitbucket, and Azure DevOps remotes and shows the matching brand icon.
+- **Zoomable UI + status bar** — adjustable zoom level and a footer showing the active repository.
 
 ## Tech Stack
 
@@ -123,23 +127,29 @@ Full endpoint reference with request/response examples: [`docs/Getting Started.m
 
 ```
 lib/
-├── git_beholder/          # Core domain logic (Git operations via CLI, Workspace/Folder/Repository)
+├── git_beholder/          # Core domain logic (one module per Git concern, via CLI)
 │   ├── git_commit.ex
+│   ├── git_diff.ex
 │   ├── git_log.ex
-│   ├── git_status.ex
-│   ├── repo.ex            # Ecto.Repo (SQLite)
-│   └── repositories.ex    # Workspace/Folder/Repository context
+│   ├── git_branches.ex
+│   ├── git_push.ex / git_pull.ex
+│   ├── git_staging.ex / git_stash.ex / git_tags.ex / git_status.ex / git_refs.ex
+│   ├── repo.ex             # Ecto.Repo (SQLite)
+│   └── repositories/       # Workspace/Folder/Repository schemas + context
 └── git_beholder_web/       # Phoenix web layer
-    ├── controllers/        # JSON API controllers
+    ├── controllers/        # One JSON controller per Git module
     ├── plugs/              # FetchRepository — resolves + validates repository paths
     ├── endpoint.ex
     └── router.ex
 
-app/                       # Desktop app (Tauri + React + TypeScript)
+app/                        # Desktop app (Tauri + React + TypeScript)
 ├── src/
-│   ├── api/                # Fetch client for the GitBeholder API
-│   └── components/
-└── src-tauri/               # Rust/Tauri shell
+│   ├── features/           # One folder per domain (branches, commits, push, pull,
+│   │                       #  staging, stashes, tags, repositories, session), each
+│   │                       #  with api.ts, types.ts, hooks/
+│   ├── layout/              # Header, footer, resizable columns, AppShell
+│   └── components/ui/       # shadcn/ui primitives (Tailwind v4)
+└── src-tauri/               # Rust/Tauri shell (thin — no business logic)
 ```
 
 ## Architecture Decision Records
@@ -148,16 +158,16 @@ Design decisions behind the project are documented in [`docs/architecture-decisi
 
 ## Roadmap
 
-- Commit history viewer with author, date, and message
-- Commit details view (`git show fd2ec6d62ef7e8c1c2ecd437b1a305439815b372`)
-- Visual file diff viewer (inline & side-by-side)
-- Interactive staging area (stage/unstage files & hunks)
-- Commit creation via UI (with message input)
-- Push and pull to/from remote repositories
-- Branch management (create, rename, switch, delete)
-- Tag creation and visualization
+- Side-by-side diff view (currently inline only)
+- Interactive hunk-level staging (whole-file stage/unstage exists today)
+- Branch creation, rename, and delete (list & switch exist today)
+- Tag creation (browsing exists today)
 - Merge & rebase interface with conflict resolution
 - Multi-repository dashboard
+- Work item integrations (Azure DevOps, GitHub, GitLab, Jira, Linear, Bitbucket) — auto-close linked work items on merge
+- Editor integrations (VS Code, JetBrains)
+- Bring-your-own-LLM AI analysis and commit assistance
+- AI agent management
 
 ## Contributing
 
