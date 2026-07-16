@@ -8,6 +8,32 @@ defmodule GitBeholder.Integrations do
   alias GitBeholder.Repo
   alias GitBeholder.Integrations.Integration
 
+  @provider_modules %{
+    "azure_devops" => GitBeholder.Integrations.AzureDevOps
+  }
+
+  @doc """
+  Tests a would-be connection's credentials against the provider named
+  in `attrs` (`provider`, `config`, `credentials`, ...) without
+  persisting anything — backs the "Test connection" action, which runs
+  before Save.
+
+  Returns:
+    * `{:ok, list()}` — e.g. the provider's work item types
+    * `{:error, :unsupported_provider}`
+    * `{:error, term()}` — whatever the provider's `list_types/1` returns
+  """
+  def test_connection(attrs) do
+    with {:ok, provider_module} <- provider_module(fetch(attrs, :provider)) do
+      connection = %{
+        config: fetch(attrs, :config) || %{},
+        credentials: fetch(attrs, :credentials)
+      }
+
+      provider_module.list_types(connection)
+    end
+  end
+
   @doc """
   Connects a Repository to a work item provider, persisting `attrs`
   (`provider`, `config`, `credentials`, ...). The credential is
@@ -62,5 +88,18 @@ defmodule GitBeholder.Integrations do
     else
       Map.put(attrs, "repository_id", repository_id)
     end
+  end
+
+  defp provider_module(provider) do
+    case Map.fetch(@provider_modules, provider) do
+      {:ok, module} -> {:ok, module}
+      :error -> {:error, :unsupported_provider}
+    end
+  end
+
+  # Reads `key` from `attrs` regardless of whether the caller used atom
+  # keys (internal/test callers) or string keys (Phoenix params).
+  defp fetch(attrs, key) do
+    Map.get(attrs, key) || Map.get(attrs, Atom.to_string(key))
   end
 end
