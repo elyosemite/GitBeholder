@@ -50,6 +50,11 @@ config :git_beholder, GitBeholderWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :git_beholder, dev_routes: true
 
+# Used to encrypt integration credentials (e.g. Azure DevOps PATs) at rest.
+# Dev-only value — production reads INTEGRATIONS_ENCRYPTION_KEY at runtime.
+config :git_beholder, :integrations_encryption_key,
+  "dev-only-integrations-encryption-key-do-not-use-in-prod"
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
 

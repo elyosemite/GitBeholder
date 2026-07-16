@@ -15,6 +15,11 @@ config :git_beholder, GitBeholderWeb.Endpoint,
 # In test we don't send emails
 config :git_beholder, GitBeholder.Mailer, adapter: Swoosh.Adapters.Test
 
+# Used to encrypt integration credentials (e.g. Azure DevOps PATs) at rest.
+# Test-only value — production reads INTEGRATIONS_ENCRYPTION_KEY at runtime.
+config :git_beholder, :integrations_encryption_key,
+  "test-only-integrations-encryption-key-do-not-use-in-prod"
+
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 

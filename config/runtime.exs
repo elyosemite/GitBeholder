@@ -39,6 +39,20 @@ if config_env() == :prod do
       You can generate one by calling: mix phx.gen.secret
       """
 
+  # Used to encrypt integration credentials (e.g. Azure DevOps PATs) at rest.
+  # A default value is used in config/dev.exs and config/test.exs but you
+  # want to use a different value for prod and you most likely don't want
+  # to check this value into version control, so we use an environment
+  # variable instead.
+  integrations_encryption_key =
+    System.get_env("INTEGRATIONS_ENCRYPTION_KEY") ||
+      raise """
+      environment variable INTEGRATIONS_ENCRYPTION_KEY is missing.
+      You can generate one by calling: mix phx.gen.secret
+      """
+
+  config :git_beholder, :integrations_encryption_key, integrations_encryption_key
+
   port = String.to_integer(System.get_env("PORT") || "4000")
 
   config :git_beholder, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
