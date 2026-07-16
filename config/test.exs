@@ -20,6 +20,10 @@ config :git_beholder, GitBeholder.Mailer, adapter: Swoosh.Adapters.Test
 config :git_beholder, :integrations_encryption_key,
   "test-only-integrations-encryption-key-do-not-use-in-prod"
 
+# Swap the real Finch-backed HTTP client for a Mox mock in tests, so
+# provider modules (e.g. AzureDevOps) never make real network calls.
+config :git_beholder, :integrations_http_client, GitBeholder.Integrations.HTTPClientMock
+
 # Disable swoosh api client as it is only required for production adapters
 config :swoosh, :api_client, false
 
