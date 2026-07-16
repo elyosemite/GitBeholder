@@ -7,7 +7,8 @@ export type DataScope =
   | "stashes"
   | "tags"
   | "sync"
-  | "repositories";
+  | "repositories"
+  | "integrations";
 
 export interface SessionState {
   repository: Repository | null;
