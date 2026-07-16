@@ -41,6 +41,11 @@ defmodule GitBeholderWeb.Router do
     post "/pull", GitPullController, :create
     get "/stashes", GitStashController, :index
     get "/tags", GitTagController, :index
+
+    post "/integrations/azure-devops", AzureDevOpsIntegrationController, :create
+    post "/integrations/azure-devops/test", AzureDevOpsIntegrationController, :test
+    get "/integrations/azure-devops", AzureDevOpsIntegrationController, :show
+    delete "/integrations/azure-devops", AzureDevOpsIntegrationController, :delete
   end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
