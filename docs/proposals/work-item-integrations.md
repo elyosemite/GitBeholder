@@ -1,98 +1,169 @@
-# Work Item Integrations — Requirements
+# Integrações com Work Items — Requisitos
 
-Status: draft, pending breakdown via `/to-issues` and `/to-prd`.
+Status: rascunho, pendente de detalhamento via `/to-issues` e `/to-prd`.
 
-Goal: let GitBeholder connect to external work item trackers (Azure DevOps first,
-then GitHub/GitLab/Jira/Linear/Bitbucket), link commits to work items, and
-eventually auto-close linked work items when a merge happens in the app. Editor
-integrations (VS Code, JetBrains) and AI/LLM integrations (bring-your-own-LLM
-analysis and commit assistance, AI agent management) are related future work
-tracked separately but share the same "integrations" surface.
+Objetivo: permitir que o GitBeholder se conecte a rastreadores de work items
+externos (Azure DevOps primeiro, depois GitHub/GitLab/Jira/Linear/Bitbucket),
+vincule commits a work items e, eventualmente, feche automaticamente work
+items vinculados quando um merge acontecer no app. Integrações com editores
+(VS Code, JetBrains) e integrações de IA/LLM (análise e assistência de commit
+com LLM próprio, gerenciamento de agentes de IA) são trabalho futuro
+relacionado, rastreado separadamente, mas compartilham a mesma superfície de
+"integrações".
 
-## Decisions locked for v1
+## Modelo de domínio (conceitos e relacionamentos)
 
-- **Auth**: Personal Access Token (PAT) only. No OAuth in v1 — avoids registering
-  a Microsoft Entra ID app and handling Tauri deep-link redirects for a first
-  integration.
-- **Commit ↔ work item linking**: explicit visual picker in the commit UI (not
-  the `AB#123` message-convention shortcut). Better discoverability; user
-  doesn't need to know IDs.
-- **Auto-close trigger**: deferred until GitBeholder has a merge feature.
-  v1 ships connection + search + linking, with the auto-close rule visible
-  but inactive ("activates once merge is available").
+Termos genéricos usados nesta proposta, independentes de provider — cada
+provider (Azure DevOps, Jira, GitHub, GitLab, Linear) mapeia esses conceitos
+de forma diferente; ver tabela de mapeamento abaixo.
 
-## Cross-provider foundation (applies to every future provider)
+- **Organization** — tenant do cliente no provider (ex: "Google"). Tem muitos
+  `Project`.
+- **Project** — subdivisão de trabalho dentro da Organization (ex: "DevOps",
+  "Backend", "Database Admin"). Pertence a uma `Organization`. Tem muitos
+  `Team` e muitos `Item`.
+  - Nome escolhido deliberadamente para não colidir com o `Workspace` que já
+    existe no GitBeholder (`lib/git_beholder/repositories/workspace.ex`), que
+    agrupa repositórios locais e não tem relação com este domínio.
+- **Team** — agrupa commiters/maintainers. Pertence a um `Project`. Tem muitos
+  `Board` e muitos membros.
+- **Board** — view/configuração Kanban, pertence a um `Team`. Não é dono
+  direto dos items — é uma visão filtrada (ex: por Area Path no Azure
+  DevOps). A relação Item↔Board é derivada, não uma FK fixa.
+- **Item** — termo genérico para Epic/Feature/User Story/Task/Bug/Issue/Card,
+  independente do provider. Pertence ao `Project`, não ao `Board`.
+- **Pull Request** (Merge Request no GitLab) — representa um merge commit
+  depois de passar por revisão. É entidade própria, separada de `Item`,
+  porque rastreia marcos importantes na trajetória do desenvolvimento — não
+  é só mais um tipo de item genérico. Pertence ao `Project`, no mesmo nível
+  de `Item`. Quando mergeada, corresponde a um merge commit no histórico git
+  local (`merge_commit_sha` faz essa ponte com o `Commit` já existente no
+  GitBeholder).
+  - Alguns Boards rastreiam Pull Requests junto com Items, outros não — isso
+    é característica de exibição/configuração do Board, não uma relação de
+    schema.
+  - O vínculo Item↔Pull Request (equivalente ao "linked work items" nativo
+    do Azure DevOps) fica só definido conceitualmente por agora — construímos
+    a tabela de link e a UI apenas quando for necessário, seguindo o mesmo
+    padrão da regra de auto-close (definida, mas inativa). Foco imediato é
+    o caso Azure DevOps.
+- **Commit** — conceito já existente no GitBeholder. O autor é identificado
+  por nome/e-mail do git, o que exige uma resolução de identidade separada
+  para mapear para um membro de `Team` no provider (não é 1:1 direto).
 
-- Internal contract: a `WorkItemProvider` behaviour in Elixir with
+Mapeamento de hierarquia por provider (referência para quando o modelo
+generalizar além do Azure DevOps):
+
+| Termo genérico | Azure DevOps | Jira | Linear | GitHub | GitLab |
+|---|---|---|---|---|---|
+| Organization | Organization | Site | Workspace (nome deles) | Organization | Group (topo) |
+| Project | Project | Project | Team | — (não existe) | Subgroup/Project |
+| Team | Team (dentro do Project) | — (não é 1ª classe) | — (Team já é o "Project") | Team | — |
+| Board | Board (por Team; view filtrada, não container) | Board (atado a 1 Project) | Cycle/view | Projects (beta) | Issue Board |
+
+Pontos em aberto, a resolver antes de generalizar além do Azure DevOps:
+
+1. **Board sem Team nativo** — Jira, GitHub e GitLab não têm "Team dono do
+   Board" como o Azure DevOps. `Board.team_id` pode precisar ficar opcional,
+   com um caminho alternativo (`Board` ligado direto ao `Project`) para
+   provedores sem Team de primeira classe.
+2. **Resolução de identidade** (autor do commit → usuário no provider →
+   membro de Team) — ainda não modelada; é o próximo passo depois de fechar
+   Item/Board/Team/Project/Organization.
+
+Este modelo detalha, para efeitos de modelagem de dados, o que a seção
+Arquitetura abaixo ainda trata como campos livres de `config` (Org URL +
+Project). A reconciliação entre este modelo de domínio e as migrations da
+seção Arquitetura é trabalho pendente, não decidido nesta proposta.
+
+## Decisões travadas para v1
+
+- **Autenticação**: Personal Access Token (PAT) apenas. Sem OAuth na v1 —
+  evita registrar um app no Microsoft Entra ID e lidar com deep-link
+  redirects do Tauri para a primeira integração.
+- **Vínculo commit ↔ work item**: seletor visual explícito na UI de commit
+  (não o atalho de convenção `AB#123` na mensagem). Melhor descoberta;
+  usuário não precisa saber os IDs.
+- **Gatilho de auto-close**: adiado até o GitBeholder ter uma feature de
+  merge. A v1 entrega conexão + busca + vínculo, com a regra de auto-close
+  visível porém inativa ("ativa quando o merge estiver disponível").
+
+## Fundação cross-provider (aplica-se a todo provider futuro)
+
+- Contrato interno: um behaviour `WorkItemProvider` em Elixir com
   `list_types/1`, `search_items/2`, `get_item/2`, `transition_item/3`,
-  `link_commit/3`. Azure DevOps, GitHub Issues, Jira, Linear, etc. all
-  implement this same interface — this is what lets future providers plug in
-  without reopening the UI.
-- An integration connection is scoped **per repository**, not per workspace —
-  each repo can point at a different org/project.
-- The auto-close rule is **configurable per repository**: provider enabled +
-  target state (e.g. "Closed" vs "Resolved" — teams differ) + trigger event.
-  We persist this rule now even though it stays inactive until merge exists.
-- Credentials (PAT for now) are stored encrypted and never sent back to the
-  frontend after saving — only a "connected" indicator is exposed.
+  `link_commit/3`. Azure DevOps, GitHub Issues, Jira, Linear, etc. todos
+  implementam essa mesma interface — é isso que permite plugar providers
+  futuros sem reabrir a UI.
+- Uma conexão de integração é escopada **por repositório**, não por
+  workspace — cada repo pode apontar para uma org/project diferente.
+- A regra de auto-close é **configurável por repositório**: provider
+  habilitado + estado alvo (ex: "Closed" vs "Resolved" — times diferem) +
+  evento gatilho. Persistimos essa regra agora, mesmo que fique inativa até
+  o merge existir.
+- Credenciais (PAT por enquanto) são armazenadas criptografadas e nunca
+  enviadas de volta ao frontend após salvar — só um indicador "conectado" é
+  exposto.
 
-## Azure DevOps v1 — functional requirements
+## Azure DevOps v1 — requisitos funcionais
 
-- **Connect**: Org URL + Project + PAT. A "Test connection" action validates
-  via `GET _apis/wit/workitemtypes` before saving.
-- **Work item types per process**: fetched dynamically (Epic/Feature/User
-  Story/Task/Bug vary by process template — must not be hardcoded).
-- **Search/list**: via WIQL, with basic filters (assigned to me, state,
-  iteration/sprint) feeding the picker.
-- **Link commit ↔ work item**: saving a link stores it locally *and* calls the
-  Azure DevOps work item relations API (`ArtifactLink`) so the commit also
-  shows up on the Azure Boards side — without this, the link is invisible to
-  anyone who only uses Azure DevOps.
-- **State transition** (built now, only triggered once merge exists): `PATCH`
-  the work item to the configured state + add a comment referencing the
-  commit/branch.
-- **Explicit error handling**: invalid/expired PAT, work item not found, state
-  transition rejected by process rules (not every state allows a direct jump
-  to "Closed") — always surfaced with an actionable message, never a silent
-  failure.
+- **Conectar**: Org URL + Project + PAT. Uma ação "Test connection" valida
+  via `GET _apis/wit/workitemtypes` antes de salvar.
+- **Tipos de work item por processo**: buscados dinamicamente (Epic/Feature/
+  User Story/Task/Bug variam por template de processo — não podem ser fixos
+  no código).
+- **Busca/listagem**: via WIQL, com filtros básicos (atribuído a mim,
+  estado, iteration/sprint) alimentando o seletor.
+- **Vínculo commit ↔ work item**: salvar um vínculo grava localmente *e*
+  chama a API de relations de work item do Azure DevOps (`ArtifactLink`),
+  para que o commit também apareça no lado do Azure Boards — sem isso, o
+  vínculo fica invisível para quem só usa o Azure DevOps.
+- **Transição de estado** (construída agora, só disparada quando o merge
+  existir): `PATCH` no work item para o estado configurado + adiciona um
+  comentário referenciando o commit/branch.
+- **Tratamento de erro explícito**: PAT inválido/expirado, work item não
+  encontrado, transição de estado rejeitada pelas regras do processo (nem
+  todo estado permite pulo direto para "Closed") — sempre exposto com
+  mensagem acionável, nunca falha silenciosa.
 
-## Architecture (follows the existing module → controller → route pattern)
+## Arquitetura (segue o padrão existente módulo → controller → rota)
 
 - `lib/git_beholder/integrations/` (context) +
   `lib/git_beholder/integrations/azure_devops.ex`
-- New migrations:
-  - `integrations` table: `repository_id`, `provider`, `config`, encrypted
-    credentials, `enabled`
-  - `work_item_links` table: `commit_sha`, `repository_id`, `provider`,
-    `external_id`, `type`, cached `title`, `url`
-- Routes under
+- Novas migrations:
+  - tabela `integrations`: `repository_id`, `provider`, `config`, credenciais
+    criptografadas, `enabled`
+  - tabela `work_item_links`: `commit_sha`, `repository_id`, `provider`,
+    `external_id`, `type`, `title` em cache, `url`
+- Rotas em
   `/api/v1/workspaces/:workspace_id/repositories/:repository_id/integrations/azure-devops/...`
-- Frontend: `app/src/features/integrations/` mirroring the existing feature
-  folders (`api.ts`, `types.ts`, `hooks/`)
+- Frontend: `app/src/features/integrations/` espelhando as pastas de feature
+  já existentes (`api.ts`, `types.ts`, `hooks/`)
 
-## UI requirements
+## Requisitos de UI
 
-1. **Integrations panel** — new destination in repository settings (no
-   settings screen exists yet; this would be the first one). Lists providers
-   using the brand icons that already exist (`PlatformIcon`), each showing
-   connected/disconnected state.
-2. **"Connect Azure DevOps" dialog** — follows the pattern of existing dialogs
-   (`CloneRepositoryDialog`, etc.): Org URL / Project / PAT (masked) fields,
-   "Test connection" button, Save.
-3. **Auto-close rule** — inside the same panel: a "Close work item on merge"
-   toggle + target-state select. Visible but with a note: "activates once
-   merge is available".
-4. **Work item picker** — a searchable combobox reusing `cmdk`, attached to the
-   commit creation panel (`ChangesColumn`/staging area), with an icon per type
-   (Epic/Feature/User Story/Task/Bug), ID, and title.
-5. **Link badge** — in the commit log (`CommitsColumn`) and commit detail, a
-   small chip like "AB#123 · User Story", clickable to open in the browser.
-6. **Error feedback** — toasts for connection failure, invalid token, rejected
-   state transition.
+1. **Painel de integrações** — novo destino nas configurações do repositório
+   (ainda não existe tela de configurações; esta seria a primeira). Lista os
+   providers usando os ícones de marca já existentes (`PlatformIcon`), cada
+   um mostrando estado conectado/desconectado.
+2. **Diálogo "Connect Azure DevOps"** — segue o padrão dos diálogos
+   existentes (`CloneRepositoryDialog`, etc.): campos Org URL / Project / PAT
+   (mascarado), botão "Test connection", Save.
+3. **Regra de auto-close** — dentro do mesmo painel: um toggle "Close work
+   item on merge" + select de estado alvo. Visível porém com uma nota:
+   "ativa quando o merge estiver disponível".
+4. **Seletor de work item** — um combobox pesquisável reaproveitando `cmdk`,
+   anexado ao painel de criação de commit (`ChangesColumn`/staging area),
+   com um ícone por tipo (Epic/Feature/User Story/Task/Bug), ID e título.
+5. **Badge de vínculo** — no log de commits (`CommitsColumn`) e no detalhe do
+   commit, um chip pequeno tipo "AB#123 · User Story", clicável para abrir
+   no navegador.
+6. **Feedback de erro** — toasts para falha de conexão, token inválido,
+   transição de estado rejeitada.
 
-## Explicitly out of scope for v1
+## Explicitamente fora de escopo para v1
 
-OAuth, automatic triggering (waits on merge), other providers (GitHub, GitLab,
-Jira, Linear, Bitbucket), editor integrations (VS Code, JetBrains), and the
-LLM/AI-agent integrations. All of these reuse the foundation above, but land
-after the Azure DevOps integration validates the pattern.
+OAuth, disparo automático (aguarda merge), outros providers (GitHub, GitLab,
+Jira, Linear, Bitbucket), integrações de editor (VS Code, JetBrains), e as
+integrações de LLM/agente de IA. Todos esses reaproveitam a fundação acima,
+mas chegam depois que a integração com Azure DevOps validar o padrão.
