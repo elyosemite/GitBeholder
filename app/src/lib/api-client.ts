@@ -17,5 +17,7 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     throw new Error(`GitBeholder API error ${response.status}: ${body}`);
   }
 
+  if (response.status === 204) return undefined as T;
+
   return response.json() as Promise<T>;
 }
