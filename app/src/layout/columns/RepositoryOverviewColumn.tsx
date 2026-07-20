@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/accordion"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
+import { PlatformIcon } from "@/components/icons/brand-icons"
 import {
   INTEGRATIONS,
   ISSUES,
@@ -31,8 +32,10 @@ import { useBranches, useCheckoutBranch, type Branch } from "@/features/branches
 import { useStashes } from "@/features/stashes"
 import { useTags } from "@/features/tags"
 import { useCommitFiles, type CommitFileChange } from "@/features/commits"
+import { useAzureDevOpsIntegration, useDisconnectAzureDevOps } from "@/features/integrations"
 import { useSession } from "@/features/session"
 import { splitPath } from "@/lib/paths"
+import { ConnectAzureDevOpsDialog } from "./ConnectAzureDevOpsDialog"
 
 function initials(name: string) {
   return name
@@ -162,6 +165,25 @@ export function RepositoryOverviewColumn() {
   const [checkingOutName, setCheckingOutName] = useState<string | null>(null)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
+  const { data: azureDevOpsIntegration } = useAzureDevOpsIntegration()
+  const disconnectAzureDevOps = useDisconnectAzureDevOps()
+  const [isAzureDialogOpen, setIsAzureDialogOpen] = useState(false)
+  const [isDisconnecting, setIsDisconnecting] = useState(false)
+  const [integrationError, setIntegrationError] = useState<string | null>(null)
+  const otherIntegrations = INTEGRATIONS.filter(({ name }) => name !== "Azure DevOps")
+
+  const handleDisconnectAzureDevOps = async () => {
+    setIsDisconnecting(true)
+    setIntegrationError(null)
+    try {
+      await disconnectAzureDevOps()
+    } catch (err) {
+      setIntegrationError(String(err))
+    } finally {
+      setIsDisconnecting(false)
+    }
+  }
+
   const { data: stashes } = useStashes()
   const stashList = stashes ?? []
 
@@ -197,10 +219,41 @@ export function RepositoryOverviewColumn() {
 
       <Accordion defaultValue={["branches"]}>
         <Section value="integrations" title="Integrations" count={INTEGRATIONS.length}>
-          {INTEGRATIONS.map(({ name, connected }, index) => (
+          <div
+            style={staggerStyle(0)}
+            className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+          >
+            <PlatformIcon platform="azure-devops" size={14} className="flex-none text-ink-secondary" />
+            <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">Azure DevOps</span>
+            {azureDevOpsIntegration ? (
+              <>
+                <Badge variant="outline" className="h-4 flex-none px-1.5 text-micro text-success">
+                  Connected
+                </Badge>
+                <button
+                  type="button"
+                  disabled={isDisconnecting}
+                  onClick={() => void handleDisconnectAzureDevOps()}
+                  className="flex-none text-meta text-ink-faint hover:text-danger disabled:pointer-events-none disabled:opacity-60"
+                >
+                  {isDisconnecting ? "Disconnecting…" : "Disconnect"}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsAzureDialogOpen(true)}
+                className="flex-none text-meta text-ink-faint hover:text-ink-secondary"
+              >
+                Connect…
+              </button>
+            )}
+          </div>
+
+          {otherIntegrations.map(({ name, connected }, index) => (
             <div
               key={name}
-              style={staggerStyle(index)}
+              style={staggerStyle(index + 1)}
               className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
             >
               <Avatar size="sm">
@@ -359,6 +412,14 @@ export function RepositoryOverviewColumn() {
           {checkoutError}
         </div>
       )}
+
+      {integrationError && (
+        <div className="border-t border-line-subtle px-panel-x py-2 text-caption text-danger">
+          {integrationError}
+        </div>
+      )}
+
+      <ConnectAzureDevOpsDialog open={isAzureDialogOpen} onOpenChange={setIsAzureDialogOpen} />
     </div>
   )
 }
