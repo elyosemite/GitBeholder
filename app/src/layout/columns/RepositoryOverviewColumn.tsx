@@ -6,6 +6,7 @@ import {
   Cloud,
   FileText,
   GitBranch,
+  GitGraph,
   GitPullRequest,
   GitPullRequestDraft,
   Loader2,
@@ -190,7 +191,7 @@ export function RepositoryOverviewColumn() {
   const { data: tags } = useTags()
   const tagList = tags ?? []
 
-  const { inspectedCommit, openDiff } = useSession()
+  const { inspectedCommit, openDiff, mainView, setMainView } = useSession()
   const { data: commitFiles } = useCommitFiles()
   const commitFileList = commitFiles ?? []
 
@@ -216,6 +217,17 @@ export function RepositoryOverviewColumn() {
           C:\Users\Alfredo\Projects\GitBeholder
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setMainView(mainView === "graph" ? "commits" : "graph")}
+        className={`flex items-center gap-icon border-b border-line-subtle px-3 py-2 text-row hover:bg-overlay-hover ${
+          mainView === "graph" ? "font-semibold text-accent" : "text-ink-secondary"
+        }`}
+      >
+        <GitGraph aria-hidden="true" size={14} className="flex-none" />
+        Graph
+      </button>
 
       <Accordion defaultValue={["branches"]}>
         <Section value="integrations" title="Integrations" count={INTEGRATIONS.length}>

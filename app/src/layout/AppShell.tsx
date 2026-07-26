@@ -2,6 +2,7 @@ import { Header } from "./header/Header";
 import { Footer } from "./footer/Footer";
 import { RepositoryOverviewColumn } from "./columns/RepositoryOverviewColumn";
 import { CommitsColumn } from "./columns/CommitsColumn";
+import { GraphColumn } from "./columns/GraphColumn";
 import { DiffColumn } from "./columns/DiffColumn";
 import { ChangesColumn } from "./columns/ChangesColumn";
 import { useSession } from "@/features/session";
@@ -12,7 +13,7 @@ const CHANGES_COLUMN_DEFAULT_WIDTH = 288; // matches the previous fixed w-72
 const CHANGES_COLUMN_MAX_WIDTH = 480;
 
 export function AppShell() {
-  const { diffFile } = useSession();
+  const { diffFile, mainView } = useSession();
   const { width: changesWidth, onPointerDown } = useResizableWidth(
     CHANGES_COLUMN_DEFAULT_WIDTH,
     0,
@@ -31,7 +32,13 @@ export function AppShell() {
           <RepositoryOverviewColumn />
         </div>
         <div className="flex-1 min-w-0 h-full">
-          {diffFile !== null ? <DiffColumn /> : <CommitsColumn />}
+          {diffFile !== null ? (
+            <DiffColumn />
+          ) : mainView === "graph" ? (
+            <GraphColumn />
+          ) : (
+            <CommitsColumn />
+          )}
         </div>
         <div
           onPointerDown={onPointerDown}
