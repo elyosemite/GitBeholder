@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import type { Repository } from "@/features/repositories";
 import { useOnWindowFocus } from "@/lib/hooks/useOnWindowFocus";
 import { SessionContext } from "./context";
-import type { DataScope, SessionApi, SessionState } from "./types";
+import type { DataScope, MainView, SessionApi, SessionState } from "./types";
 import { bump, bumpAll, initialRevisions } from "./revisions";
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
@@ -11,6 +11,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     branch: null,
     inspectedCommit: null,
     diffFile: null,
+    mainView: "commits",
     revisions: initialRevisions,
   });
 
@@ -20,6 +21,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       branch: null,
       inspectedCommit: null,
       diffFile: null,
+      mainView: "commits",
       revisions: bumpAll(s.revisions),
     }));
   }, []);
@@ -46,6 +48,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     setState((s) => ({ ...s, diffFile: null }));
   }, []);
 
+  const setMainView = useCallback((view: MainView) => {
+    setState((s) => ({ ...s, mainView: view }));
+  }, []);
+
   const invalidate = useCallback((...scopes: DataScope[]) => {
     setState((s) => ({ ...s, revisions: bump(s.revisions, ...scopes) }));
   }, []);
@@ -65,9 +71,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       selectCommit,
       openDiff,
       closeDiff,
+      setMainView,
       invalidate,
     }),
-    [state, selectRepository, setBranch, selectCommit, openDiff, closeDiff, invalidate],
+    [state, selectRepository, setBranch, selectCommit, openDiff, closeDiff, setMainView, invalidate],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
