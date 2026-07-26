@@ -90,12 +90,12 @@ export function CommitActivityBar({
         {days.map((day) => (
           <div
             key={day.date}
-            className="flex h-full w-[4px] flex-none items-end"
+            className="flex h-full w-[6px] flex-none items-end"
             onMouseEnter={() => setHoveredDate(day.date)}
             onMouseLeave={() => setHoveredDate((current) => (current === day.date ? null : current))}
           >
             <div
-              className="w-full rounded-t-sm bg-accent/60 hover:bg-accent"
+              className="w-full rounded-t-sm border-none bg-accent/60 hover:bg-accent"
               style={{
                 height: `${Math.max((day.commit_count / maxCount) * 100, day.commit_count > 0 ? 4 : 1)}%`,
               }}
@@ -105,7 +105,7 @@ export function CommitActivityBar({
       </div>
 
       {hoveredDay && (
-        <div className="pointer-events-none absolute left-2 top-2 z-10 flex max-w-md flex-col gap-1 rounded-md border border-line-subtle bg-popover px-2 py-1.5 text-caption text-popover-foreground shadow-md">
+        <div className="pointer-events-none absolute left-2 top-full z-10 mt-1 flex max-w-md flex-col gap-1 rounded-md border border-line-subtle bg-popover px-2 py-1.5 text-caption text-popover-foreground shadow-md">
           <div className="whitespace-nowrap">
             {formatDate(hoveredDay.date)} ({formatRelativeTime(new Date(hoveredDay.date))}) ·{" "}
             {hoveredDay.commit_count} commits · {hoveredDay.file_count} files ·{" "}
