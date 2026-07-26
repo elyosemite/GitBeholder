@@ -77,6 +77,16 @@ defmodule GitBeholder.CommitGraphTest do
     assert Enum.all?(edges, &(&1.target == "file:a.txt"))
   end
 
+  test "includes commits made on start_date itself, not just after it", %{repo_path: repo_path} do
+    write_commit(repo_path, %{"a.txt" => "1"}, "morning", date: "2024-06-01T09:00:00")
+    write_commit(repo_path, %{"a.txt" => "2"}, "evening", date: "2024-06-01T20:00:00")
+
+    assert {:ok, %{nodes: nodes}} =
+             CommitGraph.build(repo_path, "master", "2024-06-01", "2024-06-01")
+
+    assert length(Enum.filter(nodes, &(&1.type == "commit"))) == 2
+  end
+
   test "excludes commits outside the given date range", %{repo_path: repo_path} do
     write_commit(repo_path, %{"old.txt" => "1"}, "old", date: "2020-01-01T12:00:00")
     write_commit(repo_path, %{"new.txt" => "1"}, "new", date: "2024-06-15T12:00:00")

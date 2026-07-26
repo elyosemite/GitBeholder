@@ -40,7 +40,12 @@ defmodule GitBeholder.CommitGraph do
       "-m",
       "-n",
       Integer.to_string(max_commits + 1),
-      "--since=#{start_date}",
+      # A bare "--since=2024-06-01" (no time-of-day) silently excludes
+      # commits made *on* 2024-06-01 in this git build (parses the
+      # boundary as end-of-day, same as --until) — see
+      # GitBeholder.CommitActivity for the full explanation. Spelling
+      # out 00:00:00 pins the intended start-of-day.
+      "--since=#{start_date} 00:00:00",
       "--until=#{end_date} 23:59:59",
       "--pretty=format:#{@record_sep}%H#{@field_sep}%an#{@field_sep}%ad",
       "--date=format:%Y-%m-%d %H:%M",
