@@ -105,19 +105,23 @@ DevOps foi implementada, por ser a única com backend real.
   explicitamente (só a #47, o epic, menciona); o backend já aceita
   `auto_close_enabled`/`auto_close_target_state`, então expor isso depois é
   aditivo, não retrabalho.
-- **Erros inline, não toast.** A issue #49 fala em "toasts", mas o app não
-  tem nenhuma biblioteca de toast instalada — todo erro em todo lugar do
-  app é inline (`CloneRepositoryDialog`, o rodapé de erro do checkout de
-  branch, etc.). Introduzir uma dependência nova só para este fluxo quebraria
-  essa convenção; os erros de connect/test/disconnect aparecem como parágrafo
-  inline, do mesmo jeito.
+- **Erros via toast (shadcn `sonner`), não mais inline.** A issue #49 pedia
+  toasts; a v1 tinha ficado inline porque o app não tinha nenhuma lib de
+  toast instalada. Resolvido instalando o componente `sonner` do registry
+  do shadcn (`pnpm dlx shadcn@latest add sonner`) — mesma fonte dos outros
+  componentes em `app/src/components/ui/`, então não quebra a convenção de
+  "sem lib de UI fora do shadcn". `<Toaster />` montado uma vez em
+  `App.tsx`; os erros de connect/test/disconnect chamam `toast.error(...)`.
+  O componente gerado vinha acoplado a `next-themes` (`useTheme()`) para
+  decidir light/dark, mas o app não tem `ThemeProvider` nenhum — troquei
+  por `theme="system"` fixo (o próprio `sonner` já resolve dark/light via
+  `prefers-color-scheme` nesse modo) e removi a dependência `next-themes`
+  do `package.json`, que tinha sido adicionada automaticamente pelo CLI do
+  shadcn e ficaria sem uso.
 - **Sem tela de settings dedicada.** A issue #49 original imaginava uma
   "primeira tela de settings do repositório"; a implementação ficou dentro
   do `RepositoryOverviewColumn` existente, por instrução direta do
   dono do repositório.
-- **Não verificado com `tsc --noEmit`** no commit que fez o wiring final
-  (`be2c645`) — Node.js estava indisponível no ambiente no momento. Rodar o
-  typecheck manualmente antes de considerar a issue #49 fechada.
 
 ## Como testar manualmente
 

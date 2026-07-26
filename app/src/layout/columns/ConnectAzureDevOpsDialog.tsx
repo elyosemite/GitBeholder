@@ -1,4 +1,5 @@
 import * as React from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -26,7 +27,6 @@ export function ConnectAzureDevOpsDialog({
   const [isTesting, setIsTesting] = React.useState(false)
   const [isSaving, setIsSaving] = React.useState(false)
   const [testPassed, setTestPassed] = React.useState(false)
-  const [error, setError] = React.useState<string | null>(null)
 
   const testConnection = useTestAzureDevOpsConnection()
   const connect = useConnectAzureDevOps()
@@ -37,7 +37,6 @@ export function ConnectAzureDevOpsDialog({
       setProject("")
       setPat("")
       setTestPassed(false)
-      setError(null)
     }
   }, [open])
 
@@ -52,13 +51,12 @@ export function ConnectAzureDevOpsDialog({
 
   const handleTest = async () => {
     setIsTesting(true)
-    setError(null)
     try {
       await testConnection({ config: { org_url: orgUrl.trim(), project: project.trim() }, credentials: pat })
       setTestPassed(true)
     } catch (err) {
       setTestPassed(false)
-      setError(String(err))
+      toast.error(String(err))
     } finally {
       setIsTesting(false)
     }
@@ -66,12 +64,11 @@ export function ConnectAzureDevOpsDialog({
 
   const handleSave = async () => {
     setIsSaving(true)
-    setError(null)
     try {
       await connect({ config: { org_url: orgUrl.trim(), project: project.trim() }, credentials: pat })
       onOpenChange(false)
     } catch (err) {
-      setError(String(err))
+      toast.error(String(err))
     } finally {
       setIsSaving(false)
     }
@@ -124,7 +121,6 @@ export function ConnectAzureDevOpsDialog({
             onChange={(e) => updateField(setPat)(e.target.value)}
             disabled={isBusy}
           />
-          {error && <p className="text-caption text-danger">{error}</p>}
         </div>
 
         <DialogFooter showCloseButton>
