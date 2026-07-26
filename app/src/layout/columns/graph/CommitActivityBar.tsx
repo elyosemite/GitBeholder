@@ -86,11 +86,11 @@ export function CommitActivityBar({
 
   return (
     <div className="relative flex-none border-b border-line-subtle" style={{ height }}>
-      <div className="flex h-full items-stretch gap-px px-panel-x py-2">
+      <div className="flex h-full items-stretch gap-px overflow-x-auto px-panel-x py-2">
         {days.map((day) => (
           <div
             key={day.date}
-            className="flex h-full min-w-[3px] flex-1 items-end"
+            className="flex h-full w-[4px] flex-none items-end"
             onMouseEnter={() => setHoveredDate(day.date)}
             onMouseLeave={() => setHoveredDate((current) => (current === day.date ? null : current))}
           >
