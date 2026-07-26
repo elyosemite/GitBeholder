@@ -33,6 +33,7 @@ defmodule GitBeholderWeb.Router do
     post "/unstage", GitStagingController, :unstage
     get "/commits", GitLogController, :index
     get "/commit-graph", CommitGraphController, :index
+    get "/commit-activity", CommitActivityController, :index
     get "/commits/:hash/files", GitDiffController, :index
     get "/commits/:hash/diff", GitDiffController, :show
     get "/branches", GitBranchController, :index
