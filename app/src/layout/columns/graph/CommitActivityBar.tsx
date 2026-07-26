@@ -95,7 +95,7 @@ export function CommitActivityBar({
             onMouseLeave={() => setHoveredDate((current) => (current === day.date ? null : current))}
           >
             <div
-              className="w-full rounded-t-sm border-none bg-accent/60 hover:bg-accent"
+              className="w-full border-none bg-accent/60 hover:bg-accent"
               style={{
                 height: `${Math.max((day.commit_count / maxCount) * 100, day.commit_count > 0 ? 4 : 1)}%`,
               }}
