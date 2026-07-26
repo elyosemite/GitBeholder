@@ -9,23 +9,8 @@ const MIN_HEIGHT = 48;
 const MAX_HEIGHT = 150;
 const DEFAULT_HEIGHT = 80;
 
-// Same token palette CommitsColumn uses for author avatars, hashed by
-// name instead of a fixed lookup - branch names are unbounded, unlike
-// that hardcoded author list.
-const BRANCH_COLOR_PALETTE = [
-  "bg-sky-500/20 text-sky-400",
-  "bg-violet-500/20 text-violet-400",
-  "bg-emerald-500/20 text-emerald-400",
-  "bg-amber-500/20 text-amber-400",
-  "bg-rose-500/20 text-rose-400",
-  "bg-slate-500/20 text-slate-400",
-];
-
-function branchColor(name: string): string {
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
-  return BRANCH_COLOR_PALETTE[Math.abs(hash) % BRANCH_COLOR_PALETTE.length];
-}
+const AUTHOR_BADGE_CLASS = "inline-block rounded bg-ink/10 px-1.5 py-0.5 text-micro font-medium text-ink";
+const BRANCH_BADGE_CLASS = "inline-block rounded bg-sky-500/20 px-1.5 py-0.5 text-micro font-medium text-sky-400";
 
 function toDateKey(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -107,21 +92,33 @@ export function CommitActivityBar({
       {hoveredDay && (
         <div className="pointer-events-none absolute left-2 top-full z-10 mt-1 flex max-w-md flex-col gap-1 rounded-md border border-line-subtle bg-popover px-2 py-1.5 text-caption text-popover-foreground shadow-md">
           <div className="whitespace-nowrap">
-            {formatDate(hoveredDay.date)} ({formatRelativeTime(new Date(hoveredDay.date))}) ·{" "}
+            {formatDate(hoveredDay.date)} ({formatRelativeTime(new Date(hoveredDay.date))})
+          </div>
+          <div className="whitespace-nowrap">
             {hoveredDay.commit_count} commits · {hoveredDay.file_count} files ·{" "}
-            {hoveredDay.lines_changed} lines · {hoveredDay.authors.join(", ") || "—"}
+            {hoveredDay.lines_changed} lines
           </div>
-          <div className="flex flex-wrap items-center gap-1">
-            {hoveredDay.branches.map((branch) => (
-              <span
-                key={branch}
-                className={`rounded px-1.5 py-0.5 text-micro font-medium ${branchColor(branch)}`}
-              >
-                {branch}
-              </span>
-            ))}
-            <span className="text-ink-faint">{stashes?.length ?? 0} stashes</span>
-          </div>
+          {hoveredDay.authors.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              {hoveredDay.authors.map((author) => (
+                <span key={author} className={AUTHOR_BADGE_CLASS}>
+                  {author}
+                </span>
+              ))}
+            </div>
+          )}
+          {hoveredDay.branches.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1">
+              {hoveredDay.branches.map((branch) => (
+                <span key={branch} className={BRANCH_BADGE_CLASS}>
+                  {branch}
+                </span>
+              ))}
+            </div>
+          )}
+          {(stashes?.length ?? 0) > 0 && (
+            <div className="text-ink-faint">{stashes?.length} stashes</div>
+          )}
         </div>
       )}
 
