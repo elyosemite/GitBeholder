@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useCommitGraph } from "@/features/commit-graph";
+import { CommitActivityBar } from "./graph/CommitActivityBar";
 import { GraphDateRangeBar } from "./graph/GraphDateRangeBar";
 import { ForceGraph } from "./graph/ForceGraph";
 
@@ -18,6 +19,7 @@ export function GraphColumn() {
 
   return (
     <div className="flex h-full flex-col border-r border-line-subtle bg-canvas">
+      <CommitActivityBar startDate={startDate} endDate={endDate} />
       <GraphDateRangeBar
         startDate={startDate}
         endDate={endDate}
