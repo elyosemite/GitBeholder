@@ -2,18 +2,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   forceCenter,
   forceCollide,
-  forceLink,
   forceManyBody,
   forceSimulation,
   type Simulation,
   type SimulationNodeDatum,
 } from "d3-force";
 import type { GraphEdge, GraphNode } from "@/features/commit-graph";
+import { forceFileGravity } from "./forceFileGravity";
 
 const COMMIT_RADIUS = 4;
 const FILE_RADIUS = 8;
-const LINK_DISTANCE = 60;
 const CHARGE_STRENGTH = -150;
+const GRAVITY_STRENGTH = 0.01;
 const DRAG_ALPHA_TARGET = 0.3;
 
 export interface SimNode extends SimulationNodeDatum {
@@ -43,11 +43,12 @@ export interface DragControls {
  * computes numbers, so future filters/grouping can reshape
  * `nodes`/`edges` before they reach here without touching the physics.
  *
- * Files act as hubs with no special-cased force: a file touched by many
- * commits accumulates many `forceLink` constraints pulling toward it,
- * which is enough on its own to produce the hub effect in a bipartite
- * force-directed layout — dragging a node pulls its linked neighbors
- * along for the same reason, once the simulation is reheated.
+ * Files act as hubs via `forceFileGravity` (a custom force, see that
+ * module): each file gravitationally attracts its connected commits,
+ * with forceManyBody's repulsion and forceCollide's no-overlap pushing
+ * back — the ring of commits around a file is that equilibrium, not
+ * anything drawn explicitly. Dragging a node pulls its linked
+ * neighbors along for the same reason, once the simulation is reheated.
  */
 export function useForceSimulation(
   nodes: GraphNode[],
@@ -75,13 +76,8 @@ export function useForceSimulation(
 
     const simLinks: SimLink[] = edges.map((edge) => ({ source: edge.source, target: edge.target }));
 
-    const simulation = forceSimulation(simNodes)
-      .force(
-        "link",
-        forceLink<SimNode, SimLink>(simLinks)
-          .id((node) => node.id)
-          .distance(LINK_DISTANCE),
-      )
+    const simulation = forceSimulation<SimNode, SimLink>(simNodes)
+      .force("gravity", forceFileGravity(simLinks, GRAVITY_STRENGTH))
       .force("charge", forceManyBody().strength(CHARGE_STRENGTH))
       .force("center", forceCenter(width / 2, height / 2))
       .force("collide", forceCollide<SimNode>((node) => node.radius + 4))
