@@ -92,7 +92,8 @@ export function CommitActivityBar({
       {hoveredDay && (
         <div className="pointer-events-none absolute left-2 top-full z-10 mt-1 flex max-w-md flex-col gap-1 rounded-md border border-line-subtle bg-popover px-2 py-1.5 text-caption text-popover-foreground shadow-md">
           <div className="whitespace-nowrap">
-            {formatDate(hoveredDay.date)} ({formatRelativeTime(new Date(hoveredDay.date))})
+            <span className="font-bold">{formatDate(hoveredDay.date)}</span>{" "}
+            ({formatRelativeTime(new Date(hoveredDay.date))})
           </div>
           <div className="whitespace-nowrap">
             {hoveredDay.commit_count} commits · {hoveredDay.file_count} files ·{" "}
