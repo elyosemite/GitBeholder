@@ -52,14 +52,16 @@ export function ForceGraph({
   nodes,
   edges,
   loading,
+  gravityStrength,
 }: {
   nodes: GraphNode[];
   edges: GraphEdge[];
   loading: boolean;
+  gravityStrength: number;
 }) {
   const { ref, width, height } = useElementSize<HTMLDivElement>();
   const svgRef = useRef<SVGSVGElement>(null);
-  const { positioned, drag } = useForceSimulation(nodes, edges, width, height);
+  const { positioned, drag } = useForceSimulation(nodes, edges, width, height, gravityStrength);
   const { transform, panBy, zoomAt, toWorld } = usePanZoom();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
