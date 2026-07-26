@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   forceCenter,
   forceCollide,
   forceLink,
   forceManyBody,
   forceSimulation,
+  type Simulation,
   type SimulationNodeDatum,
 } from "d3-force";
 import type { GraphEdge, GraphNode } from "@/features/commit-graph";
@@ -13,12 +14,15 @@ const COMMIT_RADIUS = 4;
 const FILE_RADIUS = 8;
 const LINK_DISTANCE = 60;
 const CHARGE_STRENGTH = -150;
+const DRAG_ALPHA_TARGET = 0.3;
 
 export interface SimNode extends SimulationNodeDatum {
   id: string;
   kind: "commit" | "file";
   label: string;
   radius: number;
+  /** The original node, for rendering hover details (hash/author/timestamp or name). */
+  data: GraphNode;
 }
 
 interface SimLink {
@@ -26,29 +30,38 @@ interface SimLink {
   target: string;
 }
 
+export interface DragControls {
+  onDragStart: (id: string) => void;
+  onDrag: (id: string, x: number, y: number) => void;
+  onDragEnd: (id: string) => void;
+}
+
 /**
  * Runs a d3-force simulation over an abstract node/edge graph and
- * returns the current node positions, updated on every tick. React owns
- * the DOM (see ForceGraph) — this hook only computes numbers, so future
- * filters/grouping can reshape `nodes`/`edges` before they reach here
- * without touching the physics.
+ * returns the current node positions, updated on every tick, plus drag
+ * controls. React owns the DOM (see ForceGraph) — this hook only
+ * computes numbers, so future filters/grouping can reshape
+ * `nodes`/`edges` before they reach here without touching the physics.
  *
  * Files act as hubs with no special-cased force: a file touched by many
  * commits accumulates many `forceLink` constraints pulling toward it,
  * which is enough on its own to produce the hub effect in a bipartite
- * force-directed layout.
+ * force-directed layout — dragging a node pulls its linked neighbors
+ * along for the same reason, once the simulation is reheated.
  */
 export function useForceSimulation(
   nodes: GraphNode[],
   edges: GraphEdge[],
   width: number,
   height: number,
-): SimNode[] {
+): { positioned: SimNode[]; drag: DragControls } {
   const [positioned, setPositioned] = useState<SimNode[]>([]);
+  const simulationRef = useRef<Simulation<SimNode, SimLink> | null>(null);
 
   useEffect(() => {
     if (width === 0 || height === 0 || nodes.length === 0) {
       setPositioned([]);
+      simulationRef.current = null;
       return;
     }
 
@@ -57,6 +70,7 @@ export function useForceSimulation(
       kind: node.type,
       label: node.type === "commit" ? node.hash.slice(0, 7) : node.name,
       radius: node.type === "file" ? FILE_RADIUS : COMMIT_RADIUS,
+      data: node,
     }));
 
     const simLinks: SimLink[] = edges.map((edge) => ({ source: edge.source, target: edge.target }));
@@ -73,10 +87,44 @@ export function useForceSimulation(
       .force("collide", forceCollide<SimNode>((node) => node.radius + 4))
       .on("tick", () => setPositioned([...simNodes]));
 
+    simulationRef.current = simulation;
+
     return () => {
       simulation.stop();
+      simulationRef.current = null;
     };
   }, [nodes, edges, width, height]);
 
-  return positioned;
+  // Canonical d3-force drag pattern: reheat with alphaTarget so the
+  // simulation keeps ticking while a node is pinned to the pointer,
+  // pin the dragged node via fx/fy, release both on drag end.
+  const onDragStart = useCallback((id: string) => {
+    const simulation = simulationRef.current;
+    const node = simulation?.nodes().find((n) => n.id === id);
+    if (!simulation || !node) return;
+
+    simulation.alphaTarget(DRAG_ALPHA_TARGET).restart();
+    node.fx = node.x;
+    node.fy = node.y;
+  }, []);
+
+  const onDrag = useCallback((id: string, x: number, y: number) => {
+    const node = simulationRef.current?.nodes().find((n) => n.id === id);
+    if (!node) return;
+
+    node.fx = x;
+    node.fy = y;
+  }, []);
+
+  const onDragEnd = useCallback((id: string) => {
+    const simulation = simulationRef.current;
+    const node = simulation?.nodes().find((n) => n.id === id);
+    if (!simulation || !node) return;
+
+    simulation.alphaTarget(0);
+    node.fx = null;
+    node.fy = null;
+  }, []);
+
+  return { positioned, drag: { onDragStart, onDrag, onDragEnd } };
 }
