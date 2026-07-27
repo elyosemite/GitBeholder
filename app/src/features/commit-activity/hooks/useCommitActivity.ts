@@ -5,6 +5,9 @@ import type { CommitActivity } from "../types";
 
 const EMPTY_ACTIVITY: CommitActivity = { buckets: [], truncated: false };
 
+// Same reasoning as useCommitGraph: not keyed on session.revisions, so
+// a window-focus refresh never resets this - only date/branch/repo
+// changes do.
 export function useCommitActivity(startDate: Date | undefined, endDate: Date | undefined) {
   const { repository, branch } = useSession();
 
