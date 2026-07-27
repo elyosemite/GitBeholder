@@ -1,15 +1,10 @@
 import { useState } from "react";
 
 import { useCommitGraph } from "@/features/commit-graph";
+import { daysAgo } from "@/lib/daysAgo";
 import { CommitActivityBar } from "./graph/CommitActivityBar";
 import { GraphDateRangeBar } from "./graph/GraphDateRangeBar";
 import { ForceGraph } from "./graph/ForceGraph";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-function daysAgo(days: number): Date {
-  return new Date(Date.now() - days * DAY_MS);
-}
 
 export function GraphColumn() {
   const [startDate, setStartDate] = useState<Date | undefined>(() => daysAgo(30));
