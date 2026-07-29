@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCommits, type Commit, type CommitRef } from "@/features/commits";
 import { useSession } from "@/features/session";
 import { PlatformIcon } from "@/components/icons/brand-icons";
+import { daysAgo } from "@/lib/daysAgo";
+import { CommitActivityBar } from "./graph/CommitActivityBar";
 
 // Graph keeps a fixed width: dragging either of its edges shifts the whole
 // zone by resizing the ref zone, so both handles share the same state.
@@ -196,6 +198,8 @@ export function CommitsColumn() {
   const { data: commits } = useCommits();
   const { inspectedCommit, selectCommit } = useSession();
   const rows = commits ?? [];
+  const [activityStartDate] = useState(() => daysAgo(30));
+  const [activityEndDate] = useState(() => new Date());
 
   function resizeRefZone(dx: number) {
     setRefWidth((width) => Math.min(MAX_REF_WIDTH, Math.max(MIN_REF_WIDTH, width + dx)));
@@ -204,6 +208,7 @@ export function CommitsColumn() {
   return (
     <div className="flex h-full flex-col border-r border-line-subtle bg-canvas">
       {/* <ColumnHeader title="Commits" /> */}
+      <CommitActivityBar startDate={activityStartDate} endDate={activityEndDate} />
 
       <div className="relative flex min-h-0 flex-1 flex-col">
         <div className="flex flex-none items-center border-b border-line-subtle bg-panel px-row-x py-1 text-meta font-bold uppercase tracking-[0.08em] text-ink-faint">
