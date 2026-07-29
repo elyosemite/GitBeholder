@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { toast } from "sonner"
 import {
   Archive,
   CircleCheck,
@@ -170,16 +171,14 @@ export function RepositoryOverviewColumn() {
   const disconnectAzureDevOps = useDisconnectAzureDevOps()
   const [isAzureDialogOpen, setIsAzureDialogOpen] = useState(false)
   const [isDisconnecting, setIsDisconnecting] = useState(false)
-  const [integrationError, setIntegrationError] = useState<string | null>(null)
   const otherIntegrations = INTEGRATIONS.filter(({ name }) => name !== "Azure DevOps")
 
   const handleDisconnectAzureDevOps = async () => {
     setIsDisconnecting(true)
-    setIntegrationError(null)
     try {
       await disconnectAzureDevOps()
     } catch (err) {
-      setIntegrationError(String(err))
+      toast.error(String(err))
     } finally {
       setIsDisconnecting(false)
     }
@@ -422,12 +421,6 @@ export function RepositoryOverviewColumn() {
       {checkoutError && (
         <div className="border-t border-line-subtle px-panel-x py-2 text-caption text-danger">
           {checkoutError}
-        </div>
-      )}
-
-      {integrationError && (
-        <div className="border-t border-line-subtle px-panel-x py-2 text-caption text-danger">
-          {integrationError}
         </div>
       )}
 
