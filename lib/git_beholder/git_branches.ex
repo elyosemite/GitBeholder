@@ -1,8 +1,7 @@
 defmodule GitBeholder.GitBranches do
   def list_branches(repo_path) do
     if File.dir?(Path.join(repo_path, ".git")) do
-      with {:ok, local} <- local_refs(repo_path),
-           {:ok, remote} <- remote_refs(repo_path) do
+      with {:ok, {local, remote}} <- refs(repo_path) do
         {:ok, merge(local, remote)}
       end
     else
@@ -10,42 +9,34 @@ defmodule GitBeholder.GitBranches do
     end
   end
 
-  defp local_refs(repo_path) do
-    args = ["for-each-ref", "--format=%(HEAD)|%(refname:short)", "refs/heads"]
+  # Local and remote branches in a single git spawn (~20 ms each on
+  # Windows), told apart by the full refname.
+  defp refs(repo_path) do
+    args = ["for-each-ref", "--format=%(HEAD)|%(refname)", "refs/heads", "refs/remotes"]
 
     case System.cmd("git", args, cd: repo_path, stderr_to_stdout: true) do
       {output, 0} ->
-        refs =
+        parsed =
           output
           |> String.trim()
           |> String.split("\n", trim: true)
-          |> Enum.map(fn line ->
-            [head, name] = String.split(line, "|", parts: 2)
-            {name, head == "*"}
-          end)
+          |> Enum.flat_map(&parse_ref_line/1)
 
-        {:ok, refs}
+        local = for {:local, name, current} <- parsed, do: {name, current}
+        remote = for {:remote, remote, name} <- parsed, do: {remote, name}
+
+        {:ok, {local, remote}}
 
       {error_msg, _exit_code} ->
         {:error, error_msg}
     end
   end
 
-  defp remote_refs(repo_path) do
-    args = ["for-each-ref", "--format=%(refname:short)", "refs/remotes"]
-
-    case System.cmd("git", args, cd: repo_path, stderr_to_stdout: true) do
-      {output, 0} ->
-        refs =
-          output
-          |> String.trim()
-          |> String.split("\n", trim: true)
-          |> Enum.flat_map(&parse_remote_ref/1)
-
-        {:ok, refs}
-
-      {error_msg, _exit_code} ->
-        {:error, error_msg}
+  defp parse_ref_line(line) do
+    case String.split(line, "|", parts: 2) do
+      [head, "refs/heads/" <> name] -> [{:local, name, head == "*"}]
+      [_head, "refs/remotes/" <> short_ref] -> parse_remote_ref(short_ref)
+      _ -> []
     end
   end
 
@@ -54,7 +45,7 @@ defmodule GitBeholder.GitBranches do
   defp parse_remote_ref(short_ref) do
     case String.split(short_ref, "/", parts: 2) do
       [_remote, "HEAD"] -> []
-      [remote, name] -> [{remote, name}]
+      [remote, name] -> [{:remote, remote, name}]
       _ -> []
     end
   end
