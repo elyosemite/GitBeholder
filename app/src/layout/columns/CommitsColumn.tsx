@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { memo, useRef, useState } from "react";
 import { Check, GitBranch, Monitor, Tag } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,6 +6,7 @@ import { useCommits, type Commit, type CommitRef } from "@/features/commits";
 import { useSession } from "@/features/session";
 import { PlatformIcon } from "@/components/icons/brand-icons";
 import { daysAgo } from "@/lib/daysAgo";
+import { useElementSize } from "@/lib/hooks/useElementSize";
 import { CommitActivityBar } from "./graph/CommitActivityBar";
 
 // Graph keeps a fixed width: dragging either of its edges shifts the whole
@@ -17,6 +18,12 @@ const MAX_REF_WIDTH = 320;
 const COMPACT_REF_WIDTH = 120;
 const ROW_PADDING_X = 12;
 const TIME_ZONE_WIDTH = "w-32";
+// Row height (h-6) + the 6px gap between rows. Only the rows in view (plus
+// OVERSCAN_ROWS on each side) are rendered — mounting all 200 at once was
+// a 260 ms render.
+const ROW_HEIGHT = 24;
+const ROW_PITCH = ROW_HEIGHT + 6;
+const OVERSCAN_ROWS = 10;
 
 const AUTHOR_COLORS: Record<string, string> = {
   yurimelo: "bg-sky-500/20 text-sky-400",
@@ -84,13 +91,14 @@ function RefBadge({ commitRef, compact }: { commitRef: CommitRef; compact: boole
   );
 }
 
-function CommitRow({
+const CommitRow = memo(function CommitRow({
   commit,
   index,
   first,
   last,
   refWidth,
   isSelected,
+  animate,
   onSelect,
 }: {
   commit: Commit;
@@ -99,7 +107,8 @@ function CommitRow({
   last: boolean;
   refWidth: number;
   isSelected: boolean;
-  onSelect: () => void;
+  animate: boolean;
+  onSelect: (hash: string) => void;
 }) {
   const hasRefs = commit.refs.length > 0;
   // Bleeds 3px into the gap-[6px] space between rows on either side, so
@@ -112,15 +121,20 @@ function CommitRow({
       : "-top-[3px] -bottom-[3px]";
   // Stagger the entrance so the log reads top-to-bottom instead of
   // popping in all at once; caps out so a long list doesn't feel sluggish.
+  // Decided once at mount: rows mounted by scrolling don't fade in.
+  const [animateEntrance] = useState(animate);
   const delay = Math.min(index, 8) * 40;
 
   return (
     <button
       type="button"
-      onClick={onSelect}
-      style={{ animationDelay: `${delay}ms`, animationFillMode: "backwards" }}
+      onClick={() => onSelect(commit.hash)}
+      style={
+        animateEntrance ? { animationDelay: `${delay}ms`, animationFillMode: "backwards" } : undefined
+      }
       className={
-        "flex h-6 w-full animate-in items-center px-row-x text-left fade-in-0 slide-in-from-top-1 " +
+        "flex h-6 w-full items-center px-row-x text-left " +
+        (animateEntrance ? "animate-in fade-in-0 slide-in-from-top-1 " : "") +
         (isSelected ? "bg-accent-soft" : "hover:bg-overlay-hover")
       }
     >
@@ -169,7 +183,7 @@ function CommitRow({
       </div>
     </button>
   );
-}
+});
 
 function ResizeHandle({ left, onDrag }: { left: number; onDrag: (dx: number) => void }) {
   const lastX = useRef(0);
@@ -200,6 +214,23 @@ export function CommitsColumn() {
   const rows = commits ?? [];
   const [activityStartDate] = useState(() => daysAgo(30));
   const [activityEndDate] = useState(() => new Date());
+  const { ref: listRef, height: listHeight } = useElementSize<HTMLDivElement>();
+  const [scrollTop, setScrollTop] = useState(0);
+  // Entrance animation plays for rows mounted by a (re)load, not by scrolling.
+  // Reset in render (not an effect) so rows of a fresh load animate in the
+  // very render that mounts them.
+  const hasScrolledRef = useRef(false);
+  const lastCommitsRef = useRef(commits);
+  if (lastCommitsRef.current !== commits) {
+    lastCommitsRef.current = commits;
+    hasScrolledRef.current = false;
+  }
+
+  const firstVisible = Math.max(0, Math.floor(scrollTop / ROW_PITCH) - OVERSCAN_ROWS);
+  const lastVisible = Math.min(
+    rows.length,
+    Math.ceil((scrollTop + listHeight) / ROW_PITCH) + OVERSCAN_ROWS,
+  );
 
   function resizeRefZone(dx: number) {
     setRefWidth((width) => Math.min(MAX_REF_WIDTH, Math.max(MIN_REF_WIDTH, width + dx)));
@@ -222,19 +253,40 @@ export function CommitsColumn() {
           <div className={TIME_ZONE_WIDTH + " flex-none text-right"}>Timestamp</div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-[6px] overflow-y-auto">
-          {rows.map((commit, index) => (
-            <CommitRow
-              key={commit.hash}
-              commit={commit}
-              index={index}
-              first={index === 0}
-              last={index === rows.length - 1}
-              refWidth={refWidth}
-              isSelected={inspectedCommit === commit.hash}
-              onSelect={() => selectCommit(commit.hash)}
-            />
-          ))}
+        <div
+          ref={listRef}
+          className="min-h-0 flex-1 overflow-y-auto"
+          onScroll={(event) => {
+            hasScrolledRef.current = true;
+            setScrollTop(event.currentTarget.scrollTop);
+          }}
+        >
+          <div
+            className="relative"
+            style={{ height: Math.max(0, rows.length * ROW_PITCH - (ROW_PITCH - ROW_HEIGHT)) }}
+          >
+            {rows.slice(firstVisible, lastVisible).map((commit, offset) => {
+              const index = firstVisible + offset;
+              return (
+                <div
+                  key={commit.hash}
+                  className="absolute inset-x-0"
+                  style={{ top: index * ROW_PITCH }}
+                >
+                  <CommitRow
+                    commit={commit}
+                    index={index}
+                    first={index === 0}
+                    last={index === rows.length - 1}
+                    refWidth={refWidth}
+                    isSelected={inspectedCommit === commit.hash}
+                    animate={!hasScrolledRef.current}
+                    onSelect={selectCommit}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* both handles resize the ref zone, so the graph column keeps its width */}
