@@ -1,3 +1,3 @@
 export { SessionProvider } from "./provider";
-export { useSession } from "./hooks/useSession";
-export type { DataScope, SessionApi, SessionState } from "./types";
+export { useSession, useSessionActions, useSessionValue } from "./hooks/useSession";
+export type { DataScope, SessionActions, SessionApi, SessionState } from "./types";

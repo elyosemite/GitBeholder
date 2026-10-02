@@ -21,7 +21,7 @@ export interface SessionState {
   revisions: Record<DataScope, number>;
 }
 
-export interface SessionApi extends SessionState {
+export interface SessionActions {
   selectRepository: (repo: Repository) => void;
   setBranch: (branch: string) => void;
   selectCommit: (hash: string) => void;
@@ -30,3 +30,5 @@ export interface SessionApi extends SessionState {
   setMainView: (view: MainView) => void;
   invalidate: (...scopes: DataScope[]) => void;
 }
+
+export type SessionApi = SessionState & SessionActions;
