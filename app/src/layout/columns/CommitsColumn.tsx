@@ -216,7 +216,9 @@ export function CommitsColumn() {
   const [activityStartDate] = useState(() => daysAgo(30));
   const [activityEndDate] = useState(() => new Date());
   const { ref: listRef, height: listHeight } = useElementSize<HTMLDivElement>();
-  const [scrollTop, setScrollTop] = useState(0);
+  // The first row in view, not the raw scrollTop: React state only changes
+  // when a row boundary is crossed, not on every scroll event.
+  const [topRow, setTopRow] = useState(0);
   // Entrance animation plays for rows mounted by a (re)load, not by scrolling.
   // Reset in render (not an effect) so rows of a fresh load animate in the
   // very render that mounts them.
@@ -227,10 +229,10 @@ export function CommitsColumn() {
     hasScrolledRef.current = false;
   }
 
-  const firstVisible = Math.max(0, Math.floor(scrollTop / ROW_PITCH) - OVERSCAN_ROWS);
+  const firstVisible = Math.max(0, topRow - OVERSCAN_ROWS);
   const lastVisible = Math.min(
     rows.length,
-    Math.ceil((scrollTop + listHeight) / ROW_PITCH) + OVERSCAN_ROWS,
+    topRow + Math.ceil(listHeight / ROW_PITCH) + 1 + OVERSCAN_ROWS,
   );
 
   function resizeRefZone(dx: number) {
@@ -259,7 +261,7 @@ export function CommitsColumn() {
           className="min-h-0 flex-1 overflow-y-auto"
           onScroll={(event) => {
             hasScrolledRef.current = true;
-            setScrollTop(event.currentTarget.scrollTop);
+            setTopRow(Math.floor(event.currentTarget.scrollTop / ROW_PITCH));
           }}
         >
           <div
