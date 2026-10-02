@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useElementSize } from "@/lib/hooks/useElementSize";
 import { useForceSimulation, type SimNode } from "@/lib/graph/useForceSimulation";
@@ -26,14 +26,29 @@ function toScreen(point: Point, transform: Transform): Point {
   return { x: point.x * transform.k + transform.x, y: point.y * transform.k + transform.y };
 }
 
-function NodeTooltip({ node, transform }: { node: SimNode; transform: Transform }) {
+function tooltipPosition(node: SimNode, transform: Transform): Point | null {
   if (node.x === undefined || node.y === undefined) return null;
   const screen = toScreen({ x: node.x, y: node.y }, transform);
+  return { x: screen.x + node.radius * transform.k + 8, y: screen.y - 8 };
+}
+
+function NodeTooltip({
+  node,
+  transform,
+  ref,
+}: {
+  node: SimNode;
+  transform: Transform;
+  ref: React.Ref<HTMLDivElement>;
+}) {
+  const position = tooltipPosition(node, transform);
+  if (!position) return null;
 
   return (
     <div
+      ref={ref}
       className="pointer-events-none absolute z-10 flex flex-col gap-0.5 rounded-md border border-line-subtle bg-popover px-2 py-1.5 text-caption text-popover-foreground shadow-md"
-      style={{ left: screen.x + node.radius * transform.k + 8, top: screen.y - 8 }}
+      style={{ left: position.x, top: position.y }}
     >
       {node.data.type === "commit" ? (
         <>
@@ -59,7 +74,49 @@ export function ForceGraph({
 }) {
   const { ref, width, height } = useElementSize<HTMLDivElement>();
   const svgRef = useRef<SVGSVGElement>(null);
-  const { positioned, drag } = useForceSimulation(nodes, edges, width, height);
+  const circleRefs = useRef(new Map<string, SVGCircleElement>());
+  const lineRefs = useRef<(SVGLineElement | null)[]>([]);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Read by moveToTick, which runs outside React renders.
+  const byIdRef = useRef(new Map<string, SimNode>());
+  const edgesRef = useRef(edges);
+  const transformRef = useRef<Transform>({ x: 0, y: 0, k: 1 });
+  const hoveredIdRef = useRef<string | null>(null);
+
+  // Per simulation tick: move the already-rendered circles, lines and
+  // tooltip to the nodes' new x/y without a React render.
+  const moveToTick = useCallback(() => {
+    const byId = byIdRef.current;
+
+    for (const [id, circle] of circleRefs.current) {
+      const node = byId.get(id);
+      if (node?.x === undefined || node.y === undefined) continue;
+      circle.setAttribute("cx", String(node.x));
+      circle.setAttribute("cy", String(node.y));
+    }
+
+    edgesRef.current.forEach((edge, index) => {
+      const line = lineRefs.current[index];
+      const source = byId.get(edge.source);
+      const target = byId.get(edge.target);
+      if (!line || source?.x === undefined || source.y === undefined) return;
+      if (target?.x === undefined || target.y === undefined) return;
+      line.setAttribute("x1", String(source.x));
+      line.setAttribute("y1", String(source.y));
+      line.setAttribute("x2", String(target.x));
+      line.setAttribute("y2", String(target.y));
+    });
+
+    const hovered = hoveredIdRef.current ? byId.get(hoveredIdRef.current) : undefined;
+    const position = hovered && tooltipPosition(hovered, transformRef.current);
+    if (position && tooltipRef.current) {
+      tooltipRef.current.style.left = `${position.x}px`;
+      tooltipRef.current.style.top = `${position.y}px`;
+    }
+  }, []);
+
+  const { positioned, drag } = useForceSimulation(nodes, edges, width, height, moveToTick);
   const { transform, panBy, zoomAt, toWorld } = usePanZoom();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -68,6 +125,11 @@ export function ForceGraph({
 
   const byId = useMemo(() => new Map(positioned.map((node) => [node.id, node])), [positioned]);
   const hoveredNode = hoveredId ? byId.get(hoveredId) : undefined;
+
+  byIdRef.current = byId;
+  edgesRef.current = edges;
+  transformRef.current = transform;
+  hoveredIdRef.current = hoveredId;
 
   // Wheel needs a native (non-passive) listener to reliably preventDefault —
   // React's synthetic onWheel is passive by default. Plain scroll pans
@@ -175,6 +237,9 @@ export function ForceGraph({
                 return (
                   <line
                     key={index}
+                    ref={(line) => {
+                      lineRefs.current[index] = line;
+                    }}
                     x1={source.x}
                     y1={source.y}
                     x2={target.x}
@@ -190,6 +255,10 @@ export function ForceGraph({
                 node.x === undefined || node.y === undefined ? null : (
                   <circle
                     key={node.id}
+                    ref={(circle) => {
+                      if (circle) circleRefs.current.set(node.id, circle);
+                      else circleRefs.current.delete(node.id);
+                    }}
                     cx={node.x}
                     cy={node.y}
                     r={node.radius}
@@ -208,7 +277,7 @@ export function ForceGraph({
           </g>
         </svg>
       )}
-      {hoveredNode && <NodeTooltip node={hoveredNode} transform={transform} />}
+      {hoveredNode && <NodeTooltip ref={tooltipRef} node={hoveredNode} transform={transform} />}
     </div>
   );
 }

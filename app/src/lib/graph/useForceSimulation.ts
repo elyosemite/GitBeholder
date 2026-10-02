@@ -38,10 +38,13 @@ export interface DragControls {
 
 /**
  * Runs a d3-force simulation over an abstract node/edge graph and
- * returns the current node positions, updated on every tick, plus drag
- * controls. React owns the DOM (see ForceGraph) — this hook only
- * computes numbers, so future filters/grouping can reshape
- * `nodes`/`edges` before they reach here without touching the physics.
+ * returns its nodes, plus drag controls. `positioned` changes once per
+ * layout, not per tick: the simulation mutates each node's x/y in place
+ * and calls `onTick`, so the caller moves its existing DOM nodes
+ * directly instead of re-rendering ~60 times a second (profiling showed
+ * 1,500+ renders of the graph per session doing that). Future
+ * filters/grouping can still reshape `nodes`/`edges` before they reach
+ * here without touching the physics.
  *
  * Files act as hubs with no special-cased force: a file touched by many
  * commits accumulates many `forceLink` constraints pulling toward it,
@@ -54,9 +57,12 @@ export function useForceSimulation(
   edges: GraphEdge[],
   width: number,
   height: number,
+  onTick: () => void,
 ): { positioned: SimNode[]; drag: DragControls } {
   const [positioned, setPositioned] = useState<SimNode[]>([]);
   const simulationRef = useRef<Simulation<SimNode, SimLink> | null>(null);
+  const onTickRef = useRef(onTick);
+  onTickRef.current = onTick;
 
   useEffect(() => {
     if (width === 0 || height === 0 || nodes.length === 0) {
@@ -85,9 +91,10 @@ export function useForceSimulation(
       .force("charge", forceManyBody().strength(CHARGE_STRENGTH))
       .force("center", forceCenter(width / 2, height / 2))
       .force("collide", forceCollide<SimNode>((node) => node.radius + 4))
-      .on("tick", () => setPositioned([...simNodes]));
+      .on("tick", () => onTickRef.current());
 
     simulationRef.current = simulation;
+    setPositioned(simNodes);
 
     return () => {
       simulation.stop();
