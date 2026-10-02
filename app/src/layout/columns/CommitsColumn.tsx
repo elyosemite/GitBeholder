@@ -18,11 +18,12 @@ const MAX_REF_WIDTH = 320;
 const COMPACT_REF_WIDTH = 120;
 const ROW_PADDING_X = 12;
 const TIME_ZONE_WIDTH = "w-32";
-// Row height (h-6) + the 6px gap between rows. Only the rows in view (plus
-// OVERSCAN_ROWS on each side) are rendered — mounting all 200 at once was
-// a 260 ms render.
-const ROW_HEIGHT = 24;
-const ROW_PITCH = ROW_HEIGHT + 6;
+// Row height (h-row, --spacing-row) + the 4px gap between rows. Only the
+// rows in view (plus OVERSCAN_ROWS on each side) are rendered — mounting
+// all 200 at once was a 260 ms render.
+const ROW_HEIGHT = 28;
+const ROW_GAP = 4;
+const ROW_PITCH = ROW_HEIGHT + ROW_GAP;
 const OVERSCAN_ROWS = 10;
 
 const AUTHOR_COLORS: Record<string, string> = {
@@ -111,14 +112,14 @@ const CommitRow = memo(function CommitRow({
   onSelect: (hash: string) => void;
 }) {
   const hasRefs = commit.refs.length > 0;
-  // Bleeds 3px into the gap-[6px] space between rows on either side, so
+  // Bleeds half of ROW_GAP into the space between rows on either side, so
   // consecutive rows' rails meet in the middle of the gap instead of
   // stopping dead at the row's own edge.
   const railPosition = first
-    ? "top-1/2 -bottom-[3px]"
+    ? "top-1/2 -bottom-0.5"
     : last
-      ? "-top-[3px] bottom-1/2"
-      : "-top-[3px] -bottom-[3px]";
+      ? "-top-0.5 bottom-1/2"
+      : "-top-0.5 -bottom-0.5";
   // Stagger the entrance so the log reads top-to-bottom instead of
   // popping in all at once; caps out so a long list doesn't feel sluggish.
   // Decided once at mount: rows mounted by scrolling don't fade in.
@@ -133,7 +134,7 @@ const CommitRow = memo(function CommitRow({
         animateEntrance ? { animationDelay: `${delay}ms`, animationFillMode: "backwards" } : undefined
       }
       className={
-        "flex h-6 w-full items-center px-row-x text-left " +
+        "flex h-row w-full items-center px-row-x text-left text-row " +
         (animateEntrance ? "animate-in fade-in-0 slide-in-from-top-1 " : "") +
         (isSelected ? "bg-accent-soft" : "hover:bg-overlay-hover")
       }
@@ -266,7 +267,7 @@ export function CommitsColumn() {
         >
           <div
             className="relative"
-            style={{ height: Math.max(0, rows.length * ROW_PITCH - (ROW_PITCH - ROW_HEIGHT)) }}
+            style={{ height: Math.max(0, rows.length * ROW_PITCH - ROW_GAP) }}
           >
             {rows.slice(firstVisible, lastVisible).map((commit, offset) => {
               const index = firstVisible + offset;
