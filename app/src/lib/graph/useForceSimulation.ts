@@ -1,20 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  forceCenter,
-  forceCollide,
-  forceLink,
-  forceManyBody,
-  forceSimulation,
-  type Simulation,
-  type SimulationNodeDatum,
-} from "d3-force";
+import type { SimulationNodeDatum } from "d3-force";
 import type { GraphEdge, GraphNode } from "@/features/commit-graph";
+import type { FromWorker, ToWorker } from "./forceSimulationProtocol";
 
 const COMMIT_RADIUS = 4;
 const FILE_RADIUS = 8;
-const LINK_DISTANCE = 60;
-const CHARGE_STRENGTH = -150;
-const DRAG_ALPHA_TARGET = 0.3;
 
 export interface SimNode extends SimulationNodeDatum {
   id: string;
@@ -25,11 +15,6 @@ export interface SimNode extends SimulationNodeDatum {
   data: GraphNode;
 }
 
-interface SimLink {
-  source: string;
-  target: string;
-}
-
 export interface DragControls {
   onDragStart: (id: string) => void;
   onDrag: (id: string, x: number, y: number) => void;
@@ -38,11 +23,14 @@ export interface DragControls {
 
 /**
  * Runs a d3-force simulation over an abstract node/edge graph and
- * returns its nodes, plus drag controls. `positioned` changes once per
- * layout, not per tick: the simulation mutates each node's x/y in place
- * and calls `onTick`, so the caller moves its existing DOM nodes
- * directly instead of re-rendering ~60 times a second (profiling showed
- * 1,500+ renders of the graph per session doing that). Future
+ * returns its nodes, plus drag controls. The physics runs in a Web Worker
+ * (forceSimulation.worker.ts) so a large graph's ~300 settling ticks
+ * don't freeze the UI; positions come back as a Float32Array and are
+ * copied onto each node's x/y at most once per animation frame.
+ *
+ * `positioned` changes once per layout, not per tick: after the first
+ * positions arrive, each later update calls `onTick` so the caller moves
+ * its existing DOM nodes directly instead of re-rendering. Future
  * filters/grouping can still reshape `nodes`/`edges` before they reach
  * here without touching the physics.
  *
@@ -60,14 +48,14 @@ export function useForceSimulation(
   onTick: () => void,
 ): { positioned: SimNode[]; drag: DragControls } {
   const [positioned, setPositioned] = useState<SimNode[]>([]);
-  const simulationRef = useRef<Simulation<SimNode, SimLink> | null>(null);
+  const workerRef = useRef<Worker | null>(null);
+  const indexByIdRef = useRef(new Map<string, number>());
   const onTickRef = useRef(onTick);
   onTickRef.current = onTick;
 
   useEffect(() => {
     if (width === 0 || height === 0 || nodes.length === 0) {
       setPositioned([]);
-      simulationRef.current = null;
       return;
     }
 
@@ -78,60 +66,82 @@ export function useForceSimulation(
       radius: node.type === "file" ? FILE_RADIUS : COMMIT_RADIUS,
       data: node,
     }));
+    indexByIdRef.current = new Map(simNodes.map((node, index) => [node.id, index]));
 
-    const simLinks: SimLink[] = edges.map((edge) => ({ source: edge.source, target: edge.target }));
+    const worker = new Worker(new URL("./forceSimulation.worker.ts", import.meta.url), {
+      type: "module",
+    });
+    workerRef.current = worker;
 
-    const simulation = forceSimulation(simNodes)
-      .force(
-        "link",
-        forceLink<SimNode, SimLink>(simLinks)
-          .id((node) => node.id)
-          .distance(LINK_DISTANCE),
-      )
-      .force("charge", forceManyBody().strength(CHARGE_STRENGTH))
-      .force("center", forceCenter(width / 2, height / 2))
-      .force("collide", forceCollide<SimNode>((node) => node.radius + 4))
-      .on("tick", () => onTickRef.current());
+    // The worker may post faster than the screen refreshes; only the
+    // latest positions matter, applied once per frame.
+    let latest: Float32Array | null = null;
+    let frame = 0;
+    let shown = false;
 
-    simulationRef.current = simulation;
-    setPositioned(simNodes);
+    const applyLatest = () => {
+      frame = 0;
+      if (!latest) return;
+      simNodes.forEach((node, index) => {
+        node.x = latest![index * 2];
+        node.y = latest![index * 2 + 1];
+      });
+      latest = null;
+
+      if (shown) {
+        onTickRef.current();
+      } else {
+        shown = true;
+        setPositioned(simNodes);
+      }
+    };
+
+    worker.onmessage = (event: MessageEvent<FromWorker>) => {
+      latest = event.data.positions;
+      if (!frame) frame = requestAnimationFrame(applyLatest);
+    };
+
+    const init: ToWorker = {
+      type: "init",
+      nodes: simNodes.map((node) => ({ id: node.id, radius: node.radius })),
+      links: edges.map((edge) => ({ source: edge.source, target: edge.target })),
+      width,
+      height,
+    };
+    worker.postMessage(init);
 
     return () => {
-      simulation.stop();
-      simulationRef.current = null;
+      cancelAnimationFrame(frame);
+      worker.terminate();
+      workerRef.current = null;
     };
   }, [nodes, edges, width, height]);
 
-  // Canonical d3-force drag pattern: reheat with alphaTarget so the
-  // simulation keeps ticking while a node is pinned to the pointer,
-  // pin the dragged node via fx/fy, release both on drag end.
-  const onDragStart = useCallback((id: string) => {
-    const simulation = simulationRef.current;
-    const node = simulation?.nodes().find((n) => n.id === id);
-    if (!simulation || !node) return;
+  const post = useCallback((message: ToWorker) => workerRef.current?.postMessage(message), []);
 
-    simulation.alphaTarget(DRAG_ALPHA_TARGET).restart();
-    node.fx = node.x;
-    node.fy = node.y;
-  }, []);
+  const onDragStart = useCallback(
+    (id: string) => {
+      const index = indexByIdRef.current.get(id);
+      if (index !== undefined) post({ type: "dragStart", index });
+    },
+    [post],
+  );
 
-  const onDrag = useCallback((id: string, x: number, y: number) => {
-    const node = simulationRef.current?.nodes().find((n) => n.id === id);
-    if (!node) return;
+  const onDrag = useCallback(
+    (id: string, x: number, y: number) => {
+      const index = indexByIdRef.current.get(id);
+      if (index !== undefined) post({ type: "drag", index, x, y });
+    },
+    [post],
+  );
 
-    node.fx = x;
-    node.fy = y;
-  }, []);
-
-  const onDragEnd = useCallback((id: string) => {
-    const simulation = simulationRef.current;
-    const node = simulation?.nodes().find((n) => n.id === id);
-    if (!simulation || !node) return;
-
-    simulation.alphaTarget(0);
-    node.fx = null;
-    node.fy = null;
-  }, []);
+  const onDragEnd = useCallback(
+    (id: string) => {
+      const index = indexByIdRef.current.get(id);
+      if (index !== undefined) post({ type: "dragEnd", index });
+    },
+    [post],
+  );
 
   return { positioned, drag: { onDragStart, onDrag, onDragEnd } };
 }
