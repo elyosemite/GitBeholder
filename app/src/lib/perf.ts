@@ -4,8 +4,10 @@ import type { ProfilerOnRenderCallback } from "react";
  * Dev-only performance collector. Splits every API call into backend time
  * (the `Server-Timing` header set by GitBeholderWeb.Plugs.ServerTiming),
  * transport and JSON parsing; records React render cost per column via
- * <Profiler>; and records long tasks (main thread blocked > 50 ms, the
- * moments the UI freezes).
+ * <Profiler>; records long tasks (main thread blocked > 50 ms, the
+ * moments the UI freezes); and, via the Long Animation Frames API,
+ * attributes each frozen frame to the scripts that ran in it and to
+ * style/layout work.
  *
  * In the webview DevTools console: `__gbPerf.report()` prints the summary,
  * `__gbPerf.reset()` clears it before measuring a specific interaction.
@@ -32,9 +34,41 @@ interface LongTaskSample {
   startTime: number;
 }
 
+// Long Animation Frames entries — not in TypeScript's DOM lib yet.
+interface ScriptTiming {
+  duration: number;
+  invoker: string;
+  invokerType: string;
+  sourceURL: string;
+  sourceFunctionName: string;
+  sourceCharPosition: number;
+  forcedStyleAndLayoutDuration: number;
+}
+
+interface LongAnimationFrame extends PerformanceEntry {
+  blockingDuration: number;
+  styleAndLayoutStart: number;
+  scripts: ScriptTiming[];
+}
+
+interface FrameSample {
+  durationMs: number;
+  blockingMs: number;
+  scriptMs: number;
+  styleAndLayoutMs: number;
+}
+
+interface ScriptSample {
+  cause: string;
+  durationMs: number;
+  forcedLayoutMs: number;
+}
+
 const requests: RequestSample[] = [];
 const renders: RenderSample[] = [];
 const longTasks: LongTaskSample[] = [];
+const frames: FrameSample[] = [];
+const scripts: ScriptSample[] = [];
 
 // Collapses ids and hashes so samples of the same endpoint group together.
 function toRoute(method: string, path: string): string {
@@ -87,6 +121,41 @@ if (enabled && typeof PerformanceObserver !== "undefined") {
   } catch {
     // longtask unsupported in this engine; the report just omits it.
   }
+
+  try {
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries() as LongAnimationFrame[]) {
+        const end = entry.startTime + entry.duration;
+        frames.push({
+          durationMs: entry.duration,
+          blockingMs: entry.blockingDuration,
+          scriptMs: sum(entry.scripts.map((script) => script.duration)),
+          styleAndLayoutMs: entry.styleAndLayoutStart > 0 ? end - entry.styleAndLayoutStart : 0,
+        });
+        for (const script of entry.scripts) {
+          scripts.push({
+            cause: describeScript(script),
+            durationMs: script.duration,
+            forcedLayoutMs: script.forcedStyleAndLayoutDuration,
+          });
+        }
+      }
+    }).observe({ type: "long-animation-frame", buffered: true });
+  } catch {
+    // long-animation-frame unsupported; the report just omits it.
+  }
+}
+
+// "event-listener click → handleClick @ ForceGraph.tsx:1234" — the file is
+// the Vite-served module path, minus query strings like ?t= / ?v=.
+function describeScript(script: ScriptTiming): string {
+  const file = script.sourceURL.split("?")[0].split("/").slice(-2).join("/") || "(unknown)";
+  const fn = script.sourceFunctionName || "(anonymous)";
+  return `${script.invokerType} ${script.invoker} → ${fn} @ ${file}:${script.sourceCharPosition}`;
+}
+
+function sum(values: number[]): number {
+  return values.reduce((a, b) => a + b, 0);
 }
 
 function median(values: number[]): number {
@@ -95,7 +164,6 @@ function median(values: number[]): number {
   return sorted[Math.floor(sorted.length / 2)];
 }
 
-const sum = (values: number[]) => values.reduce((a, b) => a + b, 0);
 const round = (n: number) => Math.round(n * 10) / 10;
 
 function groupBy<T>(items: T[], key: (item: T) => string): Map<string, T[]> {
@@ -146,6 +214,34 @@ function report() {
     "sum ms": round(sum(longTaskMs)),
     "> 100 ms": longTaskMs.filter((d) => d > 100).length,
   });
+  if (frames.length > 0) {
+    console.log("%cFrozen frames (Long Animation Frames > 50 ms)", "font-weight:bold");
+    console.table({
+      count: frames.length,
+      "max ms": round(Math.max(...frames.map((f) => f.durationMs))),
+      "sum ms": round(sum(frames.map((f) => f.durationMs))),
+      "blocking ms (sum)": round(sum(frames.map((f) => f.blockingMs))),
+      "script ms (sum)": round(sum(frames.map((f) => f.scriptMs))),
+      "style + layout ms (sum)": round(sum(frames.map((f) => f.styleAndLayoutMs))),
+    });
+
+    const causeRows = [...groupBy(scripts, (s) => s.cause)]
+      .map(([cause, samples]) => ({
+        cause,
+        times: samples.length,
+        "total ms": round(sum(samples.map((s) => s.durationMs))),
+        "max ms": round(Math.max(...samples.map((s) => s.durationMs))),
+        "forced layout ms": round(sum(samples.map((s) => s.forcedLayoutMs))),
+      }))
+      .sort((a, b) => b["total ms"] - a["total ms"])
+      .slice(0, 15);
+
+    console.log("%cTop causes of frozen frames", "font-weight:bold");
+    console.table(causeRows);
+  } else {
+    console.log("Long Animation Frames API unavailable: no per-script attribution.");
+  }
+
   console.log("%cWhere the time went", "font-weight:bold");
   console.table({
     "backend ms": round(backendMs),
@@ -159,8 +255,18 @@ function reset() {
   requests.length = 0;
   renders.length = 0;
   longTasks.length = 0;
+  frames.length = 0;
+  scripts.length = 0;
 }
 
 if (enabled) {
-  (window as unknown as { __gbPerf: object }).__gbPerf = { report, reset, requests, renders, longTasks };
+  (window as unknown as { __gbPerf: object }).__gbPerf = {
+    report,
+    reset,
+    requests,
+    renders,
+    longTasks,
+    frames,
+    scripts,
+  };
 }
