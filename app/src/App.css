@@ -1,110 +1,194 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
 
-/* Palette: "Developer Tool / IDE" slate base (ui-ux-pro-max) with the
-   GitBeholder brand blue (Atlassian family) as accent.
-   Deviations for WCAG 4.5:1 (accessibility outranks style):
-   danger is red-400 instead of #EF4444, which fails as text on this bg. */
+/* GitBeholder design system — see docs/design-system.md.
+   Brand: #4949EB (brand-600). Neutrals share its hue (OKLCH 274°) at low
+   chroma so grays and blue read as one family. Every text/background pair
+   below is checked for WCAG AA (4.5:1) in both themes; the numbers live in
+   the doc. Dark theme is the default; light follows the OS preference. */
 @theme static {
-  /* backgrounds */
-  --color-canvas: #0f172a;
-  --color-panel: #1b2336;
-  --color-surface: #272f42;
-  --color-surface-hover: #323d57;
-  --color-header-start: #1b2336;
-  --color-header-end: #141c2e;
+  /* ── Brand scale (OKLCH from #4949EB) ─────────────────────────────── */
+  --color-brand-50: #f2f5fe;
+  --color-brand-100: #e3e9fe;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a2b2fe;
+  --color-brand-400: #7a8cff;
+  --color-brand-500: #5e69ff;
+  --color-brand-600: #4949eb;
+  --color-brand-700: #3527c4;
+  --color-brand-800: #2809a6;
+  --color-brand-900: #1b017c;
+  --color-brand-950: #0f0053;
 
-  /* borders */
-  --color-line-subtle: rgba(148, 163, 184, 0.1);
-  --color-line-default: #475569;
+  /* ── Surfaces (dark) ──────────────────────────────────────────────── */
+  --color-canvas: #0c0e14; /* app background, main columns */
+  --color-panel: #13141c; /* side panels, header, popovers */
+  --color-surface: #1c1e26; /* raised controls, inputs, badges */
+  --color-surface-hover: #252731;
 
-  /* text */
-  --color-ink: #f8fafc;
-  --color-ink-secondary: #94a3b8;
-  --color-ink-faint: #64748b;
-  --color-on-accent: #0f172a;
+  /* ── Borders ──────────────────────────────────────────────────────── */
+  --color-line-subtle: #21222a; /* dividers between regions */
+  --color-line-default: #3a3d47; /* control borders, rails */
 
-  /* accent (interactive / brand) — GitBeholder blue, Atlassian family;
-     B400 #579DFF is the dark-mode variant (B700 fails contrast on slate) */
-  --color-accent: #579dff;
-  --color-accent-soft: rgba(87, 157, 255, 0.15);
-  --color-accent-from: #85b8ff;
-  --color-accent-to: #388bff;
-  --color-accent-glow: rgba(87, 157, 255, 0.35);
-  --color-brand-from: #579dff;
-  --color-brand-to: #9f8fef;
-  --color-brand-glow: rgba(87, 157, 255, 0.35);
+  /* ── Text ─────────────────────────────────────────────────────────── */
+  --color-ink: #f2f3f8; /* primary text — 16.6:1 on panel */
+  --color-ink-secondary: #b4b7c2; /* secondary text — 9.2:1 */
+  --color-ink-faint: #8f929e; /* metadata, timestamps — 5.9:1 */
 
-  /* status */
+  /* ── Accent ───────────────────────────────────────────────────────────
+     accent      — blue as text, icons, borders, selection rails, focus.
+                   brand-400 here: #4949EB itself is only 3.0:1 on dark.
+     accent-fill — solid fills carrying white text (primary buttons).
+                   Always #4949EB: white on it is 6.1:1 in both themes.
+     accent-soft — tinted background for selected rows. */
+  --color-accent: var(--color-brand-400);
+  --color-accent-fill: var(--color-brand-600);
+  --color-accent-fill-hover: var(--color-brand-700);
+  --color-accent-soft: rgb(73 73 235 / 0.2);
+  --color-on-accent: #ffffff;
+  --color-brand-to: #a78bfa; /* secondary hue for illustrations/issues */
+
+  /* ── Status ───────────────────────────────────────────────────────── */
   --color-success: #4ade80;
+  --color-warning: #fbbf24;
   --color-danger: #f87171;
 
-  /* overlays */
-  --color-overlay-hover: rgba(255, 255, 255, 0.03);
+  /* ── Overlays ─────────────────────────────────────────────────────── */
+  --color-overlay-hover: rgb(255 255 255 / 0.04);
+  --color-overlay-press: rgb(255 255 255 / 0.07);
+  --color-scrim: rgb(5 6 10 / 0.6);
 
-  /* spacing vocabulary (4pt grid) — px-bar-x, py-panel-y, gap-icon, … */
-  --spacing-bar-x: 16px;   /* horizontal padding of bars (header, toolbars) */
-  --spacing-bar-y: 4px;    /* vertical padding of bars — compact toolbar rhythm */
-  --spacing-row-x: 12px;   /* horizontal padding of list rows */
+  /* ── Typography ───────────────────────────────────────────────────────
+     Families: Inter for UI, JetBrains Mono for hashes, paths, diffs and
+     numbers that must align. Scale (px): 11 · 12 · 13 · 14 · 16 · 20 · 24.
+     Weights: 400 regular (body), 500 medium (rows, labels, buttons),
+     600 semibold (titles, current item), 700 bold (display only).
+     11px is the floor — nothing in the app is smaller. */
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+
+  --text-micro: 11px; /* badges, avatar initials, counters */
+  --text-micro--line-height: 16px;
+  --text-meta: 11px; /* uppercase section labels, timestamps */
+  --text-meta--line-height: 16px;
+  --text-meta--letter-spacing: 0.04em;
+  --text-caption: 12px; /* secondary info, paths, empty states */
+  --text-caption--line-height: 16px;
+  --text-row: 13px; /* list rows */
+  --text-row--line-height: 20px;
+  --text-body: 13px; /* default UI text */
+  --text-body--line-height: 20px;
+  --text-title: 14px; /* panel and dialog titles */
+  --text-title--line-height: 20px;
+  --text-title--font-weight: 600;
+  --text-heading: 16px; /* section headings, empty-state titles */
+  --text-heading--line-height: 24px;
+  --text-heading--font-weight: 600;
+  --text-display: 20px; /* page-level titles */
+  --text-display--line-height: 28px;
+  --text-display--font-weight: 600;
+  --text-display-lg: 24px; /* onboarding / hero numbers */
+  --text-display-lg--line-height: 32px;
+  --text-display-lg--font-weight: 700;
+  --text-display-lg--letter-spacing: -0.01em;
+
+  /* Tailwind's default steps, remapped onto the scale above so shadcn
+     components (text-xs / text-sm / text-base) follow the system. */
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 13px;
+  --text-sm--line-height: 20px;
+  --text-base: 14px;
+  --text-base--line-height: 20px;
+  --text-lg: 16px;
+  --text-lg--line-height: 24px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+
+  /* ── Spacing & sizes (4px grid) ───────────────────────────────────── */
+  --spacing-bar-x: 12px; /* horizontal padding of bars (header, toolbars) */
+  --spacing-bar-y: 6px; /* vertical padding of bars */
+  --spacing-row-x: 12px; /* horizontal padding of list rows */
   --spacing-panel-x: 16px; /* horizontal padding of panel sections */
   --spacing-panel-y: 12px; /* vertical padding of panel sections */
-  --spacing-icon: 8px;     /* gap between an icon and its text */
+  --spacing-icon: 8px; /* gap between an icon and its text */
+  --spacing-row: 28px; /* list row height — h-row */
+  --spacing-control: 28px; /* buttons, inputs, selects — h-control */
+  --spacing-control-sm: 24px; /* inline/icon buttons inside rows */
+  --spacing-control-lg: 32px; /* dialog primary actions */
 
-  /* type scale — text-body, text-row, text-caption, text-meta, text-micro */
-  --text-body: 13px;    /* primary content (names, messages) */
-  --text-row: 12.5px;   /* list row text */
-  --text-caption: 11.5px; /* secondary info (paths, empty states) */
-  --text-meta: 10.5px;  /* metadata, section titles, timestamps */
-  --text-micro: 9.5px;  /* badges, avatar initials */
+  /* ── Radius ───────────────────────────────────────────────────────── */
+  --radius-xs: 2px; /* badges inside rows, ref chips */
+  --radius-sm: 4px; /* small controls, checkboxes */
+  --radius-md: 6px; /* buttons, inputs, list selection */
+  --radius-lg: 8px; /* popovers, menus, cards */
+  --radius-xl: 12px; /* dialogs */
+  --radius-2xl: 16px;
+  --radius-3xl: 20px;
+  --radius-4xl: 9999px; /* pills */
 
-  --font-mono: "IBM Plex Mono", monospace;
+  /* ── Elevation (dark) ─────────────────────────────────────────────────
+     Dark surfaces read depth through a 1px top highlight plus a deep
+     shadow; light theme overrides with softer, tinted shadows below. */
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.35), 0 1px 2px rgb(0 0 0 / 0.25);
+  --shadow-md: 0 6px 16px -4px rgb(0 0 0 / 0.5), 0 2px 6px -2px rgb(0 0 0 / 0.35),
+    inset 0 1px 0 rgb(255 255 255 / 0.04);
+  --shadow-lg: 0 16px 40px -8px rgb(0 0 0 / 0.6), 0 6px 12px -6px rgb(0 0 0 / 0.4),
+    inset 0 1px 0 rgb(255 255 255 / 0.05);
+  --shadow-xl: 0 24px 64px -12px rgb(0 0 0 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.06);
+
+  /* ── Motion ───────────────────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* entering */
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45); /* exiting */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --default-transition-duration: 150ms;
+  --default-transition-timing-function: var(--ease-out);
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    /* backgrounds */
-    --color-canvas: #f8fafc;
+    --color-canvas: #f8f9fb;
     --color-panel: #ffffff;
-    --color-surface: #f1f5f9;
-    --color-surface-hover: #e2e8f0;
-    --color-header-start: #ffffff;
-    --color-header-end: #f1f5f9;
+    --color-surface: #f1f2f7;
+    --color-surface-hover: #e5e7ed;
 
-    /* borders */
-    --color-line-subtle: rgba(15, 23, 42, 0.06);
-    --color-line-default: #cbd5e1;
+    --color-line-subtle: #e8e9ee;
+    --color-line-default: #d2d4db;
 
-    /* text */
-    --color-ink: #0f172a;
-    --color-ink-secondary: #475569;
-    --color-ink-faint: #64748b;
-    --color-on-accent: #ffffff;
+    --color-ink: #181b26; /* 17.2:1 on panel */
+    --color-ink-secondary: #4f5362; /* 7.7:1 */
+    --color-ink-faint: #686b79; /* 5.3:1 */
 
-    /* accent (interactive / brand) — GitBeholder blue, Atlassian family;
-       B700 #0C66E4 keeps 4.5:1 with white text */
-    --color-accent: #0c66e4;
-    --color-accent-soft: rgba(12, 102, 228, 0.12);
-    --color-accent-from: #1d7afc;
-    --color-accent-to: #0c66e4;
-    --color-accent-glow: rgba(12, 102, 228, 0.25);
-    --color-brand-from: #0c66e4;
-    --color-brand-to: #6e5dc6;
-    --color-brand-glow: rgba(12, 102, 228, 0.25);
+    /* #4949EB is 6.1:1 on white, so the brand itself is the text accent */
+    --color-accent: var(--color-brand-600);
+    --color-accent-soft: rgb(73 73 235 / 0.1);
+    --color-brand-to: #7c3aed;
 
-    /* status */
     --color-success: #15803d;
+    --color-warning: #b45309;
     --color-danger: #dc2626;
 
-    /* overlays */
-    --color-overlay-hover: rgba(15, 23, 42, 0.04);
+    --color-overlay-hover: rgb(24 27 38 / 0.04);
+    --color-overlay-press: rgb(24 27 38 / 0.07);
+    --color-scrim: rgb(24 27 38 / 0.4);
+
+    --shadow-xs: 0 1px 2px rgb(24 27 38 / 0.06);
+    --shadow-sm: 0 1px 3px rgb(24 27 38 / 0.08), 0 1px 2px rgb(24 27 38 / 0.05);
+    --shadow-md: 0 6px 16px -4px rgb(24 27 38 / 0.12), 0 2px 6px -2px rgb(24 27 38 / 0.08);
+    --shadow-lg: 0 16px 40px -8px rgb(24 27 38 / 0.18), 0 6px 12px -6px rgb(24 27 38 / 0.1);
+    --shadow-xl: 0 24px 64px -12px rgb(24 27 38 / 0.25);
 
     /* @pierre/diffs theme bridge — light-mode half of the pair in the
        shadcn :root block below; keep in sync with --color-canvas/--color-ink
        above. */
-    --diffs-light-bg: #f8fafc;
-    --diffs-light: #0f172a;
+    --diffs-light-bg: #f8f9fb;
+    --diffs-light: #181b26;
 
     color-scheme: light;
   }
@@ -133,13 +217,25 @@
   }
 
   body {
-    @apply font-sans text-[13px] bg-background text-foreground;
+    @apply font-sans text-body bg-background text-foreground antialiased;
+    /* Inter: disambiguated l/I/1 (cv05, cv08) and straight-sided digits
+       that read better next to hashes (ss01 = open digits). */
+    font-feature-settings: "cv05", "cv08", "ss01";
   }
   * {
     @apply border-border outline-ring/50;
   }
   html {
     @apply font-sans;
+  }
+
+  /* Numbers that sit in columns (counts, line stats, times) align. */
+  .font-mono,
+  code,
+  kbd,
+  pre {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: normal;
   }
 
   /* Scrollbars styled from the token system instead of the OS default,
@@ -168,13 +264,22 @@
   *::-webkit-scrollbar-thumb:hover {
     background-color: var(--color-ink-faint);
   }
+
+  /* ui-ux-pro-max: reduced-motion — keep state changes, drop movement. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 @theme inline {
-  /* This is the sans font actually in effect — it's declared after
-     @theme static above, so it wins for --font-sans. */
   --font-heading: var(--font-sans);
-  --font-sans: 'Geist Variable', sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -206,20 +311,13 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 /* shadcn semantic variables sourced from the project token system in
    @theme static above. The tokens already flip between dark and light via
    prefers-color-scheme, so these follow the theme with no .dark class. */
 :root {
-  --radius: 0.625rem;
+  --radius: 8px; /* = radius-lg; radii are set explicitly in @theme above */
 
   --background: var(--color-canvas);
   --foreground: var(--color-ink);
@@ -227,7 +325,8 @@
   --card-foreground: var(--color-ink);
   --popover: var(--color-panel);
   --popover-foreground: var(--color-ink);
-  --primary: var(--color-accent);
+  /* primary = solid brand fill with white text (buttons) */
+  --primary: var(--color-accent-fill);
   --primary-foreground: var(--color-on-accent);
   --secondary: var(--color-surface);
   --secondary-foreground: var(--color-ink);
@@ -244,7 +343,7 @@
   --chart-5: var(--color-ink-faint);
   --sidebar: var(--color-panel);
   --sidebar-foreground: var(--color-ink);
-  --sidebar-primary: var(--color-accent);
+  --sidebar-primary: var(--color-accent-fill);
   --sidebar-primary-foreground: var(--color-on-accent);
   --sidebar-accent: var(--color-surface);
   --sidebar-accent-foreground: var(--color-ink);
@@ -258,6 +357,6 @@
      diffs background (context, gutter, separator) is `color-mix`'d from
      this pair, so keep these in sync with --color-canvas/--color-ink's
      dark-mode hex in @theme static above. */
-  --diffs-dark-bg: #0f172a;
-  --diffs-dark: #f8fafc;
+  --diffs-dark-bg: #0c0e14;
+  --diffs-dark: #f2f3f8;
 }
