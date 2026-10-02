@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { memo, useCallback, useState } from "react"
 import {
   Archive,
   CircleCheck,
@@ -158,56 +158,306 @@ function InspectFileRow({
   )
 }
 
-export function RepositoryOverviewColumn() {
-  const { data: branches } = useBranches()
-  const allBranches = branches ?? []
+// Each section below is memoized and fetches its own data, so data
+// arriving for one list (or a commit being selected) re-renders only that
+// section instead of every list in the column. The column itself only
+// holds the error banners and the Azure dialog state; their setters are
+// stable, so they never re-render the sections.
 
-  const checkoutBranch = useCheckoutBranch()
-  const [checkingOutName, setCheckingOutName] = useState<string | null>(null)
-  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+const GraphToggle = memo(function GraphToggle() {
+  const mainView = useSessionValue((s) => s.mainView)
+  const { setMainView } = useSessionActions()
 
+  return (
+    <button
+      type="button"
+      onClick={() => setMainView(mainView === "graph" ? "commits" : "graph")}
+      className={`flex items-center gap-icon border-b border-line-subtle px-3 py-2 text-row hover:bg-overlay-hover ${
+        mainView === "graph" ? "font-semibold text-accent" : "text-ink-secondary"
+      }`}
+    >
+      <GitGraph aria-hidden="true" size={14} className="flex-none" />
+      Graph
+    </button>
+  )
+})
+
+const IntegrationsSection = memo(function IntegrationsSection({
+  onConnectAzureDevOps,
+  onError,
+}: {
+  onConnectAzureDevOps: () => void
+  onError: (error: string | null) => void
+}) {
   const { data: azureDevOpsIntegration } = useAzureDevOpsIntegration()
   const disconnectAzureDevOps = useDisconnectAzureDevOps()
-  const [isAzureDialogOpen, setIsAzureDialogOpen] = useState(false)
   const [isDisconnecting, setIsDisconnecting] = useState(false)
-  const [integrationError, setIntegrationError] = useState<string | null>(null)
   const otherIntegrations = INTEGRATIONS.filter(({ name }) => name !== "Azure DevOps")
 
   const handleDisconnectAzureDevOps = async () => {
     setIsDisconnecting(true)
-    setIntegrationError(null)
+    onError(null)
     try {
       await disconnectAzureDevOps()
     } catch (err) {
-      setIntegrationError(String(err))
+      onError(String(err))
     } finally {
       setIsDisconnecting(false)
     }
   }
 
-  const { data: stashes } = useStashes()
-  const stashList = stashes ?? []
+  return (
+    <Section value="integrations" title="Integrations" count={INTEGRATIONS.length}>
+      <div
+        style={staggerStyle(0)}
+        className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+      >
+        <PlatformIcon platform="azure-devops" size={14} className="flex-none text-ink-secondary" />
+        <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">Azure DevOps</span>
+        {azureDevOpsIntegration ? (
+          <>
+            <Badge variant="outline" className="h-4 flex-none px-1.5 text-micro text-success">
+              Connected
+            </Badge>
+            <button
+              type="button"
+              disabled={isDisconnecting}
+              onClick={() => void handleDisconnectAzureDevOps()}
+              className="flex-none text-meta text-ink-faint hover:text-danger disabled:pointer-events-none disabled:opacity-60"
+            >
+              {isDisconnecting ? "Disconnecting…" : "Disconnect"}
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={onConnectAzureDevOps}
+            className="flex-none text-meta text-ink-faint hover:text-ink-secondary"
+          >
+            Connect…
+          </button>
+        )}
+      </div>
 
-  const { data: tags } = useTags()
-  const tagList = tags ?? []
+      {otherIntegrations.map(({ name, connected }, index) => (
+        <div
+          key={name}
+          style={staggerStyle(index + 1)}
+          className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+        >
+          <Avatar size="sm">
+            <AvatarFallback className="text-micro font-semibold">{initials(name)}</AvatarFallback>
+          </Avatar>
+          <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">{name}</span>
+          {connected ? (
+            <Badge variant="outline" className="h-4 flex-none px-1.5 text-micro text-success">
+              Connected
+            </Badge>
+          ) : (
+            <span className="flex-none text-meta text-ink-faint">Not connected</span>
+          )}
+        </div>
+      ))}
+    </Section>
+  )
+})
 
-  const inspectedCommit = useSessionValue((s) => s.inspectedCommit)
-  const mainView = useSessionValue((s) => s.mainView)
-  const { openDiff, setMainView } = useSessionActions()
-  const { data: commitFiles } = useCommitFiles()
-  const commitFileList = commitFiles ?? []
+// Mock-backed (src/mocks/git-data) until these integrations exist: no
+// props, no data hooks, so it renders once.
+const MockSections = memo(function MockSections() {
+  return (
+    <>
+      <Section value="pull-requests" title="Pull Requests" count={PULL_REQUESTS.length}>
+        {PULL_REQUESTS.map((pr, index) => {
+          const StatusIcon = pr.status === "open" ? GitPullRequest : GitPullRequestDraft
+          return (
+            <div
+              key={pr.number}
+              style={staggerStyle(index)}
+              className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+            >
+              <StatusIcon
+                aria-hidden="true"
+                size={14}
+                className={"mt-0.5 flex-none " + (pr.status === "open" ? "text-success" : "text-ink-faint")}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-row text-ink">{pr.title}</div>
+                <div className="text-meta text-ink-faint">
+                  #{pr.number} by {pr.author}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </Section>
+
+      <Section value="issues" title="Issues" count={ISSUES.length}>
+        {ISSUES.map((issue, index) => {
+          const StateIcon = issue.state === "open" ? CircleDot : CircleCheck
+          return (
+            <div
+              key={issue.number}
+              style={staggerStyle(index)}
+              className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+            >
+              <StateIcon
+                aria-hidden="true"
+                size={14}
+                className={"mt-0.5 flex-none " + (issue.state === "open" ? "text-success" : "text-brand-to")}
+              />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-row text-ink">{issue.title}</div>
+                <div className="flex items-center gap-1.5 text-meta text-ink-faint">
+                  #{issue.number}
+                  <Badge variant="secondary" className="h-4 px-1.5 text-micro font-normal">
+                    {issue.label}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </Section>
+
+      <Section value="teams" title="Teams" count={TEAMS.length}>
+        {TEAMS.map((team, index) => (
+          <div
+            key={team.name}
+            style={staggerStyle(index)}
+            className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+          >
+            <Avatar size="sm">
+              <AvatarFallback className="text-micro font-semibold">{initials(team.name)}</AvatarFallback>
+            </Avatar>
+            <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">{team.name}</span>
+            <span className="flex-none text-meta text-ink-faint">{team.members} members</span>
+          </div>
+        ))}
+      </Section>
+    </>
+  )
+})
+
+const BranchesSection = memo(function BranchesSection({
+  onError,
+}: {
+  onError: (error: string | null) => void
+}) {
+  const { data: branches } = useBranches()
+  const allBranches = branches ?? []
+  const checkoutBranch = useCheckoutBranch()
+  const [checkingOutName, setCheckingOutName] = useState<string | null>(null)
 
   const handleCheckout = async (branch: Branch) => {
     setCheckingOutName(branch.name)
-    setCheckoutError(null)
+    onError(null)
     try {
       await checkoutBranch(branch.name)
     } catch (err) {
-      setCheckoutError(String(err))
+      onError(String(err))
     } finally {
       setCheckingOutName(null)
     }
   }
+
+  return (
+    <Section value="branches" title="Branches" count={allBranches.length}>
+      {allBranches.map((branch, index) => (
+        <BranchRow
+          key={branch.name}
+          branch={branch}
+          index={index}
+          isCheckingOut={checkingOutName === branch.name}
+          disabled={checkingOutName !== null}
+          onCheckout={() => void handleCheckout(branch)}
+        />
+      ))}
+    </Section>
+  )
+})
+
+const TagsSection = memo(function TagsSection() {
+  const { data: tags } = useTags()
+  const tagList = tags ?? []
+
+  return (
+    <Section value="tags" title="Tags" count={tagList.length}>
+      {tagList.map((tag, index) => (
+        <button
+          key={tag.name}
+          type="button"
+          style={staggerStyle(index)}
+          className={`flex w-full items-center gap-icon px-1 py-1 text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
+        >
+          <Tag aria-hidden="true" size={13} className="flex-none text-ink-faint" />
+          <span className="min-w-0 flex-1 truncate font-mono text-row text-ink-secondary">{tag.name}</span>
+          <span className="flex-none font-mono text-meta text-ink-faint">{tag.date}</span>
+        </button>
+      ))}
+    </Section>
+  )
+})
+
+const StashesSection = memo(function StashesSection() {
+  const { data: stashes } = useStashes()
+  const stashList = stashes ?? []
+
+  return (
+    <Section value="stashes" title="Stashes" count={stashList.length}>
+      {stashList.map((stash, index) => (
+        <div
+          key={stash.index}
+          style={staggerStyle(index)}
+          className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
+        >
+          <Archive aria-hidden="true" size={14} className="mt-0.5 flex-none text-ink-faint" />
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-row text-ink">
+              <span className="font-mono text-caption text-ink-faint">stash@{"{"}{stash.index}{"}"}</span>{" "}
+              {stash.message}
+            </div>
+            <div className="truncate text-meta text-ink-faint">on {stash.branch}</div>
+          </div>
+        </div>
+      ))}
+    </Section>
+  )
+})
+
+const InspectSection = memo(function InspectSection() {
+  const inspectedCommit = useSessionValue((s) => s.inspectedCommit)
+  const { openDiff } = useSessionActions()
+  const { data: commitFiles } = useCommitFiles()
+  const commitFileList = commitFiles ?? []
+
+  return (
+    <Section value="inspect" title="Inspect" count={commitFileList.length}>
+      {inspectedCommit === null ? (
+        <div className="text-caption text-ink-faint">
+          Click a commit to see its changed files.
+        </div>
+      ) : commitFileList.length > 0 ? (
+        commitFileList.map((file, index) => (
+          <InspectFileRow
+            key={file.path}
+            file={file}
+            index={index}
+            onOpenDiff={() => openDiff(file.path)}
+          />
+        ))
+      ) : (
+        <div className="text-caption text-ink-faint">No files changed.</div>
+      )}
+    </Section>
+  )
+})
+
+export function RepositoryOverviewColumn() {
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [integrationError, setIntegrationError] = useState<string | null>(null)
+  const [isAzureDialogOpen, setIsAzureDialogOpen] = useState(false)
+  const openAzureDialog = useCallback(() => setIsAzureDialogOpen(true), [])
 
   return (
     <div className="flex h-full flex-col overflow-y-auto border-r border-line-subtle bg-panel">
@@ -220,205 +470,15 @@ export function RepositoryOverviewColumn() {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={() => setMainView(mainView === "graph" ? "commits" : "graph")}
-        className={`flex items-center gap-icon border-b border-line-subtle px-3 py-2 text-row hover:bg-overlay-hover ${
-          mainView === "graph" ? "font-semibold text-accent" : "text-ink-secondary"
-        }`}
-      >
-        <GitGraph aria-hidden="true" size={14} className="flex-none" />
-        Graph
-      </button>
+      <GraphToggle />
 
       <Accordion defaultValue={["branches"]}>
-        <Section value="integrations" title="Integrations" count={INTEGRATIONS.length}>
-          <div
-            style={staggerStyle(0)}
-            className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
-          >
-            <PlatformIcon platform="azure-devops" size={14} className="flex-none text-ink-secondary" />
-            <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">Azure DevOps</span>
-            {azureDevOpsIntegration ? (
-              <>
-                <Badge variant="outline" className="h-4 flex-none px-1.5 text-micro text-success">
-                  Connected
-                </Badge>
-                <button
-                  type="button"
-                  disabled={isDisconnecting}
-                  onClick={() => void handleDisconnectAzureDevOps()}
-                  className="flex-none text-meta text-ink-faint hover:text-danger disabled:pointer-events-none disabled:opacity-60"
-                >
-                  {isDisconnecting ? "Disconnecting…" : "Disconnect"}
-                </button>
-              </>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsAzureDialogOpen(true)}
-                className="flex-none text-meta text-ink-faint hover:text-ink-secondary"
-              >
-                Connect…
-              </button>
-            )}
-          </div>
-
-          {otherIntegrations.map(({ name, connected }, index) => (
-            <div
-              key={name}
-              style={staggerStyle(index + 1)}
-              className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
-            >
-              <Avatar size="sm">
-                <AvatarFallback className="text-micro font-semibold">{initials(name)}</AvatarFallback>
-              </Avatar>
-              <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">{name}</span>
-              {connected ? (
-                <Badge variant="outline" className="h-4 flex-none px-1.5 text-micro text-success">
-                  Connected
-                </Badge>
-              ) : (
-                <span className="flex-none text-meta text-ink-faint">Not connected</span>
-              )}
-            </div>
-          ))}
-        </Section>
-
-        <Section value="pull-requests" title="Pull Requests" count={PULL_REQUESTS.length}>
-          {PULL_REQUESTS.map((pr, index) => {
-            const StatusIcon = pr.status === "open" ? GitPullRequest : GitPullRequestDraft
-            return (
-              <div
-                key={pr.number}
-                style={staggerStyle(index)}
-                className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
-              >
-                <StatusIcon
-                  aria-hidden="true"
-                  size={14}
-                  className={"mt-0.5 flex-none " + (pr.status === "open" ? "text-success" : "text-ink-faint")}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-row text-ink">{pr.title}</div>
-                  <div className="text-meta text-ink-faint">
-                    #{pr.number} by {pr.author}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </Section>
-
-        <Section value="issues" title="Issues" count={ISSUES.length}>
-          {ISSUES.map((issue, index) => {
-            const StateIcon = issue.state === "open" ? CircleDot : CircleCheck
-            return (
-              <div
-                key={issue.number}
-                style={staggerStyle(index)}
-                className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
-              >
-                <StateIcon
-                  aria-hidden="true"
-                  size={14}
-                  className={"mt-0.5 flex-none " + (issue.state === "open" ? "text-success" : "text-brand-to")}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-row text-ink">{issue.title}</div>
-                  <div className="flex items-center gap-1.5 text-meta text-ink-faint">
-                    #{issue.number}
-                    <Badge variant="secondary" className="h-4 px-1.5 text-micro font-normal">
-                      {issue.label}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </Section>
-
-        <Section value="teams" title="Teams" count={TEAMS.length}>
-          {TEAMS.map((team, index) => (
-            <div
-              key={team.name}
-              style={staggerStyle(index)}
-              className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
-            >
-              <Avatar size="sm">
-                <AvatarFallback className="text-micro font-semibold">{initials(team.name)}</AvatarFallback>
-              </Avatar>
-              <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">{team.name}</span>
-              <span className="flex-none text-meta text-ink-faint">{team.members} members</span>
-            </div>
-          ))}
-        </Section>
-
-        <Section value="branches" title="Branches" count={allBranches.length}>
-          {allBranches.map((branch, index) => (
-            <BranchRow
-              key={branch.name}
-              branch={branch}
-              index={index}
-              isCheckingOut={checkingOutName === branch.name}
-              disabled={checkingOutName !== null}
-              onCheckout={() => void handleCheckout(branch)}
-            />
-          ))}
-        </Section>
-
-        <Section value="tags" title="Tags" count={tagList.length}>
-          {tagList.map((tag, index) => (
-            <button
-              key={tag.name}
-              type="button"
-              style={staggerStyle(index)}
-              className={`flex w-full items-center gap-icon px-1 py-1 text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
-            >
-              <Tag aria-hidden="true" size={13} className="flex-none text-ink-faint" />
-              <span className="min-w-0 flex-1 truncate font-mono text-row text-ink-secondary">{tag.name}</span>
-              <span className="flex-none font-mono text-meta text-ink-faint">{tag.date}</span>
-            </button>
-          ))}
-        </Section>
-
-        <Section value="stashes" title="Stashes" count={stashList.length}>
-          {stashList.map((stash, index) => (
-            <div
-              key={stash.index}
-              style={staggerStyle(index)}
-              className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
-            >
-              <Archive aria-hidden="true" size={14} className="mt-0.5 flex-none text-ink-faint" />
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-row text-ink">
-                  <span className="font-mono text-caption text-ink-faint">stash@{"{"}{stash.index}{"}"}</span>{" "}
-                  {stash.message}
-                </div>
-                <div className="truncate text-meta text-ink-faint">on {stash.branch}</div>
-              </div>
-            </div>
-          ))}
-        </Section>
-
-        <Section value="inspect" title="Inspect" count={commitFileList.length}>
-          {inspectedCommit === null ? (
-            <div className="text-caption text-ink-faint">
-              Click a commit to see its changed files.
-            </div>
-          ) : commitFileList.length > 0 ? (
-            commitFileList.map((file, index) => (
-              <InspectFileRow
-                key={file.path}
-                file={file}
-                index={index}
-                onOpenDiff={() => openDiff(file.path)}
-              />
-            ))
-          ) : (
-            <div className="text-caption text-ink-faint">No files changed.</div>
-          )}
-        </Section>
+        <IntegrationsSection onConnectAzureDevOps={openAzureDialog} onError={setIntegrationError} />
+        <MockSections />
+        <BranchesSection onError={setCheckoutError} />
+        <TagsSection />
+        <StashesSection />
+        <InspectSection />
       </Accordion>
 
       {checkoutError && (
