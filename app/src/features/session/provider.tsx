@@ -1,10 +1,15 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Repository } from "@/features/repositories";
 import { useOnWindowFocus } from "@/lib/hooks/useOnWindowFocus";
 import { SessionContext } from "./context";
 import { createSessionStore } from "./store";
 import type { DataScope, MainView, SessionActions } from "./types";
 import { bump, bumpAll, initialRevisions } from "./revisions";
+
+// Branches, stashes and tags rarely change outside the app; refetching
+// them (and re-rendering their lists) on every alt-tab cost up to ~200 ms
+// per focus. Working-tree status and ahead/behind still refresh every time.
+const FULL_FOCUS_REFRESH_INTERVAL_MS = 60_000;
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [store] = useState(() =>
@@ -67,9 +72,16 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   // Editing files outside the app (or fetching/pulling from elsewhere)
   // doesn't touch our state — catch up whenever the window regains focus
   // instead of polling on a timer.
+  const lastFullRefreshRef = useRef(0);
   useOnWindowFocus(() => {
-    if (store.getState().repository) {
+    if (!store.getState().repository) return;
+
+    const now = Date.now();
+    if (now - lastFullRefreshRef.current >= FULL_FOCUS_REFRESH_INTERVAL_MS) {
+      lastFullRefreshRef.current = now;
       actions.invalidate("status", "branches", "sync", "stashes", "tags");
+    } else {
+      actions.invalidate("status", "sync");
     }
   });
 
