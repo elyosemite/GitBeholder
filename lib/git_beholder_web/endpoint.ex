@@ -49,7 +49,10 @@ defmodule GitBeholderWeb.Endpoint do
 
   plug Plug.RequestId
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
-  plug CORSPlug, origin: @cors_origins
+  plug GitBeholderWeb.Plugs.ServerTiming
+  # Server-Timing must be exposed or the webview, being a different
+  # origin, can't read it from the response.
+  plug CORSPlug, origin: @cors_origins, expose: ["server-timing"]
 
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
