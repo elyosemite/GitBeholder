@@ -1,5 +1,5 @@
 import { Minus, Plus, type LucideIcon } from "lucide-react";
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useZoom } from "@/lib/hooks/useZoom";
 
 function ZoomButton({
@@ -27,7 +27,7 @@ function ZoomButton({
 }
 
 export function Footer({ zoom }: { zoom: ReturnType<typeof useZoom> }) {
-  const { repository } = useSession();
+  const repository = useSessionValue((s) => s.repository);
 
   return (
     <footer className="flex h-6 flex-none items-center justify-between border-t border-line-subtle bg-panel px-bar-x text-meta text-ink-faint">

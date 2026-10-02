@@ -30,5 +30,3 @@ export interface SessionActions {
   setMainView: (view: MainView) => void;
   invalidate: (...scopes: DataScope[]) => void;
 }
-
-export type SessionApi = SessionState & SessionActions;

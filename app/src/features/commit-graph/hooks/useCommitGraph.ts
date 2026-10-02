@@ -1,4 +1,4 @@
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useApiData } from "@/lib/hooks/useApiData";
 import { getCommitGraph } from "../api";
 import type { CommitGraph } from "../types";
@@ -11,7 +11,8 @@ const EMPTY_GRAPH: CommitGraph = { nodes: [], edges: [], truncated: false };
 // "status"/"branches"/"sync"/"stashes"/"tags". Only a repository/branch
 // switch or an actual date-range change should trigger a new fetch.
 export function useCommitGraph(startDate: Date | undefined, endDate: Date | undefined) {
-  const { repository, branch } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const branch = useSessionValue((s) => s.branch);
 
   return useApiData(
     () =>

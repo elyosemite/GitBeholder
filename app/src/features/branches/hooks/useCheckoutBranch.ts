@@ -1,9 +1,10 @@
 import { useCallback } from "react";
-import { useSession } from "@/features/session";
+import { useSessionActions, useSessionValue } from "@/features/session";
 import { checkoutBranch } from "../api";
 
 export function useCheckoutBranch() {
-  const { repository, setBranch } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const { setBranch } = useSessionActions();
 
   return useCallback(
     async (name: string) => {

@@ -3,7 +3,7 @@ import { Check, GitBranch, Monitor, Tag } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCommits, type Commit, type CommitRef } from "@/features/commits";
-import { useSession } from "@/features/session";
+import { useSessionActions, useSessionValue } from "@/features/session";
 import { PlatformIcon } from "@/components/icons/brand-icons";
 import { daysAgo } from "@/lib/daysAgo";
 import { useElementSize } from "@/lib/hooks/useElementSize";
@@ -210,7 +210,8 @@ function ResizeHandle({ left, onDrag }: { left: number; onDrag: (dx: number) => 
 export function CommitsColumn() {
   const [refWidth, setRefWidth] = useState(208);
   const { data: commits } = useCommits();
-  const { inspectedCommit, selectCommit } = useSession();
+  const inspectedCommit = useSessionValue((s) => s.inspectedCommit);
+  const { selectCommit } = useSessionActions();
   const rows = commits ?? [];
   const [activityStartDate] = useState(() => daysAgo(30));
   const [activityEndDate] = useState(() => new Date());

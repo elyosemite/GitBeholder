@@ -1,4 +1,4 @@
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useApiData } from "@/lib/hooks/useApiData";
 import { getCommitActivity } from "../api";
 import type { CommitActivity } from "../types";
@@ -9,7 +9,8 @@ const EMPTY_ACTIVITY: CommitActivity = { buckets: [], truncated: false };
 // a window-focus refresh never resets this - only date/branch/repo
 // changes do.
 export function useCommitActivity(startDate: Date | undefined, endDate: Date | undefined) {
-  const { repository, branch } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const branch = useSessionValue((s) => s.branch);
 
   return useApiData(
     () =>

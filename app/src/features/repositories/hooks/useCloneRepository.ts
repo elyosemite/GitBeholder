@@ -1,10 +1,10 @@
 import { useCallback } from "react";
-import { useSession } from "@/features/session";
+import { useSessionActions } from "@/features/session";
 import { cloneRepository } from "../api";
 import { WORKSPACE_ID } from "../constants";
 
 export function useCloneRepository() {
-  const { selectRepository } = useSession();
+  const { selectRepository } = useSessionActions();
 
   return useCallback(
     async (url: string, destination: string) => {

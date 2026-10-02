@@ -1,10 +1,10 @@
 import { useCallback } from "react";
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { testAzureDevOpsConnection } from "../api";
 import type { ConnectAzureDevOpsPayload } from "../types";
 
 export function useTestAzureDevOpsConnection() {
-  const { repository } = useSession();
+  const repository = useSessionValue((s) => s.repository);
 
   // Doesn't persist anything, so it doesn't invalidate the integrations scope.
   return useCallback(

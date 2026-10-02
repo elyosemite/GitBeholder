@@ -14,14 +14,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { useSession } from "@/features/session"
+import { useSessionValue } from "@/features/session"
 import { useBranches, useCheckoutBranch, type Branch } from "@/features/branches"
 
 export function BranchBlock() {
   const [open, setOpen] = React.useState(false)
   const [isCheckingOut, setIsCheckingOut] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
-  const { repository, branch } = useSession()
+  const repository = useSessionValue((s) => s.repository)
+  const branch = useSessionValue((s) => s.branch)
   const { data: branches, error: loadError } = useBranches()
   const checkoutBranch = useCheckoutBranch()
 

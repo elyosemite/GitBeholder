@@ -1,9 +1,10 @@
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useApiData } from "@/lib/hooks/useApiData";
 import { getAzureDevOpsIntegration } from "../api";
 
 export function useAzureDevOpsIntegration() {
-  const { repository, revisions } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const revisions = useSessionValue((s) => s.revisions);
 
   return useApiData(
     () =>

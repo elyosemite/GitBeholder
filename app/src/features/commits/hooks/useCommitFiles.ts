@@ -1,9 +1,10 @@
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useApiData } from "@/lib/hooks/useApiData";
 import { getCommitFiles } from "../api";
 
 export function useCommitFiles() {
-  const { repository, inspectedCommit } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const inspectedCommit = useSessionValue((s) => s.inspectedCommit);
 
   return useApiData(
     () =>

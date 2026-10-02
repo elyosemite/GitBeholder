@@ -20,7 +20,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { useSession } from "@/features/session"
+import { useSessionActions, useSessionValue } from "@/features/session"
 import { useRepositories } from "@/features/repositories"
 import { OpenLocalRepositoryDialog } from "./OpenLocalRepositoryDialog"
 import { CloneRepositoryDialog } from "./CloneRepositoryDialog"
@@ -51,7 +51,8 @@ function RepositoryActionButton({
 export function RepositoryBlock() {
   const [open, setOpen] = React.useState(false)
   const [activeDialog, setActiveDialog] = React.useState<RepositoryDialog>(null)
-  const { repository, selectRepository } = useSession()
+  const repository = useSessionValue((s) => s.repository)
+  const { selectRepository } = useSessionActions()
   const { data: repositories, error } = useRepositories()
 
   function openDialog(dialog: RepositoryDialog) {

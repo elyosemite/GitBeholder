@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { usePush, usePushStatus } from "@/features/push"
 import { usePull } from "@/features/pull"
-import { useSession } from "@/features/session"
+import { useSessionActions } from "@/features/session"
 import { useStashes } from "@/features/stashes"
 
 export function GitOperationBlock() {
@@ -22,7 +22,7 @@ export function GitOperationBlock() {
   const [isPulling, setIsPulling] = React.useState(false)
 
   const { data: stashes, loading: isLoadingStashes } = useStashes()
-  const { invalidate } = useSession()
+  const { invalidate } = useSessionActions()
 
   const ahead = pushStatus?.ahead ?? 0
   const behind = pushStatus?.behind ?? 0

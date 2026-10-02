@@ -1,9 +1,10 @@
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useSharedApiData } from "@/lib/hooks/useSharedApiData";
 import { listStashes } from "../api";
 
 export function useStashes() {
-  const { repository, revisions } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const revisions = useSessionValue((s) => s.revisions);
 
   // Shared: several components read stashes at once (header, overview
   // column, activity bar) — one request serves them all.

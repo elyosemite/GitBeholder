@@ -1,9 +1,11 @@
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useApiData } from "@/lib/hooks/useApiData";
 import { getFileDiff } from "../api";
 
 export function useFileDiff() {
-  const { repository, inspectedCommit, diffFile } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const inspectedCommit = useSessionValue((s) => s.inspectedCommit);
+  const diffFile = useSessionValue((s) => s.diffFile);
 
   return useApiData(
     () =>

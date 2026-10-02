@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
 import { PatchDiff } from "@pierre/diffs/react";
-import { useSession } from "@/features/session";
+import { useSessionActions, useSessionValue } from "@/features/session";
 import { useFileDiff } from "@/features/commits";
 
 export function DiffColumn() {
-  const { diffFile, closeDiff } = useSession();
+  const diffFile = useSessionValue((s) => s.diffFile);
+  const { closeDiff } = useSessionActions();
   const { data: diff } = useFileDiff();
 
   useEffect(() => {

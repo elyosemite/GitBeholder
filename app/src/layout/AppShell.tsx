@@ -6,7 +6,7 @@ import { CommitsColumn } from "./columns/CommitsColumn";
 import { GraphColumn } from "./columns/GraphColumn";
 import { DiffColumn } from "./columns/DiffColumn";
 import { ChangesColumn } from "./columns/ChangesColumn";
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useResizableWidth } from "@/lib/hooks/useResizableWidth";
 import { useZoom } from "@/lib/hooks/useZoom";
 import { onRender } from "@/lib/perf";
@@ -15,7 +15,8 @@ const CHANGES_COLUMN_DEFAULT_WIDTH = 288; // matches the previous fixed w-72
 const CHANGES_COLUMN_MAX_WIDTH = 480;
 
 export function AppShell() {
-  const { diffFile, mainView } = useSession();
+  const diffFile = useSessionValue((s) => s.diffFile);
+  const mainView = useSessionValue((s) => s.mainView);
   const { width: changesWidth, onPointerDown } = useResizableWidth(
     CHANGES_COLUMN_DEFAULT_WIDTH,
     0,

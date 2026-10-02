@@ -34,7 +34,7 @@ import { useStashes } from "@/features/stashes"
 import { useTags } from "@/features/tags"
 import { useCommitFiles, type CommitFileChange } from "@/features/commits"
 import { useAzureDevOpsIntegration, useDisconnectAzureDevOps } from "@/features/integrations"
-import { useSession } from "@/features/session"
+import { useSessionActions, useSessionValue } from "@/features/session"
 import { splitPath } from "@/lib/paths"
 import { ConnectAzureDevOpsDialog } from "./ConnectAzureDevOpsDialog"
 
@@ -191,7 +191,9 @@ export function RepositoryOverviewColumn() {
   const { data: tags } = useTags()
   const tagList = tags ?? []
 
-  const { inspectedCommit, openDiff, mainView, setMainView } = useSession()
+  const inspectedCommit = useSessionValue((s) => s.inspectedCommit)
+  const mainView = useSessionValue((s) => s.mainView)
+  const { openDiff, setMainView } = useSessionActions()
   const { data: commitFiles } = useCommitFiles()
   const commitFileList = commitFiles ?? []
 

@@ -1,9 +1,10 @@
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useSharedApiData } from "@/lib/hooks/useSharedApiData";
 import { listBranches } from "../api";
 
 export function useBranches() {
-  const { repository, revisions } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const revisions = useSessionValue((s) => s.revisions);
 
   // Shared: several components read branches at once (header, overview
   // column) — one request serves them all.

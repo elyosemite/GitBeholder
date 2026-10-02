@@ -1,9 +1,10 @@
 import { useCallback } from "react";
-import { useSession } from "@/features/session";
+import { useSessionActions, useSessionValue } from "@/features/session";
 import { createCommit } from "../api";
 
 export function useCreateCommit() {
-  const { repository, invalidate } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const { invalidate } = useSessionActions();
 
   return useCallback(
     async (message: string) => {

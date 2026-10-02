@@ -1,9 +1,11 @@
-import { useSession } from "@/features/session";
+import { useSessionValue } from "@/features/session";
 import { useApiData } from "@/lib/hooks/useApiData";
 import { listCommits } from "../api";
 
 export function useCommits() {
-  const { repository, branch, revisions } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const branch = useSessionValue((s) => s.branch);
+  const revisions = useSessionValue((s) => s.revisions);
 
   return useApiData(
     () =>

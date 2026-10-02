@@ -1,10 +1,10 @@
 import { useCallback } from "react";
-import { useSession } from "@/features/session";
+import { useSessionActions } from "@/features/session";
 import { openLocalRepository } from "../api";
 import { WORKSPACE_ID } from "../constants";
 
 export function useOpenLocalRepository() {
-  const { selectRepository } = useSession();
+  const { selectRepository } = useSessionActions();
 
   return useCallback(
     async (path: string) => {

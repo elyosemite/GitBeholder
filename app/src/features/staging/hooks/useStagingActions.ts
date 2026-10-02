@@ -1,9 +1,10 @@
 import { useCallback } from "react";
-import { useSession } from "@/features/session";
+import { useSessionActions, useSessionValue } from "@/features/session";
 import { stageFile, unstageFile } from "../api";
 
 export function useStagingActions() {
-  const { repository, invalidate } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const { invalidate } = useSessionActions();
 
   const stage = useCallback(
     async (path: string) => {

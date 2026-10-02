@@ -1,10 +1,11 @@
 import { useCallback } from "react";
-import { useSession } from "@/features/session";
+import { useSessionActions, useSessionValue } from "@/features/session";
 import { connectAzureDevOps } from "../api";
 import type { ConnectAzureDevOpsPayload } from "../types";
 
 export function useConnectAzureDevOps() {
-  const { repository, invalidate } = useSession();
+  const repository = useSessionValue((s) => s.repository);
+  const { invalidate } = useSessionActions();
 
   return useCallback(
     async (payload: ConnectAzureDevOpsPayload) => {
