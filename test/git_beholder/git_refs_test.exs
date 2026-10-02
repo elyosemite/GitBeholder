@@ -105,6 +105,20 @@ defmodule GitBeholder.GitRefsTest do
     assert main_ref.platform == nil
   end
 
+  test "each remote resolves its own platform when there are several", %{repo_path: repo_path} do
+    sha = commit(repo_path, "first")
+
+    System.cmd("git", ["remote", "add", "origin", "git@github.com:someone/somerepo.git"], cd: repo_path)
+    System.cmd("git", ["remote", "add", "work", "https://dev.azure.com/org/project/_git/repo"], cd: repo_path)
+    System.cmd("git", ["update-ref", "refs/remotes/origin/gh-only", sha], cd: repo_path)
+    System.cmd("git", ["update-ref", "refs/remotes/work/ado-only", sha], cd: repo_path)
+
+    assert {:ok, decorations} = GitRefs.decorations_by_commit(repo_path)
+
+    assert Enum.find(decorations[sha], &(&1.name == "gh-only")).platform == "github"
+    assert Enum.find(decorations[sha], &(&1.name == "ado-only")).platform == "azure-devops"
+  end
+
   test "a local branch and its same-named remote-tracking ref merge into one CommitRef", %{
     repo_path: repo_path
   } do

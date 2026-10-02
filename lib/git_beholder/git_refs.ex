@@ -91,17 +91,43 @@ defmodule GitBeholder.GitRefs do
   defp classify(_refname), do: :unknown
 
   defp resolve_platforms(repo_path, raw_refs) do
-    raw_refs
-    |> Enum.map(& &1.remote)
-    |> Enum.reject(&is_nil/1)
-    |> Enum.uniq()
-    |> Map.new(fn remote -> {remote, remote_platform(repo_path, remote)} end)
+    if Enum.any?(raw_refs, & &1.remote) do
+      repo_path
+      |> remote_urls()
+      |> Map.new(fn {remote, url} -> {remote, detect_platform(url)} end)
+    else
+      %{}
+    end
   end
 
-  defp remote_platform(repo_path, remote) do
-    case System.cmd("git", ["remote", "get-url", remote], cd: repo_path, stderr_to_stdout: true) do
-      {url, 0} -> detect_platform(String.trim(url))
-      _ -> nil
+  # One `git config` for every remote instead of a `git remote get-url`
+  # per remote — each git spawn costs ~20 ms on Windows. Unlike get-url it
+  # skips `url.<base>.insteadOf` rewriting, which only matters for platform
+  # detection when a rewrite changes the host.
+  defp remote_urls(repo_path) do
+    case System.cmd("git", ["config", "--get-regexp", ~S"^remote\..*\.url$"],
+           cd: repo_path,
+           stderr_to_stdout: true
+         ) do
+      {output, 0} ->
+        output
+        |> String.split("\n", trim: true)
+        |> Enum.flat_map(&parse_remote_url_line/1)
+
+      # Exit 1 = no remote has a url configured.
+      _ ->
+        []
+    end
+  end
+
+  # "remote.origin.url git@github.com:a/b.git" -> {"origin", "git@github.com:a/b.git"}
+  defp parse_remote_url_line(line) do
+    with [key, url] <- String.split(String.trim(line), " ", parts: 2),
+         "remote." <> rest <- key,
+         remote when remote != "" <- String.replace_suffix(rest, ".url", "") do
+      [{remote, url}]
+    else
+      _ -> []
     end
   end
 
