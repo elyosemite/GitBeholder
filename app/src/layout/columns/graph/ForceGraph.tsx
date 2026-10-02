@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 
 import { useElementSize } from "@/lib/hooks/useElementSize";
 import { useForceSimulation, type SimNode } from "@/lib/graph/useForceSimulation";
@@ -63,6 +63,101 @@ function NodeTooltip({
   );
 }
 
+function nodeIdOf(target: EventTarget): string | undefined {
+  return target instanceof SVGElement ? target.dataset.nodeId : undefined;
+}
+
+interface NodeHandlers {
+  onPointerDown: (event: React.PointerEvent<SVGGElement>) => void;
+  onPointerMove: (event: React.PointerEvent<SVGGElement>) => void;
+  onPointerUp: (event: React.PointerEvent<SVGGElement>) => void;
+  onPointerOver: (event: React.PointerEvent<SVGGElement>) => void;
+  onPointerOut: (event: React.PointerEvent<SVGGElement>) => void;
+}
+
+// Edges and nodes are memoized layers: hover, pan/zoom and drag change
+// ForceGraph's state but none of these props, so the thousands of
+// <line>/<circle> elements of a large graph only re-render when the
+// layout itself changes. Positions move via moveToTick, not React.
+const EdgeLayer = memo(function EdgeLayer({
+  edges,
+  byId,
+  lineRefs,
+}: {
+  edges: GraphEdge[];
+  byId: Map<string, SimNode>;
+  lineRefs: RefObject<(SVGLineElement | null)[]>;
+}) {
+  return (
+    <g>
+      {edges.map((edge, index) => {
+        const source = byId.get(edge.source);
+        const target = byId.get(edge.target);
+        if (!source || source.x === undefined || source.y === undefined) return null;
+        if (!target || target.x === undefined || target.y === undefined) return null;
+
+        return (
+          <line
+            key={index}
+            ref={(line) => {
+              lineRefs.current[index] = line;
+            }}
+            x1={source.x}
+            y1={source.y}
+            x2={target.x}
+            y2={target.y}
+            className="stroke-line-subtle"
+            // 1 screen pixel at any zoom, without depending on transform.k.
+            strokeWidth={1}
+            vectorEffect="non-scaling-stroke"
+          />
+        );
+      })}
+    </g>
+  );
+});
+
+// Pointer handlers sit on the <g> (event delegation) and find the node
+// through data-node-id, so no per-circle closures change between renders.
+const NodeLayer = memo(function NodeLayer({
+  positioned,
+  circleRefs,
+  handlers,
+}: {
+  positioned: SimNode[];
+  circleRefs: RefObject<Map<string, SVGCircleElement>>;
+  handlers: NodeHandlers;
+}) {
+  return (
+    <g
+      onPointerDown={handlers.onPointerDown}
+      onPointerMove={handlers.onPointerMove}
+      onPointerUp={handlers.onPointerUp}
+      onPointerCancel={handlers.onPointerUp}
+      onPointerOver={handlers.onPointerOver}
+      onPointerOut={handlers.onPointerOut}
+    >
+      {positioned.map((node) =>
+        node.x === undefined || node.y === undefined ? null : (
+          <circle
+            key={node.id}
+            ref={(circle) => {
+              if (circle) circleRefs.current.set(node.id, circle);
+              else circleRefs.current.delete(node.id);
+            }}
+            data-node-id={node.id}
+            cx={node.x}
+            cy={node.y}
+            r={node.radius}
+            className={node.kind === "file" ? "fill-accent" : "fill-ink-faint"}
+            style={{ cursor: "grab", touchAction: "none" }}
+          />
+        ),
+      )}
+    </g>
+  );
+});
+
 export function ForceGraph({
   nodes,
   edges,
@@ -119,9 +214,12 @@ export function ForceGraph({
   const { positioned, drag } = useForceSimulation(nodes, edges, width, height, moveToTick);
   const { transform, panBy, zoomAt, toWorld } = usePanZoom();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const lastPanPointRef = useRef<Point | null>(null);
+  // Refs, not state: starting a drag must not re-render the graph.
+  const draggingIdRef = useRef<string | null>(null);
+  const toWorldRef = useRef(toWorld);
+  toWorldRef.current = toWorld;
 
   const byId = useMemo(() => new Map(positioned.map((node) => [node.id, node])), [positioned]);
   const hoveredNode = hoveredId ? byId.get(hoveredId) : undefined;
@@ -155,26 +253,44 @@ export function ForceGraph({
     return () => svg.removeEventListener("wheel", handleWheel);
   }, [zoomAt, panBy, width, height]);
 
-  function handleNodePointerDown(node: SimNode, event: React.PointerEvent<SVGCircleElement>) {
-    event.currentTarget.setPointerCapture(event.pointerId);
-    setDraggingId(node.id);
-    drag.onDragStart(node.id);
-  }
-
-  function handleNodePointerMove(node: SimNode, event: React.PointerEvent<SVGCircleElement>) {
-    const svg = svgRef.current;
-    if (!svg || draggingId !== node.id) return;
-    const world = toWorld(toSvgPoint(svg, event));
-    drag.onDrag(node.id, world.x, world.y);
-  }
-
-  function handleNodePointerUp(node: SimNode, event: React.PointerEvent<SVGCircleElement>) {
-    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
-    }
-    setDraggingId(null);
-    drag.onDragEnd(node.id);
-  }
+  const { onDragStart, onDrag, onDragEnd } = drag;
+  const nodeHandlers = useMemo<NodeHandlers>(
+    () => ({
+      onPointerDown(event) {
+        const id = nodeIdOf(event.target);
+        if (!id) return;
+        const circle = event.target as SVGCircleElement;
+        circle.setPointerCapture(event.pointerId);
+        circle.style.cursor = "grabbing";
+        draggingIdRef.current = id;
+        onDragStart(id);
+      },
+      onPointerMove(event) {
+        const id = draggingIdRef.current;
+        const svg = svgRef.current;
+        if (!id || !svg) return;
+        const world = toWorldRef.current(toSvgPoint(svg, event));
+        onDrag(id, world.x, world.y);
+      },
+      onPointerUp(event) {
+        const id = draggingIdRef.current;
+        if (!id) return;
+        const circle = event.target as SVGCircleElement;
+        if (circle.hasPointerCapture(event.pointerId)) circle.releasePointerCapture(event.pointerId);
+        circle.style.cursor = "grab";
+        draggingIdRef.current = null;
+        onDragEnd(id);
+      },
+      onPointerOver(event) {
+        const id = nodeIdOf(event.target);
+        if (id) setHoveredId(id);
+      },
+      onPointerOut(event) {
+        if (nodeIdOf(event.target)) setHoveredId(null);
+      },
+    }),
+    [onDragStart, onDrag, onDragEnd],
+  );
 
   function handleBackgroundPointerDown(event: React.PointerEvent<SVGRectElement>) {
     const svg = svgRef.current;
@@ -227,53 +343,8 @@ export function ForceGraph({
             onPointerCancel={handleBackgroundPointerUp}
           />
           <g transform={`translate(${transform.x} ${transform.y}) scale(${transform.k})`}>
-            <g>
-              {edges.map((edge, index) => {
-                const source = byId.get(edge.source);
-                const target = byId.get(edge.target);
-                if (!source || source.x === undefined || source.y === undefined) return null;
-                if (!target || target.x === undefined || target.y === undefined) return null;
-
-                return (
-                  <line
-                    key={index}
-                    ref={(line) => {
-                      lineRefs.current[index] = line;
-                    }}
-                    x1={source.x}
-                    y1={source.y}
-                    x2={target.x}
-                    y2={target.y}
-                    className="stroke-line-subtle"
-                    strokeWidth={1 / transform.k}
-                  />
-                );
-              })}
-            </g>
-            <g>
-              {positioned.map((node) =>
-                node.x === undefined || node.y === undefined ? null : (
-                  <circle
-                    key={node.id}
-                    ref={(circle) => {
-                      if (circle) circleRefs.current.set(node.id, circle);
-                      else circleRefs.current.delete(node.id);
-                    }}
-                    cx={node.x}
-                    cy={node.y}
-                    r={node.radius}
-                    className={node.kind === "file" ? "fill-accent" : "fill-ink-faint"}
-                    style={{ cursor: draggingId === node.id ? "grabbing" : "grab", touchAction: "none" }}
-                    onPointerDown={(event) => handleNodePointerDown(node, event)}
-                    onPointerMove={(event) => handleNodePointerMove(node, event)}
-                    onPointerUp={(event) => handleNodePointerUp(node, event)}
-                    onPointerCancel={(event) => handleNodePointerUp(node, event)}
-                    onMouseEnter={() => setHoveredId(node.id)}
-                    onMouseLeave={() => setHoveredId(null)}
-                  />
-                ),
-              )}
-            </g>
+            <EdgeLayer edges={edges} byId={byId} lineRefs={lineRefs} />
+            <NodeLayer positioned={positioned} circleRefs={circleRefs} handlers={nodeHandlers} />
           </g>
         </svg>
       )}
