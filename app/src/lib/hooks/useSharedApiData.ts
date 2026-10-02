@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 
 interface AsyncState<T> {
   data: T | null;
@@ -40,50 +40,49 @@ function publish(key: string, state: AsyncState<unknown>) {
  * fold the session revision into it (`stashes:<repoId>:<revision>`), the
  * same thing useApiData uses as a dependency. An entry is dropped once
  * no component reads it anymore, so a key seen again later fetches fresh.
+ *
+ * Results land as a transition, so rendering a long list for freshly
+ * arrived data can yield to input instead of freezing the UI — unlike
+ * useSyncExternalStore, which always renders synchronously.
  */
 export function useSharedApiData<T>(key: string, fetcher: () => Promise<T>): AsyncState<T> {
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
 
-  const subscribe = useCallback(
-    (listener: () => void) => {
-      const entry = entryFor(key);
-      entry.listeners.add(listener);
-
-      return () => {
-        entry.listeners.delete(listener);
-        // Deferred so StrictMode's immediate unmount/remount, or a
-        // sibling mounting in the same commit, keeps the entry alive.
-        setTimeout(() => {
-          if (entry.listeners.size === 0 && entries.get(key) === entry) entries.delete(key);
-        }, 0);
-      };
-    },
-    [key],
-  );
-
-  const getSnapshot = useCallback(
-    () => (entries.get(key)?.state ?? LOADING) as AsyncState<T>,
-    [key],
-  );
-
-  const state = useSyncExternalStore(subscribe, getSnapshot);
+  const [state, setState] = useState<AsyncState<unknown>>(() => entries.get(key)?.state ?? LOADING);
 
   useEffect(() => {
     const entry = entryFor(key);
-    if (entry.started) return;
-    entry.started = true;
+    const sync = () => startTransition(() => setState(entry.state));
 
-    fetcherRef.current().then(
-      (data) => publish(key, { data, error: null, loading: false }),
-      (err) => publish(key, { data: null, error: String(err), loading: false }),
-    );
+    entry.listeners.add(sync);
+    // Catch up with whatever the entry holds now: another component may
+    // already have fetched it, or this is a new key still loading.
+    setState(entry.state);
+
+    if (!entry.started) {
+      entry.started = true;
+      fetcherRef.current().then(
+        (data) => publish(key, { data, error: null, loading: false }),
+        (err) => publish(key, { data: null, error: String(err), loading: false }),
+      );
+    }
+
+    return () => {
+      entry.listeners.delete(sync);
+      // Deferred so StrictMode's immediate unmount/remount, or a
+      // sibling mounting in the same commit, keeps the entry alive.
+      setTimeout(() => {
+        if (entry.listeners.size === 0 && entries.get(key) === entry) entries.delete(key);
+      }, 0);
+    };
   }, [key]);
 
   // Keep the previous data on screen while a new key loads, as
   // useApiData does, instead of blanking the list on every refetch.
   const lastData = useRef<T | null>(null);
-  if (state.data !== null) lastData.current = state.data;
+  const data = state.data as T | null;
+  if (data !== null) lastData.current = data;
 
-  return { data: state.data ?? lastData.current, error: state.error, loading: state.loading };
+  return { data: data ?? lastData.current, error: state.error, loading: state.loading };
 }
