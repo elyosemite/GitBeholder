@@ -1,3 +1,4 @@
+import { Profiler } from "react";
 import { Header } from "./header/Header";
 import { Footer } from "./footer/Footer";
 import { RepositoryOverviewColumn } from "./columns/RepositoryOverviewColumn";
@@ -8,6 +9,7 @@ import { ChangesColumn } from "./columns/ChangesColumn";
 import { useSession } from "@/features/session";
 import { useResizableWidth } from "@/lib/hooks/useResizableWidth";
 import { useZoom } from "@/lib/hooks/useZoom";
+import { onRender } from "@/lib/perf";
 
 const CHANGES_COLUMN_DEFAULT_WIDTH = 288; // matches the previous fixed w-72
 const CHANGES_COLUMN_MAX_WIDTH = 480;
@@ -23,21 +25,31 @@ export function AppShell() {
 
   return (
     <div className="flex flex-col h-screen bg-canvas">
-      <Header />
+      <Profiler id="Header" onRender={onRender}>
+        <Header />
+      </Profiler>
       <main
         className="flex-1 flex min-w-0 min-h-0"
         style={{ zoom: `${zoom.zoom}%` }}
       >
         <div className="w-72 flex-none h-full">
-          <RepositoryOverviewColumn />
+          <Profiler id="RepositoryOverviewColumn" onRender={onRender}>
+            <RepositoryOverviewColumn />
+          </Profiler>
         </div>
         <div className="flex-1 min-w-0 h-full">
           {diffFile !== null ? (
-            <DiffColumn />
+            <Profiler id="DiffColumn" onRender={onRender}>
+              <DiffColumn />
+            </Profiler>
           ) : mainView === "graph" ? (
-            <GraphColumn />
+            <Profiler id="GraphColumn" onRender={onRender}>
+              <GraphColumn />
+            </Profiler>
           ) : (
-            <CommitsColumn />
+            <Profiler id="CommitsColumn" onRender={onRender}>
+              <CommitsColumn />
+            </Profiler>
           )}
         </div>
         <div
@@ -48,7 +60,9 @@ export function AppShell() {
           className="w-1 flex-none h-full cursor-col-resize bg-line-subtle hover:bg-accent active:bg-accent"
         />
         <div className="flex-none h-full overflow-hidden" style={{ width: changesWidth }}>
-          <ChangesColumn />
+          <Profiler id="ChangesColumn" onRender={onRender}>
+            <ChangesColumn />
+          </Profiler>
         </div>
       </main>
       <Footer zoom={zoom} />
