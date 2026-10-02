@@ -19,14 +19,16 @@ defmodule GitBeholder.GitLog do
         "--date=format:%Y-%m-%d %H:%M"
       ]
 
-      case System.cmd("git", args, cd: repo_path, stderr_to_stdout: true) do
-        {output, 0} ->
-          with {:ok, decorations} <- GitRefs.decorations_by_commit(repo_path) do
-            {:ok, parse(output, decorations)}
-          end
+      # The refs lookup spawns its own git processes; run it alongside
+      # `git log` instead of after it.
+      decorations_task = Task.async(fn -> GitRefs.decorations_by_commit(repo_path) end)
+      log_result = System.cmd("git", args, cd: repo_path, stderr_to_stdout: true)
+      decorations = Task.await(decorations_task, :infinity)
 
-        {error_msg, _exit_code} ->
-          {:error, error_msg}
+      case {log_result, decorations} do
+        {{output, 0}, {:ok, decorations}} -> {:ok, parse(output, decorations)}
+        {{_output, 0}, {:error, reason}} -> {:error, reason}
+        {{error_msg, _exit_code}, _decorations} -> {:error, error_msg}
       end
     else
       {:error, "Not a valid Git repository"}
