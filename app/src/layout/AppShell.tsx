@@ -18,6 +18,22 @@ import { onRender } from "@/lib/perf";
 
 const CHANGES_COLUMN_DEFAULT_WIDTH = 288; // matches the previous fixed w-72
 const CHANGES_COLUMN_MAX_WIDTH = 480;
+// The overview column can grow but never get narrower than its original
+// fixed width (w-72), which its lists are laid out for.
+const OVERVIEW_COLUMN_MIN_WIDTH = 288;
+const OVERVIEW_COLUMN_MAX_WIDTH = 480;
+
+function ColumnResizeHandle({ onPointerDown }: { onPointerDown: (event: React.PointerEvent) => void }) {
+  return (
+    <div
+      onPointerDown={onPointerDown}
+      role="separator"
+      aria-orientation="vertical"
+      title="Drag to resize"
+      className="w-1 flex-none h-full cursor-col-resize bg-line-subtle hover:bg-accent active:bg-accent"
+    />
+  );
+}
 
 export function AppShell() {
   const diffFile = useSessionValue((s) => s.diffFile);
@@ -26,6 +42,12 @@ export function AppShell() {
     CHANGES_COLUMN_DEFAULT_WIDTH,
     0,
     CHANGES_COLUMN_MAX_WIDTH,
+  );
+  const { width: overviewWidth, onPointerDown: onOverviewResizeStart } = useResizableWidth(
+    OVERVIEW_COLUMN_MIN_WIDTH,
+    OVERVIEW_COLUMN_MIN_WIDTH,
+    OVERVIEW_COLUMN_MAX_WIDTH,
+    "left",
   );
   const zoom = useZoom();
   const { tabs, activeId } = useTabs();
@@ -54,11 +76,12 @@ export function AppShell() {
           className="flex-1 flex min-w-0 min-h-0"
           style={{ zoom: `${zoom.zoom}%` }}
         >
-          <div className="w-72 flex-none h-full">
+          <div className="flex-none h-full" style={{ width: overviewWidth }}>
             <Profiler id="RepositoryOverviewColumn" onRender={onRender}>
               <RepositoryOverviewColumn />
             </Profiler>
           </div>
+          <ColumnResizeHandle onPointerDown={onOverviewResizeStart} />
           <div className="flex-1 min-w-0 h-full">
             {diffFile !== null ? (
               <Profiler id="DiffColumn" onRender={onRender}>
@@ -74,13 +97,7 @@ export function AppShell() {
               </Profiler>
             )}
           </div>
-          <div
-            onPointerDown={onPointerDown}
-            role="separator"
-            aria-orientation="vertical"
-            title="Drag to resize"
-            className="w-1 flex-none h-full cursor-col-resize bg-line-subtle hover:bg-accent active:bg-accent"
-          />
+          <ColumnResizeHandle onPointerDown={onPointerDown} />
           <div className="flex-none h-full overflow-hidden" style={{ width: changesWidth }}>
             <Profiler id="ChangesColumn" onRender={onRender}>
               <ChangesColumn />
