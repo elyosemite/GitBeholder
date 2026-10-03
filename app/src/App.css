@@ -5,51 +5,54 @@
 @import "@fontsource-variable/jetbrains-mono";
 
 /* GitBeholder design system — see docs/design-system.md.
-   Brand: #4949EB (brand-600). Neutrals share its hue (OKLCH 274°) at low
+   Brand: #2196F3 (brand-500). Neutrals share its hue (OKLCH 249°) at low
    chroma so grays and blue read as one family. Every text/background pair
    below is checked for WCAG AA (4.5:1) in both themes; the numbers live in
    the doc. Dark theme is the default; light applies under
    :root[data-theme="light"] (Settings: system / light / dark). */
 @theme static {
-  /* ── Brand scale (OKLCH from #4949EB) ─────────────────────────────── */
-  --color-brand-50: #f2f5fe;
-  --color-brand-100: #e3e9fe;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a2b2fe;
-  --color-brand-400: #7a8cff;
-  --color-brand-500: #5e69ff;
-  --color-brand-600: #4949eb;
-  --color-brand-700: #3527c4;
-  --color-brand-800: #2809a6;
-  --color-brand-900: #1b017c;
-  --color-brand-950: #0f0053;
+  /* ── Brand scale (OKLCH from #2196F3) ─────────────────────────────── */
+  --color-brand-50: #eff6fe;
+  --color-brand-100: #daecff;
+  --color-brand-200: #b3d9ff;
+  --color-brand-300: #87c3ff;
+  --color-brand-400: #4daaff;
+  --color-brand-500: #2196f3;
+  --color-brand-600: #037bce;
+  --color-brand-700: #0166ad;
+  --color-brand-800: #034f88;
+  --color-brand-900: #023a65;
+  --color-brand-950: #002544;
 
   /* ── Surfaces (dark) ──────────────────────────────────────────────── */
-  --color-canvas: #0c0e14; /* app background, main columns */
-  --color-panel: #13141c; /* side panels, header, popovers */
-  --color-surface: #1c1e26; /* raised controls, inputs, badges */
-  --color-surface-hover: #252731;
+  --color-canvas: #0a0f14; /* app background, main columns */
+  --color-panel: #10161b; /* side panels, header, popovers */
+  --color-surface: #181f25; /* raised controls, inputs, badges */
+  --color-surface-hover: #212930;
 
   /* ── Borders ──────────────────────────────────────────────────────── */
-  --color-line-subtle: #21222a; /* dividers between regions */
-  --color-line-default: #3a3d47; /* control borders, rails */
+  --color-line-subtle: #1e2329; /* dividers between regions */
+  --color-line-default: #363e46; /* control borders, rails */
 
   /* ── Text ─────────────────────────────────────────────────────────── */
-  --color-ink: #f2f3f8; /* primary text — 16.6:1 on panel */
-  --color-ink-secondary: #b4b7c2; /* secondary text — 9.2:1 */
-  --color-ink-faint: #8f929e; /* metadata, timestamps — 5.9:1 */
+  --color-ink: #f0f4f7; /* primary text — 16.5:1 on panel */
+  --color-ink-secondary: #b0b8c1; /* secondary text — 9.1:1 */
+  --color-ink-faint: #8a939d; /* metadata, timestamps — 5.9:1 */
 
   /* ── Accent ───────────────────────────────────────────────────────────
      accent      — blue as text, icons, borders, selection rails, focus.
-                   brand-400 here: #4949EB itself is only 3.0:1 on dark.
-     accent-fill — solid fills carrying white text (primary buttons).
-                   Always #4949EB: white on it is 6.1:1 in both themes.
+                   #2196F3 itself on dark (5.3–6.2:1); brand-700 on light.
+     accent-fill — solid fills (primary buttons). Always #2196F3.
+     on-accent   — text on accent-fill: near-black, 6.2:1. White would be
+                   only 3.1:1 on #2196F3, under AA.
+     accent-fill-hover lightens (brand-400, 7.8:1 with on-accent): darkening
+                   would drop the dark text under AA.
      accent-soft — tinted background for selected rows. */
-  --color-accent: var(--color-brand-400);
-  --color-accent-fill: var(--color-brand-600);
-  --color-accent-fill-hover: var(--color-brand-700);
-  --color-accent-soft: rgb(73 73 235 / 0.2);
-  --color-on-accent: #ffffff;
+  --color-accent: var(--color-brand-500);
+  --color-accent-fill: var(--color-brand-500);
+  --color-accent-fill-hover: var(--color-brand-400);
+  --color-accent-soft: rgb(33 150 243 / 0.2);
+  --color-on-accent: #0a0f14;
   --color-brand-to: #a78bfa; /* secondary hue for illustrations/issues */
 
   /* ── Status ───────────────────────────────────────────────────────── */
@@ -178,19 +181,19 @@
 :root[data-theme="light"] {
     --color-canvas: #f8f9fb;
     --color-panel: #ffffff;
-    --color-surface: #f1f2f7;
-    --color-surface-hover: #e5e7ed;
+    --color-surface: #eff3f6;
+    --color-surface-hover: #e3e8ed;
 
-    --color-line-subtle: #e8e9ee;
-    --color-line-default: #d2d4db;
+    --color-line-subtle: #e6eaed;
+    --color-line-default: #cfd5db;
 
-    --color-ink: #181b26; /* 17.2:1 on panel */
-    --color-ink-secondary: #4f5362; /* 7.7:1 */
-    --color-ink-faint: #686b79; /* 5.3:1 */
+    --color-ink: #141d26; /* 17.0:1 on panel */
+    --color-ink-secondary: #495561; /* 7.6:1 */
+    --color-ink-faint: #626d78; /* 5.3:1 */
 
-    /* #4949EB is 6.1:1 on white, so the brand itself is the text accent */
-    --color-accent: var(--color-brand-600);
-    --color-accent-soft: rgb(73 73 235 / 0.1);
+    /* #2196F3 is only 3.1:1 on white: blue text uses brand-700 (6.0:1) */
+    --color-accent: var(--color-brand-700);
+    --color-accent-soft: rgb(33 150 243 / 0.1);
     --color-brand-to: #7c3aed;
 
     --color-success: #15803d;
@@ -206,21 +209,21 @@
     --color-tag: #92400e;
     --color-remote: #075985;
 
-    --color-overlay-hover: rgb(24 27 38 / 0.04);
-    --color-overlay-press: rgb(24 27 38 / 0.07);
-    --color-scrim: rgb(24 27 38 / 0.4);
+    --color-overlay-hover: rgb(20 29 38 / 0.04);
+    --color-overlay-press: rgb(20 29 38 / 0.07);
+    --color-scrim: rgb(20 29 38 / 0.4);
 
-    --shadow-xs: 0 1px 2px rgb(24 27 38 / 0.06);
-    --shadow-sm: 0 1px 3px rgb(24 27 38 / 0.08), 0 1px 2px rgb(24 27 38 / 0.05);
-    --shadow-md: 0 6px 16px -4px rgb(24 27 38 / 0.12), 0 2px 6px -2px rgb(24 27 38 / 0.08);
-    --shadow-lg: 0 16px 40px -8px rgb(24 27 38 / 0.18), 0 6px 12px -6px rgb(24 27 38 / 0.1);
-    --shadow-xl: 0 24px 64px -12px rgb(24 27 38 / 0.25);
+    --shadow-xs: 0 1px 2px rgb(20 29 38 / 0.06);
+    --shadow-sm: 0 1px 3px rgb(20 29 38 / 0.08), 0 1px 2px rgb(20 29 38 / 0.05);
+    --shadow-md: 0 6px 16px -4px rgb(20 29 38 / 0.12), 0 2px 6px -2px rgb(20 29 38 / 0.08);
+    --shadow-lg: 0 16px 40px -8px rgb(20 29 38 / 0.18), 0 6px 12px -6px rgb(20 29 38 / 0.1);
+    --shadow-xl: 0 24px 64px -12px rgb(20 29 38 / 0.25);
 
     /* @pierre/diffs theme bridge — light-mode half of the pair in the
        shadcn :root block below; keep in sync with --color-canvas/--color-ink
        above. */
     --diffs-light-bg: #f8f9fb;
-    --diffs-light: #181b26;
+    --diffs-light: #141d26;
 
     color-scheme: light;
 }
@@ -388,6 +391,6 @@
      diffs background (context, gutter, separator) is `color-mix`'d from
      this pair, so keep these in sync with --color-canvas/--color-ink's
      dark-mode hex in @theme static above. */
-  --diffs-dark-bg: #0c0e14;
-  --diffs-dark: #f2f3f8;
+  --diffs-dark-bg: #0a0f14;
+  --diffs-dark: #f0f4f7;
 }

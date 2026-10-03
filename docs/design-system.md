@@ -8,7 +8,7 @@ Princípios:
 
 - **Denso, como uma IDE.** Base de 13px, linhas e controles de 28px. É um
   cliente Git usado o dia todo; cabe mais histórico na tela sem apertar.
-- **Uma cor de marca, com função.** O azul `#4949EB` marca o que é
+- **Uma cor de marca, com função.** O azul `#2196F3` marca o que é
   interativo, selecionado ou em foco — não decora.
 - **Acessível nos dois temas.** Todo par texto/fundo passa WCAG AA (4,5:1);
   os números estão nas tabelas abaixo.
@@ -20,39 +20,41 @@ Princípios:
 
 ### Escala da marca
 
-Gerada em OKLCH a partir de `#4949EB` (brand-600), mesma matiz (274°),
+Gerada em OKLCH a partir de `#2196F3` (brand-500), mesma matiz (249°),
 luminosidade em degraus.
 
 | Token | Hex | Contraste no fundo escuro (panel) | Contraste no branco |
 |---|---|---|---|
-| `brand-50` | `#f2f5fe` | 16.85 | 1.09 |
-| `brand-100` | `#e3e9fe` | 15.17 | 1.21 |
-| `brand-200` | `#c7d2fe` | 12.31 | 1.49 |
-| `brand-300` | `#a2b2fe` | 9.04 | 2.03 |
-| `brand-400` | `#7a8cff` | **6.14** | 2.99 |
-| `brand-500` | `#5e69ff` | 4.32 | 4.25 |
-| `brand-600` | `#4949eb` | 3.00 | **6.11** |
-| `brand-700` | `#3527c4` | 1.96 | 9.38 |
-| `brand-800` | `#2809a6` | 1.47 | 12.50 |
-| `brand-900` | `#1b017c` | 1.17 | 15.65 |
-| `brand-950` | `#0f0053` | 1.00 | 18.34 |
+| `brand-50` | `#eff6fe` | 16.85 | 1.09 |
+| `brand-100` | `#daecff` | 15.22 | 1.21 |
+| `brand-200` | `#b3d9ff` | 12.48 | 1.47 |
+| `brand-300` | `#87c3ff` | 9.86 | 1.86 |
+| `brand-400` | `#4daaff` | 7.43 | 2.47 |
+| `brand-500` | `#2196f3` | **5.87** | 3.12 |
+| `brand-600` | `#037bce` | 4.13 | 4.44 |
+| `brand-700` | `#0166ad` | 3.06 | **5.99** |
+| `brand-800` | `#034f88` | 2.16 | 8.48 |
+| `brand-900` | `#023a65` | 1.57 | 11.69 |
+| `brand-950` | `#002544` | 1.18 | 15.58 |
 
 ### Papéis do azul
 
-`#4949EB` tem só 3,0:1 sobre o fundo escuro — reprova como texto. Por isso
-o azul tem três papéis, cada um com o tom que passa no contraste:
+`#2196F3` é claro: passa como texto no fundo escuro (5,9:1), mas tem só
+3,1:1 no branco — e texto **branco sobre ele** também fica em 3,1:1, abaixo
+do AA. Por isso:
 
 | Token | Para quê | Escuro | Claro |
 |---|---|---|---|
-| `accent` | texto, ícone, borda, trilho de seleção, anel de foco | `brand-400` (6,1:1) | `brand-600` (6,1:1) |
-| `accent-fill` | preenchimento sólido com texto branco (botão primário) | `brand-600` | `brand-600` |
-| `accent-fill-hover` | hover/pressionado do preenchimento | `brand-700` | `brand-700` |
-| `accent-soft` | fundo de linha selecionada | 600 a 20% | 600 a 10% |
-| `on-accent` | texto sobre `accent-fill` | branco (6,1:1) | branco (6,1:1) |
+| `accent` | texto, ícone, borda, trilho de seleção, anel de foco | `brand-500` (5,3–6,2:1) | `brand-700` (5,4–6,0:1) |
+| `accent-fill` | preenchimento sólido (botão primário) | `brand-500` | `brand-500` |
+| `on-accent` | texto sobre `accent-fill` | quase preto `#0a0f14` (6,2:1) | idem |
+| `accent-fill-hover` | hover do preenchimento — **clareia** | `brand-400` (7,8:1 com `on-accent`) | idem |
+| `accent-soft` | fundo de linha selecionada | 500 a 20% | 500 a 10% |
 
-O `primary` do shadcn aponta para `accent-fill`, então `<Button>` padrão já
-sai com `#4949EB` e texto branco. Não use `brand-500` como fundo de texto
-branco: 4,25:1, abaixo do AA.
+Botão primário = `#2196F3` com texto escuro. O hover clareia em vez de
+escurecer: escurecer o fundo derrubaria o texto escuro para baixo do AA
+(por isso o hover usa `hover:bg-accent-fill-hover`, não `bg-primary/80`).
+Não use texto branco sobre `accent-fill`.
 
 ### Neutros
 
@@ -61,15 +63,15 @@ família.
 
 | Token | Uso | Escuro | Claro |
 |---|---|---|---|
-| `canvas` | fundo do app, colunas principais | `#0c0e14` | `#f8f9fb` |
-| `panel` | painéis laterais, header, popovers | `#13141c` | `#ffffff` |
-| `surface` | controles elevados, inputs, badges | `#1c1e26` | `#f1f2f7` |
-| `surface-hover` | hover de `surface` | `#252731` | `#e5e7ed` |
-| `line-subtle` | divisórias entre regiões | `#21222a` | `#e8e9ee` |
-| `line-default` | borda de controles, trilhos | `#3a3d47` | `#d2d4db` |
-| `ink` | texto principal | `#f2f3f8` — 16,6:1 | `#181b26` — 17,2:1 |
-| `ink-secondary` | texto secundário | `#b4b7c2` — 9,2:1 | `#4f5362` — 7,7:1 |
-| `ink-faint` | metadados, timestamps, placeholders | `#8f929e` — 5,9:1 | `#686b79` — 5,3:1 |
+| `canvas` | fundo do app, colunas principais | `#0a0f14` | `#f8f9fb` |
+| `panel` | painéis laterais, header, popovers | `#10161b` | `#ffffff` |
+| `surface` | controles elevados, inputs, badges | `#181f25` | `#eff3f6` |
+| `surface-hover` | hover de `surface` | `#212930` | `#e3e8ed` |
+| `line-subtle` | divisórias entre regiões | `#1e2329` | `#e6eaed` |
+| `line-default` | borda de controles, trilhos | `#363e46` | `#cfd5db` |
+| `ink` | texto principal | `#f0f4f7` — 16,5:1 | `#141d26` — 17,0:1 |
+| `ink-secondary` | texto secundário | `#b0b8c1` — 9,1:1 | `#495561` — 7,6:1 |
+| `ink-faint` | metadados, timestamps, placeholders | `#8a939d` — 5,9:1 | `#626d78` — 5,3:1 |
 
 (Contrastes medidos contra `panel`; contra `canvas` e `surface` todos ficam
 acima de 4,5:1 também.)
