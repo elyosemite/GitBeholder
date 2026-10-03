@@ -9,3 +9,8 @@ export function getCurrentUser(): Promise<User> {
 export function updateCurrentUser(payload: UpdateUserPayload): Promise<User> {
   return request<User>("/me", { method: "PATCH", body: payload });
 }
+
+/** Every user with their team and photo — matched to commit authors by email. */
+export function listUsers(): Promise<User[]> {
+  return request<{ users: User[] }>("/users").then(({ users }) => users);
+}

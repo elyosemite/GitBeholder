@@ -18,6 +18,7 @@ export interface Commit {
   message: string;
   description: string;
   author: string;
+  author_email: string;
   timestamp: string;
   refs: CommitRef[];
 }
