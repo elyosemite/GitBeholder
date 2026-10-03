@@ -70,6 +70,58 @@ defmodule GitBeholder.GitCommitDetailsTest do
     assert {:error, :invalid_hash} = GitCommitDetails.get(repo_path, "HEAD")
   end
 
+  test "reports co-authors and drops their trailers from the body", %{repo_path: repo_path} do
+    hash =
+      commit(
+        repo_path,
+        "feat: x\n\nBody text.\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nco-authored-by: Grace <grace@example.com>"
+      )
+
+    assert {:ok, details} = GitCommitDetails.get(repo_path, hash)
+
+    assert details.co_authors == [
+             %{name: "Claude Opus 5.5", email: "noreply@anthropic.com"},
+             %{name: "Grace", email: "grace@example.com"}
+           ]
+
+    assert details.body == "Body text."
+  end
+
+  test "reports files changed, insertions and deletions", %{repo_path: repo_path} do
+    File.write!(Path.join(repo_path, "a.txt"), "1\n2\n3\n")
+    git(repo_path, ["add", "-A"])
+    git(repo_path, ["commit", "-q", "-m", "base"])
+
+    File.write!(Path.join(repo_path, "a.txt"), "1\nTWO\n3\n4\n")
+    File.write!(Path.join(repo_path, "b.txt"), "new\n")
+    git(repo_path, ["add", "-A"])
+    git(repo_path, ["commit", "-q", "-m", "edit"])
+    hash = git(repo_path, ["rev-parse", "HEAD"])
+
+    assert {:ok, %{stats: stats}} = GitCommitDetails.get(repo_path, hash)
+    assert stats == %{files_changed: 2, insertions: 3, deletions: 1}
+  end
+
+  test "lists local (current or not) and remote branches containing the commit", %{repo_path: repo_path} do
+    hash = commit(repo_path, "first")
+    current = git(repo_path, ["rev-parse", "--abbrev-ref", "HEAD"])
+    git(repo_path, ["branch", "feature"])
+    git(repo_path, ["update-ref", "refs/remotes/origin/#{current}", hash])
+    git(repo_path, ["symbolic-ref", "refs/remotes/origin/HEAD", "refs/remotes/origin/#{current}"])
+
+    assert {:ok, %{branches: branches}} = GitCommitDetails.get(repo_path, hash)
+
+    assert Enum.sort_by(branches, & &1.name) ==
+             Enum.sort_by(
+               [
+                 %{name: current, remote: false, current: true},
+                 %{name: "feature", remote: false, current: false},
+                 %{name: "origin/#{current}", remote: true, current: false}
+               ],
+               & &1.name
+             )
+  end
+
   test "returns an error for an unknown commit", %{repo_path: repo_path} do
     commit(repo_path, "first")
 
