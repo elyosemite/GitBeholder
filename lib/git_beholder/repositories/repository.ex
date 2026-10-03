@@ -7,6 +7,8 @@ defmodule GitBeholder.Repositories.Repository do
   schema "repositories" do
     field :name, :string
     field :path, :string
+    # Set by Repositories.mark_opened/1, never by user input.
+    field :last_opened_at, :utc_datetime_usec
 
     belongs_to :workspace, Workspace
     belongs_to :folder, Folder

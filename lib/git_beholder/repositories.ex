@@ -60,6 +60,35 @@ defmodule GitBeholder.Repositories do
   end
 
   @doc """
+  The `limit` most recently opened repositories across all workspaces —
+  opened ones first (newest first), then never-opened ones by registration,
+  so a fresh install still lists what it has.
+  """
+  def list_recent_repositories(limit \\ 10) do
+    Repo.all(
+      from r in Repository,
+        order_by: [
+          asc: fragment("? IS NULL", r.last_opened_at),
+          desc: r.last_opened_at,
+          desc: r.inserted_at,
+          desc: r.id
+        ],
+        limit: ^limit
+    )
+  end
+
+  @doc """
+  Records that the app opened `repository` at `opened_at` (now by
+  default), making it the most recent (and the one reopened on the next
+  launch).
+  """
+  def mark_opened(%Repository{} = repository, opened_at \\ DateTime.utc_now()) do
+    repository
+    |> Ecto.Changeset.change(last_opened_at: opened_at)
+    |> Repo.update()
+  end
+
+  @doc """
   Resolves a Repository that belongs to the given Workspace, validating
   that its registered path still exists and is still a Git repository.
 

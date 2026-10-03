@@ -112,6 +112,65 @@ defmodule GitBeholder.RepositoriesTest do
     end
   end
 
+  describe "mark_opened/1 and list_recent_repositories/1" do
+    setup do
+      {:ok, workspace} = Repositories.create_workspace(%{name: "Engineering"})
+
+      create = fn name ->
+        {:ok, repository} =
+          Repositories.create_repository(%{name: name, path: "/tmp/#{name}", workspace_id: workspace.id})
+
+        repository
+      end
+
+      # Explicit, increasing instants: consecutive DateTime.utc_now() calls
+      # can return the same value on Windows' clock resolution.
+      at = fn seconds -> DateTime.add(~U[2026-10-01 12:00:00.000000Z], seconds) end
+
+      %{create: create, at: at}
+    end
+
+    test "mark_opened records when the repository was opened", %{create: create} do
+      repository = create.("api")
+      assert repository.last_opened_at == nil
+
+      assert {:ok, opened} = Repositories.mark_opened(repository)
+      assert %DateTime{} = opened.last_opened_at
+    end
+
+    test "lists the most recently opened first, then never-opened ones", %{create: create, at: at} do
+      never = create.("never_opened")
+      first = create.("opened_first")
+      last = create.("opened_last")
+
+      {:ok, _} = Repositories.mark_opened(first, at.(1))
+      {:ok, _} = Repositories.mark_opened(last, at.(2))
+
+      ids = Repositories.list_recent_repositories() |> Enum.map(& &1.id)
+
+      assert ids == [last.id, first.id, never.id]
+    end
+
+    test "reopening moves a repository back to the top", %{create: create, at: at} do
+      a = create.("a")
+      b = create.("b")
+
+      {:ok, _} = Repositories.mark_opened(a, at.(1))
+      {:ok, _} = Repositories.mark_opened(b, at.(2))
+      {:ok, _} = Repositories.mark_opened(a, at.(3))
+
+      assert [%{id: top} | _] = Repositories.list_recent_repositories()
+      assert top == a.id
+    end
+
+    test "returns at most `limit` repositories", %{create: create} do
+      for n <- 1..12, do: create.("repo_#{n}")
+
+      assert length(Repositories.list_recent_repositories()) == 10
+      assert length(Repositories.list_recent_repositories(3)) == 3
+    end
+  end
+
   describe "open_local_repository/2" do
     setup do
       {:ok, workspace} = Repositories.create_workspace(%{name: "Engineering"})
