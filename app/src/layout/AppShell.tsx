@@ -12,6 +12,7 @@ import { CommitPanel } from "./panel/CommitPanel";
 import { useSessionValue } from "@/features/session";
 import { useRestoreLastRepository, useTabs } from "@/features/tabs";
 import { useTrackRepositoryOpened } from "@/features/repositories";
+import { useBranchMemory } from "@/features/branches";
 import { useWorkbenchLayout, useWorkbenchShortcuts } from "@/features/workbench";
 import { useResizableHeight } from "@/lib/hooks/useResizableHeight";
 import { useResizableWidth } from "@/lib/hooks/useResizableWidth";
@@ -78,6 +79,7 @@ export function AppShell() {
   const activeKind = tabs.find((tab) => tab.id === activeId)?.kind ?? "new";
   const restoring = useRestoreLastRepository();
   useTrackRepositoryOpened();
+  useBranchMemory();
 
   return (
     <div className="flex flex-col h-screen bg-canvas">
