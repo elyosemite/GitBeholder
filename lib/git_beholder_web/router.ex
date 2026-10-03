@@ -22,6 +22,17 @@ defmodule GitBeholderWeb.Router do
     post "/workspaces/:workspace_id/repositories", RepositoryController, :create
     post "/workspaces/:workspace_id/repositories/open-local", RepositoryController, :open_local
     post "/workspaces/:workspace_id/repositories/clone", RepositoryController, :clone
+
+    get "/teams", TeamController, :index
+    post "/teams", TeamController, :create
+
+    get "/users", UserController, :index
+    post "/users", UserController, :create
+    get "/users/:id", UserController, :show
+    patch "/users/:id", UserController, :update
+
+    get "/me", UserController, :show_me
+    patch "/me", UserController, :update_me
   end
 
   scope "/api/v1/workspaces/:workspace_id/repositories/:repository_id", GitBeholderWeb do
