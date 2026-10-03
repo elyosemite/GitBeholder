@@ -4,7 +4,6 @@ import {
   CircleCheck,
   CircleDot,
   Cloud,
-  FileText,
   GitBranch,
   GitGraph,
   GitPullRequest,
@@ -32,10 +31,8 @@ import {
 import { useBranches, useCheckoutBranch, type Branch } from "@/features/branches"
 import { useStashes } from "@/features/stashes"
 import { useTags } from "@/features/tags"
-import { useCommitFiles, type CommitFileChange } from "@/features/commits"
 import { useAzureDevOpsIntegration, useDisconnectAzureDevOps } from "@/features/integrations"
 import { useSessionActions, useSessionValue } from "@/features/session"
-import { splitPath } from "@/lib/paths"
 import { ConnectAzureDevOpsDialog } from "./ConnectAzureDevOpsDialog"
 
 function initials(name: string) {
@@ -122,37 +119,6 @@ function BranchRow({
           current
         </Badge>
       )}
-    </button>
-  )
-}
-
-function InspectFileRow({
-  file,
-  index,
-  onOpenDiff,
-}: {
-  file: CommitFileChange
-  index: number
-  onOpenDiff: () => void
-}) {
-  const { name, dir } = splitPath(file.path)
-
-  return (
-    <button
-      type="button"
-      onClick={onOpenDiff}
-      className={`flex w-full items-center gap-icon px-1 py-1 text-row text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
-      style={staggerStyle(index)}
-    >
-      <FileText aria-hidden="true" className="size-icon-sm flex-none text-ink-faint" />
-      <span className="flex min-w-0 flex-1 items-baseline gap-icon" title={file.path}>
-        <span className="flex-none text-ink">{name}</span>
-        {dir && <span className="min-w-0 flex-1 truncate text-ink-faint">{dir}</span>}
-      </span>
-      <span className="flex flex-none items-center gap-1.5 font-mono text-meta">
-        {file.additions !== null && <span className="text-success">+{file.additions}</span>}
-        {file.deletions !== null && <span className="text-danger">-{file.deletions}</span>}
-      </span>
     </button>
   )
 }
@@ -422,34 +388,6 @@ const StashesSection = memo(function StashesSection() {
   )
 })
 
-const InspectSection = memo(function InspectSection() {
-  const inspectedCommit = useSessionValue((s) => s.inspectedCommit)
-  const { openDiff } = useSessionActions()
-  const { data: commitFiles } = useCommitFiles()
-  const commitFileList = commitFiles ?? []
-
-  return (
-    <Section value="inspect" title="Inspect" count={commitFileList.length}>
-      {inspectedCommit === null ? (
-        <div className="text-caption text-ink-faint">
-          Click a commit to see its changed files.
-        </div>
-      ) : commitFileList.length > 0 ? (
-        commitFileList.map((file, index) => (
-          <InspectFileRow
-            key={file.path}
-            file={file}
-            index={index}
-            onOpenDiff={() => openDiff(file.path)}
-          />
-        ))
-      ) : (
-        <div className="text-caption text-ink-faint">No files changed.</div>
-      )}
-    </Section>
-  )
-})
-
 export function RepositoryOverviewColumn() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [integrationError, setIntegrationError] = useState<string | null>(null)
@@ -475,7 +413,6 @@ export function RepositoryOverviewColumn() {
         <BranchesSection onError={setCheckoutError} />
         <TagsSection />
         <StashesSection />
-        <InspectSection />
       </Accordion>
 
       {checkoutError && (

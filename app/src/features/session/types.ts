@@ -28,7 +28,6 @@ export interface SessionActions {
   setBranch: (branch: string) => void;
   selectCommit: (hash: string) => void;
   openDiff: (path: string) => void;
-  closeDiff: () => void;
   setMainView: (view: MainView) => void;
   invalidate: (...scopes: DataScope[]) => void;
 }

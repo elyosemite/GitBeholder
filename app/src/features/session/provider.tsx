@@ -66,9 +66,6 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         store.setState((s) => ({ ...s, diffFile: path }));
       },
 
-      closeDiff() {
-        store.setState((s) => ({ ...s, diffFile: null }));
-      },
 
       setMainView(view: MainView) {
         store.setState((s) => ({ ...s, mainView: view }));

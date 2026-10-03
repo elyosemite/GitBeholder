@@ -1,6 +1,7 @@
-import { FolderGit2, LayoutGrid, Plus, Settings, X } from "lucide-react"
+import { FolderGit2, LayoutGrid, PanelBottom, PanelLeft, PanelRight, Plus, Settings, X } from "lucide-react"
 
 import { useRepositoryTabSync, useTabActions, useTabs, type Tab } from "@/features/tabs"
+import { useWorkbenchLayout, type WorkbenchArea } from "@/features/workbench"
 
 function tabLabel(tab: Tab) {
   switch (tab.kind) {
@@ -18,6 +19,39 @@ const TAB_ICONS = { repository: FolderGit2, new: LayoutGrid, settings: Settings 
 function TabIcon({ tab }: { tab: Tab }) {
   const Icon = TAB_ICONS[tab.kind]
   return <Icon aria-hidden="true" className="size-icon-sm flex-none" />
+}
+
+const LAYOUT_TOGGLES: { area: WorkbenchArea; label: string; shortcut: string; icon: typeof PanelLeft }[] = [
+  { area: "primarySidebar", label: "Toggle Primary Side Bar", shortcut: "Ctrl+B", icon: PanelLeft },
+  { area: "panel", label: "Toggle Panel", shortcut: "Ctrl+J", icon: PanelBottom },
+  { area: "secondarySidebar", label: "Toggle Secondary Side Bar", shortcut: "Ctrl+Alt+B", icon: PanelRight },
+]
+
+// VS Code-style layout controls at the far right of the tab bar; each one
+// also has a keyboard shortcut (features/workbench).
+function LayoutToggles() {
+  const { layout, toggle } = useWorkbenchLayout()
+
+  return (
+    <div className="ml-auto flex flex-none items-center gap-0.5 px-1">
+      {LAYOUT_TOGGLES.map(({ area, label, shortcut, icon: Icon }) => (
+        <button
+          key={area}
+          type="button"
+          aria-label={label}
+          aria-pressed={layout[area]}
+          title={`${label} (${shortcut})`}
+          onClick={() => toggle(area)}
+          className={
+            "flex size-control flex-none items-center justify-center rounded-md outline-none hover:bg-overlay-hover hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 " +
+            (layout[area] ? "text-ink" : "text-ink-faint")
+          }
+        >
+          <Icon aria-hidden="true" className="size-icon-md" />
+        </button>
+      ))}
+    </div>
+  )
 }
 
 // Top-level navigation: one tab per open repository plus Settings; future
@@ -84,6 +118,8 @@ export function TabBar() {
       >
         <Plus aria-hidden="true" className="size-icon-md" />
       </button>
+
+      <LayoutToggles />
     </div>
   )
 }
