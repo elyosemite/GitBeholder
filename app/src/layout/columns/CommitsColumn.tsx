@@ -151,7 +151,9 @@ const CommitRow = memo(function CommitRow({
       >
         <div className={"absolute left-1/2 w-0.5 -translate-x-1/2 bg-accent " + railPosition} />
         {hasRefs && <div className="absolute top-1/2 right-1/2 left-0 h-px bg-line-default" />}
-        <Avatar size="sm" className="z-10 border-2 border-accent" title={authorTitle}>
+        {/* Opaque disc: the initials fallback is a 20% author tint, which
+            let the rail show through avatars without a photo. */}
+        <Avatar size="sm" className="z-10 border-2 border-accent bg-canvas" title={authorTitle}>
           {user?.avatar_url && <AvatarImage src={user.avatar_url} alt={commit.author} />}
           <AvatarFallback
             className={"text-micro font-semibold " + authorColor(commit.author)}
