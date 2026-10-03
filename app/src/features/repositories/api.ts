@@ -29,3 +29,15 @@ export function cloneRepository(
     body: { url, destination },
   });
 }
+
+/** Most recently opened repositories across workspaces (launcher, startup). */
+export function listRecentRepositories(limit = 10): Promise<Repository[]> {
+  return request(`/repositories/recent?limit=${limit}`);
+}
+
+/** Records that the app opened this repository; it becomes the most recent. */
+export function markRepositoryOpened(repository: Repository): Promise<Repository> {
+  return request(`/workspaces/${repository.workspace_id}/repositories/${repository.id}/opened`, {
+    method: "POST",
+  });
+}
