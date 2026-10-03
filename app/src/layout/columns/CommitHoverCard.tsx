@@ -14,6 +14,9 @@ import { formatRelativeTime } from "@/lib/formatRelativeTime"
 const OPEN_DELAY_MS = 700
 const CLOSE_DELAY_MS = 250
 
+// Gap between the pointer and the card's top-left corner.
+const POINTER_OFFSET_PX = 8
+
 // "October 3, 2026 at 12:53 PM"
 const DATE_FORMAT = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeStyle: "short" })
 
@@ -32,12 +35,40 @@ export function CommitHoverCard({
   trigger: React.ReactElement
   children: React.ReactNode
 }) {
+  const [open, setOpen] = React.useState(false)
+  // Where the pointer rests on the row. Tracked only while closed: once
+  // open, the card stays put so the pointer can travel into it.
+  const pointerRef = React.useRef({ x: 0, y: 0 })
+  const pointerAnchor = React.useMemo(
+    () => ({
+      getBoundingClientRect: () =>
+        DOMRect.fromRect({ x: pointerRef.current.x, y: pointerRef.current.y, width: 0, height: 0 }),
+    }),
+    [],
+  )
+
   return (
-    <HoverCard>
-      <HoverCardTrigger delay={OPEN_DELAY_MS} closeDelay={CLOSE_DELAY_MS} render={trigger}>
+    <HoverCard open={open} onOpenChange={setOpen}>
+      <HoverCardTrigger
+        delay={OPEN_DELAY_MS}
+        closeDelay={CLOSE_DELAY_MS}
+        render={trigger}
+        onPointerMove={(event) => {
+          if (!open) pointerRef.current = { x: event.clientX, y: event.clientY }
+        }}
+      >
         {children}
       </HoverCardTrigger>
-      <HoverCardContent side="bottom" align="start" className="w-96 p-0 select-text">
+      {/* Anchored at the pointer, not the full-width row, so the card opens
+          next to where the user is looking. */}
+      <HoverCardContent
+        anchor={pointerAnchor}
+        side="bottom"
+        align="start"
+        sideOffset={POINTER_OFFSET_PX}
+        alignOffset={POINTER_OFFSET_PX}
+        className="w-96 p-0 select-text"
+      >
         <CommitCardBody hash={hash} />
       </HoverCardContent>
     </HoverCard>
