@@ -24,6 +24,7 @@ export interface SessionState {
 
 export interface SessionActions {
   selectRepository: (repo: Repository) => void;
+  closeRepository: () => void;
   setBranch: (branch: string) => void;
   selectCommit: (hash: string) => void;
   openDiff: (path: string) => void;

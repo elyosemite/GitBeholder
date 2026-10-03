@@ -36,6 +36,18 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
         }));
       },
 
+      // No repository open (e.g. its last tab was closed).
+      closeRepository() {
+        store.setState((s) => ({
+          ...s,
+          repository: null,
+          branch: null,
+          inspectedCommit: null,
+          diffFile: null,
+          mainView: "commits",
+        }));
+      },
+
       setBranch(branch: string) {
         store.setState((s) => ({
           ...s,
