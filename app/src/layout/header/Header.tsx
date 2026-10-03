@@ -3,6 +3,7 @@ import { RepositoryBlock } from "./RepositoryBlock"
 import { BranchBlock } from "./BranchBlock"
 import { GitOperationBlock } from "./GitOperationBlock"
 import { SearchBlock } from "./SearchBlock"
+import { SettingsBlock } from "./SettingsBlock"
 import { UserBlock } from "./UserBlock"
 
 export function Header() {
@@ -20,7 +21,10 @@ export function Header() {
 
       <div className="flex flex-1 items-center justify-end gap-3">
         <SearchBlock />
-        <UserBlock />
+        <div className="flex items-center gap-1">
+          <SettingsBlock />
+          <UserBlock />
+        </div>
       </div>
     </header>
   )

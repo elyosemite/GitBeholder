@@ -16,7 +16,7 @@ function TabIcon({ tab }: { tab: Tab }) {
 export function TabBar() {
   useRepositoryTabSync()
   const { tabs, activeId } = useTabs()
-  const { activate, close, openSettings } = useTabActions()
+  const { activate, close } = useTabActions()
 
   return (
     <div className="flex h-control-lg flex-none items-stretch border-b border-line-subtle bg-panel">
@@ -64,19 +64,6 @@ export function TabBar() {
           )
         })}
       </div>
-
-      <button
-        type="button"
-        aria-label="Settings"
-        title="Settings"
-        onClick={openSettings}
-        className={
-          "flex w-control-lg flex-none items-center justify-center border-l border-line-subtle outline-none hover:bg-overlay-hover hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset " +
-          (activeId === "settings" ? "text-accent" : "text-ink-secondary")
-        }
-      >
-        <Settings aria-hidden="true" className="size-icon-md" />
-      </button>
     </div>
   )
 }
