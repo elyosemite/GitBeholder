@@ -11,6 +11,7 @@ import { useElementSize } from "@/lib/hooks/useElementSize";
 import { pxToken } from "@/lib/designTokens";
 import { authorColor, authorInitials } from "@/lib/authorColor";
 import { CommitActivityBar } from "./graph/CommitActivityBar";
+import { CommitHoverCard } from "./CommitHoverCard";
 
 // Graph keeps a fixed width: dragging either of its edges shifts the whole
 // zone by resizing the ref zone, so both handles share the same state.
@@ -101,8 +102,6 @@ const CommitRow = memo(function CommitRow({
   onSelect: (hash: string) => void;
 }) {
   const hasRefs = commit.refs.length > 0;
-  const authorTitle =
-    `${commit.author} <${commit.author_email}>` + (user ? ` · Team ${user.team.name}` : "");
   // Bleeds half of --spacing-row-gap (4px) into the space between rows on
   // either side, so
   // consecutive rows' rails meet in the middle of the gap instead of
@@ -119,16 +118,23 @@ const CommitRow = memo(function CommitRow({
   const delay = Math.min(index, 8) * 40;
 
   return (
-    <button
-      type="button"
-      onClick={() => onSelect(commit.hash)}
-      style={
-        animateEntrance ? { animationDelay: `${delay}ms`, animationFillMode: "backwards" } : undefined
-      }
-      className={
-        "flex h-row w-full items-center px-row-x text-left text-row " +
-        (animateEntrance ? "animate-in fade-in-0 slide-in-from-top-1 " : "") +
-        (isSelected ? "bg-accent-soft" : "hover:bg-overlay-hover")
+    // Resting on the row opens the commit card, which replaces the native
+    // title tooltips the row used to show.
+    <CommitHoverCard
+      hash={commit.hash}
+      trigger={
+        <button
+          type="button"
+          onClick={() => onSelect(commit.hash)}
+          style={
+            animateEntrance ? { animationDelay: `${delay}ms`, animationFillMode: "backwards" } : undefined
+          }
+          className={
+            "flex h-row w-full items-center px-row-x text-left text-row " +
+            (animateEntrance ? "animate-in fade-in-0 slide-in-from-top-1 " : "") +
+            (isSelected ? "bg-accent-soft" : "hover:bg-overlay-hover")
+          }
+        />
       }
     >
       <div className="flex min-w-0 flex-none items-center" style={{ width: refWidth }}>
@@ -153,7 +159,7 @@ const CommitRow = memo(function CommitRow({
         {hasRefs && <div className="absolute top-1/2 right-1/2 left-0 h-px bg-line-default" />}
         {/* Opaque disc: the initials fallback is a 20% author tint, which
             let the rail show through avatars without a photo. */}
-        <Avatar size="sm" className="z-10 border-2 border-accent bg-canvas" title={authorTitle}>
+        <Avatar size="sm" className="z-10 border-2 border-accent bg-canvas">
           {user?.avatar_url && <AvatarImage src={user.avatar_url} alt={commit.author} />}
           <AvatarFallback
             className={"text-micro font-semibold " + authorColor(commit.author)}
@@ -163,10 +169,7 @@ const CommitRow = memo(function CommitRow({
         </Avatar>
       </div>
 
-      <div
-        className="flex min-w-0 flex-1 items-baseline gap-icon px-row-x"
-        title={commit.description ? `${commit.message}\n\n${commit.description}` : commit.message}
-      >
+      <div className="flex min-w-0 flex-1 items-baseline gap-icon px-row-x">
         <span className="min-w-0 flex-3 truncate text-row text-ink">{commit.message}</span>
         {commit.description && (
           <span className="min-w-0 flex-2 truncate text-row text-ink-faint">{commit.description}</span>
@@ -176,7 +179,7 @@ const CommitRow = memo(function CommitRow({
       <div className={TIME_ZONE_WIDTH + " flex-none text-right font-mono text-meta text-ink-faint"}>
         {commit.timestamp}
       </div>
-    </button>
+    </CommitHoverCard>
   );
 });
 
