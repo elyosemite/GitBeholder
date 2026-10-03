@@ -7,8 +7,11 @@ export { useCommitDetails } from "./hooks/useCommitDetails";
 export { DIFF_CONTEXT_OPTIONS } from "./types";
 export type {
   Commit,
+  CommitBranch,
+  CommitCoAuthor,
   CommitDetails,
   CommitPerson,
+  CommitStats,
   CommitRef,
   CommitFileChange,
   DiffContext,

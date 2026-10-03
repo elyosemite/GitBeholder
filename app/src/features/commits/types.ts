@@ -40,6 +40,26 @@ export interface CommitPerson {
   date: string;
 }
 
+export interface CommitCoAuthor {
+  name: string;
+  email: string;
+}
+
+export interface CommitStats {
+  files_changed: number;
+  insertions: number;
+  deletions: number;
+}
+
+/** A branch containing the commit. */
+export interface CommitBranch {
+  /** "main" for a local branch, "origin/main" for a remote one. */
+  name: string;
+  remote: boolean;
+  /** The local branch currently checked out. */
+  current: boolean;
+}
+
 export interface CommitDetails {
   hash: string;
   /** Empty for a root commit, two for a merge. */
@@ -47,8 +67,13 @@ export interface CommitDetails {
   author: CommitPerson;
   /** Differs from the author after a rebase, cherry-pick or amend by someone else. */
   committer: CommitPerson;
+  /** From Co-authored-by trailers, e.g. an AI pair. */
+  co_authors: CommitCoAuthor[];
   subject: string;
+  /** Message body without the co-author trailers. */
   body: string;
+  stats: CommitStats;
+  branches: CommitBranch[];
 }
 
 /** Unchanged lines shown around each change in a diff (git -U). */
