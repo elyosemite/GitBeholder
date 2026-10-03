@@ -3,6 +3,7 @@ import { Check, GitBranch, Monitor, Tag } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useCommits, type Commit, type CommitRef } from "@/features/commits";
+import { useUsersByEmail, type User } from "@/features/users";
 import { useSessionActions, useSessionValue } from "@/features/session";
 import { PlatformIcon } from "@/components/icons/brand-icons";
 import { daysAgo } from "@/lib/daysAgo";
@@ -85,6 +86,7 @@ const CommitRow = memo(function CommitRow({
   refWidth,
   isSelected,
   animate,
+  user,
   onSelect,
 }: {
   commit: Commit;
@@ -94,9 +96,13 @@ const CommitRow = memo(function CommitRow({
   refWidth: number;
   isSelected: boolean;
   animate: boolean;
+  /** The GitBeholder user with the author's email, if any: photo and team. */
+  user: User | undefined;
   onSelect: (hash: string) => void;
 }) {
   const hasRefs = commit.refs.length > 0;
+  const authorTitle =
+    `${commit.author} <${commit.author_email}>` + (user ? ` · Team ${user.team.name}` : "");
   // Bleeds half of --spacing-row-gap (4px) into the space between rows on
   // either side, so
   // consecutive rows' rails meet in the middle of the gap instead of
@@ -145,8 +151,8 @@ const CommitRow = memo(function CommitRow({
       >
         <div className={"absolute left-1/2 w-0.5 -translate-x-1/2 bg-accent " + railPosition} />
         {hasRefs && <div className="absolute top-1/2 right-1/2 left-0 h-px bg-line-default" />}
-        <Avatar size="sm" className="z-10 border-2 border-accent" title={commit.author}>
-          <AvatarImage src="/avatar.png" alt={commit.author} />
+        <Avatar size="sm" className="z-10 border-2 border-accent" title={authorTitle}>
+          {user?.avatar_url && <AvatarImage src={user.avatar_url} alt={commit.author} />}
           <AvatarFallback
             className={"text-micro font-semibold " + authorColor(commit.author)}
           >
@@ -197,6 +203,7 @@ function ResizeHandle({ left, onDrag }: { left: number; onDrag: (dx: number) => 
 export function CommitsColumn() {
   const [refWidth, setRefWidth] = useState(208);
   const { data: commits } = useCommits();
+  const usersByEmail = useUsersByEmail();
   const inspectedCommit = useSessionValue((s) => s.inspectedCommit);
   const { selectCommit } = useSessionActions();
   const rows = commits ?? [];
@@ -276,6 +283,7 @@ export function CommitsColumn() {
                     refWidth={refWidth}
                     isSelected={inspectedCommit === commit.hash}
                     animate={!hasScrolledRef.current}
+                    user={usersByEmail.get(commit.author_email.toLowerCase())}
                     onSelect={selectCommit}
                   />
                 </div>

@@ -3,7 +3,7 @@ import type { ReactNode } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import type { CommitDetails, CommitPerson } from "@/features/commits"
 import { useSessionActions } from "@/features/session"
-import { useCurrentUser } from "@/features/users"
+import { useUsersByEmail } from "@/features/users"
 import { authorColor, authorInitials } from "@/lib/authorColor"
 import { formatRelativeTime } from "@/lib/formatRelativeTime"
 
@@ -35,14 +35,12 @@ function Person({ person }: { person: CommitPerson }) {
 // parents and the full message.
 export function CommitInfo({ details }: { details: CommitDetails }) {
   const { selectCommit } = useSessionActions()
-  const { data: currentUser } = useCurrentUser()
+  const usersByEmail = useUsersByEmail()
   const { author, committer } = details
 
-  // Only the local user has a photo today; integrations will add others'.
-  const photo =
-    currentUser?.avatar_url && currentUser.email.toLowerCase() === author.email.toLowerCase()
-      ? currentUser.avatar_url
-      : null
+  // The GitBeholder user with the author's email: photo and team.
+  const user = usersByEmail.get(author.email.toLowerCase())
+  const photo = user?.avatar_url ?? null
 
   return (
     <div className="flex flex-col gap-3 p-panel-x">
@@ -55,7 +53,10 @@ export function CommitInfo({ details }: { details: CommitDetails }) {
         </Avatar>
         <div className="min-w-0">
           <div className="truncate text-title text-ink">{author.name}</div>
-          <div className="truncate text-caption text-ink-faint">{author.email}</div>
+          <div className="truncate text-caption text-ink-faint">
+            {author.email}
+            {user && <> · Team {user.team.name}</>}
+          </div>
         </div>
       </div>
 
