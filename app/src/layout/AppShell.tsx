@@ -1,12 +1,15 @@
 import { Profiler } from "react";
 import { Header } from "./header/Header";
 import { Footer } from "./footer/Footer";
+import { TabBar } from "./tabs/TabBar";
+import { SettingsView } from "./settings/SettingsView";
 import { RepositoryOverviewColumn } from "./columns/RepositoryOverviewColumn";
 import { CommitsColumn } from "./columns/CommitsColumn";
 import { GraphColumn } from "./columns/GraphColumn";
 import { DiffColumn } from "./columns/DiffColumn";
 import { ChangesColumn } from "./columns/ChangesColumn";
 import { useSessionValue } from "@/features/session";
+import { useTabs } from "@/features/tabs";
 import { useResizableWidth } from "@/lib/hooks/useResizableWidth";
 import { useZoom } from "@/lib/hooks/useZoom";
 import { onRender } from "@/lib/perf";
@@ -23,49 +26,57 @@ export function AppShell() {
     CHANGES_COLUMN_MAX_WIDTH,
   );
   const zoom = useZoom();
+  const { activeId } = useTabs();
 
   return (
     <div className="flex flex-col h-screen bg-canvas">
+      <TabBar />
       <Profiler id="Header" onRender={onRender}>
         <Header />
       </Profiler>
-      <main
-        className="flex-1 flex min-w-0 min-h-0"
-        style={{ zoom: `${zoom.zoom}%` }}
-      >
-        <div className="w-72 flex-none h-full">
-          <Profiler id="RepositoryOverviewColumn" onRender={onRender}>
-            <RepositoryOverviewColumn />
-          </Profiler>
-        </div>
-        <div className="flex-1 min-w-0 h-full">
-          {diffFile !== null ? (
-            <Profiler id="DiffColumn" onRender={onRender}>
-              <DiffColumn />
+      {activeId === "settings" ? (
+        <main className="flex-1 min-w-0 min-h-0" style={{ zoom: `${zoom.zoom}%` }}>
+          <SettingsView />
+        </main>
+      ) : (
+        <main
+          className="flex-1 flex min-w-0 min-h-0"
+          style={{ zoom: `${zoom.zoom}%` }}
+        >
+          <div className="w-72 flex-none h-full">
+            <Profiler id="RepositoryOverviewColumn" onRender={onRender}>
+              <RepositoryOverviewColumn />
             </Profiler>
-          ) : mainView === "graph" ? (
-            <Profiler id="GraphColumn" onRender={onRender}>
-              <GraphColumn />
+          </div>
+          <div className="flex-1 min-w-0 h-full">
+            {diffFile !== null ? (
+              <Profiler id="DiffColumn" onRender={onRender}>
+                <DiffColumn />
+              </Profiler>
+            ) : mainView === "graph" ? (
+              <Profiler id="GraphColumn" onRender={onRender}>
+                <GraphColumn />
+              </Profiler>
+            ) : (
+              <Profiler id="CommitsColumn" onRender={onRender}>
+                <CommitsColumn />
+              </Profiler>
+            )}
+          </div>
+          <div
+            onPointerDown={onPointerDown}
+            role="separator"
+            aria-orientation="vertical"
+            title="Drag to resize"
+            className="w-1 flex-none h-full cursor-col-resize bg-line-subtle hover:bg-accent active:bg-accent"
+          />
+          <div className="flex-none h-full overflow-hidden" style={{ width: changesWidth }}>
+            <Profiler id="ChangesColumn" onRender={onRender}>
+              <ChangesColumn />
             </Profiler>
-          ) : (
-            <Profiler id="CommitsColumn" onRender={onRender}>
-              <CommitsColumn />
-            </Profiler>
-          )}
-        </div>
-        <div
-          onPointerDown={onPointerDown}
-          role="separator"
-          aria-orientation="vertical"
-          title="Drag to resize"
-          className="w-1 flex-none h-full cursor-col-resize bg-line-subtle hover:bg-accent active:bg-accent"
-        />
-        <div className="flex-none h-full overflow-hidden" style={{ width: changesWidth }}>
-          <Profiler id="ChangesColumn" onRender={onRender}>
-            <ChangesColumn />
-          </Profiler>
-        </div>
-      </main>
+          </div>
+        </main>
+      )}
       <Footer zoom={zoom} />
     </div>
   );
