@@ -138,6 +138,7 @@
   --spacing-icon-sm: 14px; /* icon size in list rows — size-icon-sm */
   --spacing-icon-md: 16px; /* icon size in buttons, header — size-icon-md */
   --spacing-row: 28px; /* list row height — h-row */
+  --spacing-row-gap: 4px; /* space between list rows */
   --spacing-control: 28px; /* buttons, inputs, selects — h-control */
   --spacing-control-sm: 24px; /* inline/icon buttons inside rows */
   --spacing-control-lg: 32px; /* dialog primary actions */

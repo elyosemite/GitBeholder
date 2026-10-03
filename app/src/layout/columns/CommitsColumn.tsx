@@ -7,6 +7,7 @@ import { useSessionActions, useSessionValue } from "@/features/session";
 import { PlatformIcon } from "@/components/icons/brand-icons";
 import { daysAgo } from "@/lib/daysAgo";
 import { useElementSize } from "@/lib/hooks/useElementSize";
+import { pxToken } from "@/lib/designTokens";
 import { CommitActivityBar } from "./graph/CommitActivityBar";
 
 // Graph keeps a fixed width: dragging either of its edges shifts the whole
@@ -16,14 +17,10 @@ const MIN_REF_WIDTH = 40; // just enough for an icon-only badge
 const MAX_REF_WIDTH = 320;
 // below this, the badge drops one trailing icon (local wins over platform)
 const COMPACT_REF_WIDTH = 120;
-const ROW_PADDING_X = 12;
 const TIME_ZONE_WIDTH = "w-32";
-// Row height (h-row, --spacing-row) + the 4px gap between rows. Only the
-// rows in view (plus OVERSCAN_ROWS on each side) are rendered — mounting
-// all 200 at once was a 260 ms render.
-const ROW_HEIGHT = 28;
-const ROW_GAP = 4;
-const ROW_PITCH = ROW_HEIGHT + ROW_GAP;
+// Only the rows in view (plus OVERSCAN_ROWS on each side) are rendered —
+// mounting all 200 at once was a 260 ms render. Row geometry comes from the
+// design tokens (--spacing-row, --spacing-row-gap), read in the component.
 const OVERSCAN_ROWS = 10;
 
 // Author colors from the categorical tokens (--color-author-1..6). The
@@ -121,7 +118,8 @@ const CommitRow = memo(function CommitRow({
   onSelect: (hash: string) => void;
 }) {
   const hasRefs = commit.refs.length > 0;
-  // Bleeds half of ROW_GAP into the space between rows on either side, so
+  // Bleeds half of --spacing-row-gap (4px) into the space between rows on
+  // either side, so
   // consecutive rows' rails meet in the middle of the gap instead of
   // stopping dead at the row's own edge.
   const railPosition = first
@@ -239,10 +237,15 @@ export function CommitsColumn() {
     hasScrolledRef.current = false;
   }
 
+  const rowHeight = pxToken("--spacing-row");
+  const rowGap = pxToken("--spacing-row-gap");
+  const rowPitch = rowHeight + rowGap;
+  const rowPaddingX = pxToken("--spacing-row-x");
+
   const firstVisible = Math.max(0, topRow - OVERSCAN_ROWS);
   const lastVisible = Math.min(
     rows.length,
-    topRow + Math.ceil(listHeight / ROW_PITCH) + 1 + OVERSCAN_ROWS,
+    topRow + Math.ceil(listHeight / rowPitch) + 1 + OVERSCAN_ROWS,
   );
 
   function resizeRefZone(dx: number) {
@@ -271,12 +274,12 @@ export function CommitsColumn() {
           className="min-h-0 flex-1 overflow-y-auto"
           onScroll={(event) => {
             hasScrolledRef.current = true;
-            setTopRow(Math.floor(event.currentTarget.scrollTop / ROW_PITCH));
+            setTopRow(Math.floor(event.currentTarget.scrollTop / rowPitch));
           }}
         >
           <div
             className="relative"
-            style={{ height: Math.max(0, rows.length * ROW_PITCH - ROW_GAP) }}
+            style={{ height: Math.max(0, rows.length * rowPitch - rowGap) }}
           >
             {rows.slice(firstVisible, lastVisible).map((commit, offset) => {
               const index = firstVisible + offset;
@@ -284,7 +287,7 @@ export function CommitsColumn() {
                 <div
                   key={commit.hash}
                   className="absolute inset-x-0"
-                  style={{ top: index * ROW_PITCH }}
+                  style={{ top: index * rowPitch }}
                 >
                   <CommitRow
                     commit={commit}
@@ -303,8 +306,8 @@ export function CommitsColumn() {
         </div>
 
         {/* both handles resize the ref zone, so the graph column keeps its width */}
-        <ResizeHandle left={ROW_PADDING_X + refWidth} onDrag={resizeRefZone} />
-        <ResizeHandle left={ROW_PADDING_X + refWidth + GRAPH_WIDTH} onDrag={resizeRefZone} />
+        <ResizeHandle left={rowPaddingX + refWidth} onDrag={resizeRefZone} />
+        <ResizeHandle left={rowPaddingX + refWidth + GRAPH_WIDTH} onDrag={resizeRefZone} />
       </div>
     </div>
   );
