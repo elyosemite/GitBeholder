@@ -8,6 +8,7 @@ import { PlatformIcon } from "@/components/icons/brand-icons";
 import { daysAgo } from "@/lib/daysAgo";
 import { useElementSize } from "@/lib/hooks/useElementSize";
 import { pxToken } from "@/lib/designTokens";
+import { authorColor, authorInitials } from "@/lib/authorColor";
 import { CommitActivityBar } from "./graph/CommitActivityBar";
 
 // Graph keeps a fixed width: dragging either of its edges shifts the whole
@@ -22,28 +23,6 @@ const TIME_ZONE_WIDTH = "w-32";
 // mounting all 200 at once was a 260 ms render. Row geometry comes from the
 // design tokens (--spacing-row, --spacing-row-gap), read in the component.
 const OVERSCAN_ROWS = 10;
-
-// Author colors from the categorical tokens (--color-author-1..6). The
-// index comes from a hash of the name, so any author gets a stable color
-// without hard-coding names.
-const AUTHOR_COLORS = [
-  "bg-author-1/20 text-author-1",
-  "bg-author-2/20 text-author-2",
-  "bg-author-3/20 text-author-3",
-  "bg-author-4/20 text-author-4",
-  "bg-author-5/20 text-author-5",
-  "bg-author-6/20 text-author-6",
-];
-
-function authorColor(author: string) {
-  let hash = 0;
-  for (const char of author) hash = (hash * 31 + char.charCodeAt(0)) | 0;
-  return AUTHOR_COLORS[Math.abs(hash) % AUTHOR_COLORS.length];
-}
-
-function authorInitials(author: string) {
-  return author.replace(/[^a-zA-Z]/g, "").slice(0, 2).toUpperCase();
-}
 
 // At the minimum zone width the badge collapses into a square with a single
 // centered icon: tag > local > platform > current > generic branch.
