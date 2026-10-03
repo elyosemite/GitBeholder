@@ -123,4 +123,60 @@ defmodule GitBeholderWeb.GitDiffControllerTest do
       assert json_response(conn, 400)
     end
   end
+
+  test "GET .../commits/:hash returns the commit details", %{
+    conn: conn,
+    workspace: workspace,
+    repository: repository,
+    hash: hash
+  } do
+    conn = get(conn, "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commits/#{hash}")
+
+    assert %{
+             "hash" => ^hash,
+             "parents" => parents,
+             "author" => %{"name" => _, "email" => _, "date" => _},
+             "committer" => %{"name" => _, "email" => _, "date" => _},
+             "subject" => subject
+           } = json_response(conn, 200)
+
+    assert is_list(parents)
+    assert is_binary(subject)
+  end
+
+  test "file list includes each file's status", %{
+    conn: conn,
+    workspace: workspace,
+    repository: repository,
+    hash: hash
+  } do
+    conn = get(conn, "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commits/#{hash}/files")
+
+    for change <- json_response(conn, 200) do
+      assert change["status"] in ~w(A M D R C T)
+    end
+  end
+
+  test "GET .../commits/:hash/diff honors an allowed context size", %{
+    conn: conn,
+    workspace: workspace,
+    repository: repository,
+    hash: hash
+  } do
+    base = "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commits/#{hash}"
+    [%{"path" => path} | _] = conn |> get("#{base}/files") |> json_response(200)
+
+    narrow = conn |> get("#{base}/diff?path=#{URI.encode_www_form(path)}&context=1") |> json_response(200)
+    wide = conn |> get("#{base}/diff?path=#{URI.encode_www_form(path)}&context=100") |> json_response(200)
+
+    if narrow["patch"] do
+      assert String.length(wide["patch"]) >= String.length(narrow["patch"])
+    end
+  end
+
+  test "rejects a non-hex hash with 400", %{conn: conn, workspace: workspace, repository: repository} do
+    conn = get(conn, "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/commits/--output=x/files")
+
+    assert %{"error" => "invalid_hash"} = json_response(conn, 400)
+  end
 end
