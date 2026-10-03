@@ -84,13 +84,32 @@ defmodule GitBeholderWeb.RepositoryController do
     end
   end
 
+  # Most recently opened repositories, for the launcher (`?limit=`, max 50).
+  def recent(conn, params) do
+    limit =
+      case Integer.parse(Map.get(params, "limit", "10")) do
+        {n, ""} when n in 1..50 -> n
+        _ -> 10
+      end
+
+    json(conn, Enum.map(Repositories.list_recent_repositories(limit), &repository_json/1))
+  end
+
+  # Called whenever the app opens a repository (repository-scoped route,
+  # so FetchRepository has already validated it).
+  def opened(conn, _params) do
+    {:ok, repository} = Repositories.mark_opened(conn.assigns.repository)
+    json(conn, repository_json(repository))
+  end
+
   defp repository_json(repository) do
     %{
       id: repository.id,
       name: repository.name,
       path: repository.path,
       workspace_id: repository.workspace_id,
-      folder_id: repository.folder_id
+      folder_id: repository.folder_id,
+      last_opened_at: repository.last_opened_at
     }
   end
 end

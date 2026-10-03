@@ -23,6 +23,8 @@ defmodule GitBeholderWeb.Router do
     post "/workspaces/:workspace_id/repositories/open-local", RepositoryController, :open_local
     post "/workspaces/:workspace_id/repositories/clone", RepositoryController, :clone
 
+    get "/repositories/recent", RepositoryController, :recent
+
     get "/teams", TeamController, :index
     post "/teams", TeamController, :create
 
@@ -38,6 +40,7 @@ defmodule GitBeholderWeb.Router do
   scope "/api/v1/workspaces/:workspace_id/repositories/:repository_id", GitBeholderWeb do
     pipe_through [:api, :repository]
 
+    post "/opened", RepositoryController, :opened
     get "/status", GitStatusController, :index
     post "/commit", GitCommitController, :create
     post "/stage", GitStagingController, :stage

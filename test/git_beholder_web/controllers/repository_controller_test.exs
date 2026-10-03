@@ -191,4 +191,53 @@ defmodule GitBeholderWeb.RepositoryControllerTest do
       assert json_response(conn, 400)
     end
   end
+
+  describe "GET /api/v1/repositories/recent" do
+    test "lists recently opened repositories first", %{conn: conn, workspace: workspace} do
+      {:ok, older} =
+        Repositories.create_repository(%{name: "older", path: "/repos/older", workspace_id: workspace.id})
+
+      {:ok, newer} =
+        Repositories.create_repository(%{name: "newer", path: "/repos/newer", workspace_id: workspace.id})
+
+      {:ok, _} = Repositories.mark_opened(older, ~U[2026-10-01 10:00:00.000000Z])
+      {:ok, _} = Repositories.mark_opened(newer, ~U[2026-10-01 11:00:00.000000Z])
+
+      conn = get(conn, "/api/v1/repositories/recent")
+
+      assert [%{"name" => "newer", "last_opened_at" => opened_at}, %{"name" => "older"}] =
+               json_response(conn, 200)
+
+      assert is_binary(opened_at)
+    end
+
+    test "honors limit", %{conn: conn, workspace: workspace} do
+      for n <- 1..3 do
+        Repositories.create_repository(%{name: "r#{n}", path: "/repos/r#{n}", workspace_id: workspace.id})
+      end
+
+      conn = get(conn, "/api/v1/repositories/recent?limit=2")
+
+      assert length(json_response(conn, 200)) == 2
+    end
+  end
+
+  describe "POST /api/v1/workspaces/:workspace_id/repositories/:repository_id/opened" do
+    test "marks a valid repository as opened", %{conn: conn, workspace: workspace} do
+      {:ok, repository} =
+        Repositories.create_repository(%{name: "git_beholder", path: File.cwd!(), workspace_id: workspace.id})
+
+      conn = post(conn, "/api/v1/workspaces/#{workspace.id}/repositories/#{repository.id}/opened")
+
+      assert %{"id" => id, "last_opened_at" => opened_at} = json_response(conn, 200)
+      assert id == repository.id
+      assert is_binary(opened_at)
+    end
+
+    test "returns 404 for an unknown repository", %{conn: conn, workspace: workspace} do
+      conn = post(conn, "/api/v1/workspaces/#{workspace.id}/repositories/999999/opened")
+
+      assert json_response(conn, 404)
+    end
+  end
 end
