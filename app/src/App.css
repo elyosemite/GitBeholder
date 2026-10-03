@@ -8,7 +8,8 @@
    Brand: #4949EB (brand-600). Neutrals share its hue (OKLCH 274°) at low
    chroma so grays and blue read as one family. Every text/background pair
    below is checked for WCAG AA (4.5:1) in both themes; the numbers live in
-   the doc. Dark theme is the default; light follows the OS preference. */
+   the doc. Dark theme is the default; light applies under
+   :root[data-theme="light"] (Settings: system / light / dark). */
 @theme static {
   /* ── Brand scale (OKLCH from #4949EB) ─────────────────────────────── */
   --color-brand-50: #f2f5fe;
@@ -172,8 +173,9 @@
   --default-transition-timing-function: var(--ease-out);
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
+/* Light theme. `data-theme` is set on <html> by features/settings/theme.ts
+   from the user's preference (system / light / dark). */
+:root[data-theme="light"] {
     --color-canvas: #f8f9fb;
     --color-panel: #ffffff;
     --color-surface: #f1f2f7;
@@ -221,7 +223,6 @@
     --diffs-light: #181b26;
 
     color-scheme: light;
-  }
 }
 
 @layer base {
@@ -345,7 +346,7 @@
 
 /* shadcn semantic variables sourced from the project token system in
    @theme static above. The tokens already flip between dark and light via
-   prefers-color-scheme, so these follow the theme with no .dark class. */
+   data-theme, so these follow the theme with no .dark class. */
 :root {
   --radius: 8px; /* = radius-lg; radii are set explicitly in @theme above */
 
