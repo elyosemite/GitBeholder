@@ -10,7 +10,7 @@ export function SearchBlock() {
   return (
     <InputGroup className="w-64">
       <InputGroupAddon>
-        <Search aria-hidden="true" size={16} />
+        <Search aria-hidden="true" className="size-icon-md" />
       </InputGroupAddon>
       <InputGroupInput
         placeholder="Paste your commit hash here…"

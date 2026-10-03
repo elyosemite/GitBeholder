@@ -29,7 +29,7 @@ export function DiffColumn() {
           title="Close diff (Esc)"
           className="flex-none rounded-sm p-1 text-ink-faint hover:bg-overlay-hover hover:text-ink"
         >
-          <X aria-hidden="true" size={14} />
+          <X aria-hidden="true" className="size-icon-sm" />
         </button>
       </div>
 

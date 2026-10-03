@@ -85,10 +85,10 @@ export function GitOperationBlock() {
           disabled={disabled}
           className="gap-icon font-normal text-muted-foreground hover:text-foreground"
         >
-          <Icon aria-hidden="true" size={16} />
+          <Icon aria-hidden="true" className="size-icon-md" />
           {label}
           {loading ? (
-            <Loader2 aria-hidden="true" size={12} className="-ml-1 animate-spin text-accent" />
+            <Loader2 aria-hidden="true" className="size-icon-xs -ml-1 animate-spin text-accent" />
           ) : (
             badge !== undefined && (
               <Badge

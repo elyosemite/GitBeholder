@@ -26,14 +26,23 @@ const ROW_GAP = 4;
 const ROW_PITCH = ROW_HEIGHT + ROW_GAP;
 const OVERSCAN_ROWS = 10;
 
-const AUTHOR_COLORS: Record<string, string> = {
-  yurimelo: "bg-sky-500/20 text-sky-400",
-  "ana.dev": "bg-violet-500/20 text-violet-400",
-  "camila.reis": "bg-emerald-500/20 text-emerald-400",
-  "pedro.lima": "bg-amber-500/20 text-amber-400",
-  "rafael.souza": "bg-rose-500/20 text-rose-400",
-  dependabot: "bg-slate-500/20 text-slate-400",
-};
+// Author colors from the categorical tokens (--color-author-1..6). The
+// index comes from a hash of the name, so any author gets a stable color
+// without hard-coding names.
+const AUTHOR_COLORS = [
+  "bg-author-1/20 text-author-1",
+  "bg-author-2/20 text-author-2",
+  "bg-author-3/20 text-author-3",
+  "bg-author-4/20 text-author-4",
+  "bg-author-5/20 text-author-5",
+  "bg-author-6/20 text-author-6",
+];
+
+function authorColor(author: string) {
+  let hash = 0;
+  for (const char of author) hash = (hash * 31 + char.charCodeAt(0)) | 0;
+  return AUTHOR_COLORS[Math.abs(hash) % AUTHOR_COLORS.length];
+}
 
 function authorInitials(author: string) {
   return author.replace(/[^a-zA-Z]/g, "").slice(0, 2).toUpperCase();
@@ -44,15 +53,15 @@ function authorInitials(author: string) {
 function IconOnlyBadge({ commitRef }: { commitRef: CommitRef }) {
   let icon;
   if (commitRef.type === "tag") {
-    icon = <Tag aria-hidden="true" size={11} className="text-amber-400" />;
+    icon = <Tag aria-hidden="true" className="size-icon-xs text-tag" />;
   } else if (commitRef.local) {
-    icon = <Monitor aria-hidden="true" size={11} className="text-ink-secondary" />;
+    icon = <Monitor aria-hidden="true" className="size-icon-xs text-ink-secondary" />;
   } else if (commitRef.platform) {
     icon = <PlatformIcon platform={commitRef.platform} className="text-ink-secondary" />;
   } else if (commitRef.current) {
-    icon = <Check aria-hidden="true" size={11} className="text-success" />;
+    icon = <Check aria-hidden="true" className="size-icon-xs text-success" />;
   } else {
-    icon = <GitBranch aria-hidden="true" size={11} className="text-ink-secondary" />;
+    icon = <GitBranch aria-hidden="true" className="size-icon-xs text-ink-secondary" />;
   }
 
   return (
@@ -74,16 +83,16 @@ function RefBadge({ commitRef, compact }: { commitRef: CommitRef; compact: boole
   return (
     <div className="flex h-5 min-w-0 items-center gap-1 border border-line-default bg-surface px-1.5">
       {commitRef.type === "tag" && (
-        <Tag aria-hidden="true" size={10} className="flex-none text-amber-400" />
+        <Tag aria-hidden="true" className="size-icon-xs flex-none text-tag" />
       )}
       {commitRef.current && (
-        <Check aria-label="current branch" size={11} className="flex-none text-success" />
+        <Check aria-label="current branch" className="size-icon-xs flex-none text-success" />
       )}
       <span className="truncate text-meta text-ink-secondary" title={commitRef.name}>
         {commitRef.name}
       </span>
       {showLocal && (
-        <Monitor aria-label="local branch" size={11} className="flex-none text-ink-secondary" />
+        <Monitor aria-label="local branch" className="size-icon-xs flex-none text-ink-secondary" />
       )}
       {showPlatform && (
         <PlatformIcon platform={commitRef.platform!} className="flex-none text-ink-secondary" />
@@ -162,7 +171,7 @@ const CommitRow = memo(function CommitRow({
         <Avatar size="sm" className="z-10 border-2 border-accent" title={commit.author}>
           <AvatarImage src="/avatar.png" alt={commit.author} />
           <AvatarFallback
-            className={"text-micro font-semibold " + (AUTHOR_COLORS[commit.author] ?? "")}
+            className={"text-micro font-semibold " + authorColor(commit.author)}
           >
             {authorInitials(commit.author)}
           </AvatarFallback>
@@ -173,9 +182,9 @@ const CommitRow = memo(function CommitRow({
         className="flex min-w-0 flex-1 items-baseline gap-icon px-row-x"
         title={commit.description ? `${commit.message}\n\n${commit.description}` : commit.message}
       >
-        <span className="min-w-0 flex-[3] truncate text-row text-ink">{commit.message}</span>
+        <span className="min-w-0 flex-3 truncate text-row text-ink">{commit.message}</span>
         {commit.description && (
-          <span className="min-w-0 flex-[2] truncate text-row text-ink-faint">{commit.description}</span>
+          <span className="min-w-0 flex-2 truncate text-row text-ink-faint">{commit.description}</span>
         )}
       </div>
 
@@ -246,7 +255,7 @@ export function CommitsColumn() {
       <CommitActivityBar startDate={activityStartDate} endDate={activityEndDate} />
 
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <div className="flex flex-none items-center border-b border-line-subtle bg-panel px-row-x py-1 text-meta font-bold uppercase tracking-[0.08em] text-ink-faint">
+        <div className="flex flex-none items-center border-b border-line-subtle bg-panel px-row-x py-1 text-meta font-bold uppercase tracking-caps text-ink-faint">
           <div className="flex-none truncate" style={{ width: refWidth }}>
             Branch / Tag
           </div>

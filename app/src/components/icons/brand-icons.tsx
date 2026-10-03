@@ -19,24 +19,30 @@ const PLATFORM_LABELS: Record<Platform, string> = {
   "azure-devops": "Azure DevOps",
 }
 
+// Icon size tokens (--spacing-icon-*); a prop instead of a class so a
+// caller's className can't end up with two competing size classes.
+const ICON_SIZE_CLASS = {
+  xs: "size-icon-xs",
+  sm: "size-icon-sm",
+  md: "size-icon-md",
+} as const
+
 export function PlatformIcon({
   platform,
-  size = 11,
+  size = "xs",
   className,
 }: {
   platform: Platform
-  size?: number
+  size?: keyof typeof ICON_SIZE_CLASS
   className?: string
 }) {
   return (
     <svg
-      width={size}
-      height={size}
       viewBox="0 0 24 24"
       fill="currentColor"
       role="img"
       aria-label={PLATFORM_LABELS[platform]}
-      className={className}
+      className={`${ICON_SIZE_CLASS[size]} ${className ?? ""}`}
     >
       <title>{PLATFORM_LABELS[platform]}</title>
       <path d={PLATFORM_PATHS[platform]} />

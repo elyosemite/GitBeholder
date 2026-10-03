@@ -58,7 +58,7 @@ export function BranchBlock() {
             ) : (
               <SelectedIcon
                 aria-hidden="true"
-                className={`size-4 shrink-0 ${!selected?.local ? "text-sky-500" : "text-muted-foreground"}`}
+                className={`size-4 shrink-0 ${!selected?.local ? "text-remote" : "text-muted-foreground"}`}
               />
             )}
             <span className="flex-none text-meta font-medium uppercase tracking-wide text-muted-foreground">
@@ -92,7 +92,7 @@ export function BranchBlock() {
                     >
                       <Icon
                         aria-hidden="true"
-                        className={b.local ? "text-muted-foreground" : "text-sky-500"}
+                        className={b.local ? "text-muted-foreground" : "text-remote"}
                       />
                       <span className="truncate">{b.name}</span>
                     </CommandItem>

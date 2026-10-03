@@ -68,7 +68,7 @@ function Section({
 }) {
   return (
     <AccordionItem value={value} className="border-line-subtle px-2">
-      <AccordionTrigger className="px-2 py-2 text-meta font-bold uppercase tracking-[0.08em] text-ink-faint hover:no-underline">
+      <AccordionTrigger className="px-2 py-2 text-meta font-bold uppercase tracking-caps text-ink-faint hover:no-underline">
         <span className="flex items-center gap-2">
           {title}
           <Badge variant="outline" className="h-4 px-1.5 font-mono text-micro font-normal text-ink-faint">
@@ -107,12 +107,11 @@ function BranchRow({
       className={`flex w-full items-center gap-icon px-1 py-1 text-row hover:bg-overlay-hover disabled:pointer-events-none disabled:opacity-60 ${ROW_ANIMATION}`}
     >
       {isCheckingOut ? (
-        <Loader2 aria-hidden="true" size={13} className="flex-none animate-spin text-accent" />
+        <Loader2 aria-hidden="true" className="size-icon-sm flex-none animate-spin text-accent" />
       ) : (
         <Icon
           aria-hidden="true"
-          size={13}
-          className={"flex-none " + (!branch.local ? "text-sky-500" : branch.current ? "text-accent" : "text-ink-faint")}
+          className={"size-icon-sm flex-none " + (!branch.local ? "text-remote" : branch.current ? "text-accent" : "text-ink-faint")}
         />
       )}
       <span className={"truncate " + (branch.current ? "font-semibold text-accent" : "text-ink-secondary")}>
@@ -145,7 +144,7 @@ function InspectFileRow({
       className={`flex w-full items-center gap-icon px-1 py-1 text-row text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
       style={staggerStyle(index)}
     >
-      <FileText aria-hidden="true" size={13} className="flex-none text-ink-faint" />
+      <FileText aria-hidden="true" className="size-icon-sm flex-none text-ink-faint" />
       <span className="flex min-w-0 flex-1 items-baseline gap-icon" title={file.path}>
         <span className="flex-none text-ink">{name}</span>
         {dir && <span className="min-w-0 flex-1 truncate text-ink-faint">{dir}</span>}
@@ -176,7 +175,7 @@ const GraphToggle = memo(function GraphToggle() {
         mainView === "graph" ? "font-semibold text-accent" : "text-ink-secondary"
       }`}
     >
-      <GitGraph aria-hidden="true" size={14} className="flex-none" />
+      <GitGraph aria-hidden="true" className="size-icon-sm flex-none" />
       Graph
     </button>
   )
@@ -212,7 +211,7 @@ const IntegrationsSection = memo(function IntegrationsSection({
         style={staggerStyle(0)}
         className={`flex items-center gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
       >
-        <PlatformIcon platform="azure-devops" size={14} className="flex-none text-ink-secondary" />
+        <PlatformIcon platform="azure-devops" size="sm" className="flex-none text-ink-secondary" />
         <span className="min-w-0 flex-1 truncate text-row text-ink-secondary">Azure DevOps</span>
         {azureDevOpsIntegration ? (
           <>
@@ -278,8 +277,7 @@ const MockSections = memo(function MockSections() {
             >
               <StatusIcon
                 aria-hidden="true"
-                size={14}
-                className={"mt-0.5 flex-none " + (pr.status === "open" ? "text-success" : "text-ink-faint")}
+                className={"size-icon-sm mt-0.5 flex-none " + (pr.status === "open" ? "text-success" : "text-ink-faint")}
               />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-row text-ink">{pr.title}</div>
@@ -303,8 +301,7 @@ const MockSections = memo(function MockSections() {
             >
               <StateIcon
                 aria-hidden="true"
-                size={14}
-                className={"mt-0.5 flex-none " + (issue.state === "open" ? "text-success" : "text-brand-to")}
+                className={"size-icon-sm mt-0.5 flex-none " + (issue.state === "open" ? "text-success" : "text-brand-to")}
               />
               <div className="min-w-0 flex-1">
                 <div className="truncate text-row text-ink">{issue.title}</div>
@@ -390,7 +387,7 @@ const TagsSection = memo(function TagsSection() {
           style={staggerStyle(index)}
           className={`flex w-full items-center gap-icon px-1 py-1 text-left hover:bg-overlay-hover ${ROW_ANIMATION}`}
         >
-          <Tag aria-hidden="true" size={13} className="flex-none text-ink-faint" />
+          <Tag aria-hidden="true" className="size-icon-sm flex-none text-ink-faint" />
           <span className="min-w-0 flex-1 truncate font-mono text-row text-ink-secondary">{tag.name}</span>
           <span className="flex-none font-mono text-meta text-ink-faint">{tag.date}</span>
         </button>
@@ -411,7 +408,7 @@ const StashesSection = memo(function StashesSection() {
           style={staggerStyle(index)}
           className={`flex items-start gap-icon px-1 py-1 hover:bg-overlay-hover ${ROW_ANIMATION}`}
         >
-          <Archive aria-hidden="true" size={14} className="mt-0.5 flex-none text-ink-faint" />
+          <Archive aria-hidden="true" className="size-icon-sm mt-0.5 flex-none text-ink-faint" />
           <div className="min-w-0 flex-1">
             <div className="truncate text-row text-ink">
               <span className="font-mono text-caption text-ink-faint">stash@{"{"}{stash.index}{"}"}</span>{" "}

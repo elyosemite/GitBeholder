@@ -21,7 +21,7 @@ function ZoomButton({
       onClick={onClick}
       className="flex h-full items-center px-1 text-ink-faint transition-colors hover:text-ink disabled:pointer-events-none disabled:opacity-40"
     >
-      <Icon aria-hidden="true" size={12} />
+      <Icon aria-hidden="true" className="size-icon-xs" />
     </button>
   );
 }

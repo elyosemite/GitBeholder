@@ -10,7 +10,7 @@ const MAX_HEIGHT = 150;
 const DEFAULT_HEIGHT = 80;
 
 const AUTHOR_BADGE_CLASS = "inline-block rounded bg-ink/10 px-1.5 py-0.5 text-micro font-medium text-ink";
-const BRANCH_BADGE_CLASS = "inline-block rounded bg-sky-500/20 px-1.5 py-0.5 text-micro font-medium text-sky-400";
+const BRANCH_BADGE_CLASS = "inline-block rounded bg-accent-soft px-1.5 py-0.5 text-micro font-medium text-accent";
 
 function toDateKey(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -75,7 +75,7 @@ export function CommitActivityBar({
         {days.map((day) => (
           <div
             key={day.date}
-            className="flex h-full w-[6px] flex-none items-end"
+            className="flex h-full w-1.5 flex-none items-end"
             onMouseEnter={() => setHoveredDate(day.date)}
             onMouseLeave={() => setHoveredDate((current) => (current === day.date ? null : current))}
           >

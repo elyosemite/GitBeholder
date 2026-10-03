@@ -41,7 +41,7 @@ function FileRow({
         title={staged ? "Move to Unstaged" : "Move to Staged"}
         className="flex-none rounded-sm p-0.5 text-ink-faint opacity-0 outline-none transition-opacity hover:text-ink focus-visible:opacity-100 group-hover:opacity-100"
       >
-        <ToggleIcon aria-hidden="true" size={14} />
+        <ToggleIcon aria-hidden="true" className="size-icon-sm" />
       </button>
     </div>
   );
