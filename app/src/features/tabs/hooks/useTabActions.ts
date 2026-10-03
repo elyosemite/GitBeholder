@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 import { useSessionActions, useSessionValue } from "@/features/session";
-import { activateTab, closeTab, getTabsState, openSettingsTab } from "../store";
+import { activateTab, closeTab, getTabsState, openNewTab, openSettingsTab } from "../store";
 import type { Tab } from "../types";
 
 /**
@@ -39,6 +39,7 @@ export function useTabActions() {
         focusRepositoryOf(next);
       },
       openSettings: openSettingsTab,
+      openNew: openNewTab,
     };
   }, [selectRepository, closeRepository]);
 }

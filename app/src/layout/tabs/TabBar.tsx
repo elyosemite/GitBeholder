@@ -1,13 +1,22 @@
-import { FolderGit2, Settings, X } from "lucide-react"
+import { FolderGit2, LayoutGrid, Settings, X } from "lucide-react"
 
 import { useRepositoryTabSync, useTabActions, useTabs, type Tab } from "@/features/tabs"
 
 function tabLabel(tab: Tab) {
-  return tab.kind === "repository" ? tab.repository.name : "Settings"
+  switch (tab.kind) {
+    case "repository":
+      return tab.repository.name
+    case "new":
+      return "New tab"
+    case "settings":
+      return "Settings"
+  }
 }
 
+const TAB_ICONS = { repository: FolderGit2, new: LayoutGrid, settings: Settings } as const
+
 function TabIcon({ tab }: { tab: Tab }) {
-  const Icon = tab.kind === "repository" ? FolderGit2 : Settings
+  const Icon = TAB_ICONS[tab.kind]
   return <Icon aria-hidden="true" className="size-icon-sm flex-none" />
 }
 
