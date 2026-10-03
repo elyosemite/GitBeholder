@@ -169,4 +169,64 @@ defmodule GitBeholder.GitDiffTest do
       assert patch =~ "+feature change"
     end
   end
+
+  describe "file status" do
+    test "reports added, modified, deleted and renamed files", %{repo_path: repo_path} do
+      File.write!(Path.join(repo_path, "keep.txt"), "v1\n")
+      File.write!(Path.join(repo_path, "gone.txt"), "bye\n")
+      File.write!(Path.join(repo_path, "old_name.txt"), "a\nb\nc\nd\ne\n")
+      commit(repo_path, "base")
+
+      File.write!(Path.join(repo_path, "keep.txt"), "v2\n")
+      File.rm!(Path.join(repo_path, "gone.txt"))
+      File.write!(Path.join(repo_path, "fresh.txt"), "hi\n")
+      System.cmd("git", ["mv", "old_name.txt", "new_name.txt"], cd: repo_path)
+      hash = commit(repo_path, "mixed changes")
+
+      assert {:ok, changes} = GitDiff.file_changes(repo_path, hash)
+      status = Map.new(changes, &{&1.path, &1.status})
+
+      assert status == %{
+               "keep.txt" => "M",
+               "gone.txt" => "D",
+               "fresh.txt" => "A",
+               "new_name.txt" => "R"
+             }
+    end
+
+    test "rejects a non-hex hash before calling git", %{repo_path: repo_path} do
+      assert {:error, :invalid_hash} = GitDiff.file_changes(repo_path, "--output=/tmp/pwned")
+      assert {:error, :invalid_hash} = GitDiff.file_diff(repo_path, "--output=/tmp/pwned", "a.txt")
+    end
+  end
+
+  describe "file_diff/4 context lines" do
+    setup %{repo_path: repo_path} do
+      lines = Enum.map_join(1..40, "", &"line #{&1}\n")
+      File.write!(Path.join(repo_path, "big.txt"), lines)
+      commit(repo_path, "add big.txt")
+
+      File.write!(Path.join(repo_path, "big.txt"), String.replace(lines, "line 20\n", "changed 20\n"))
+      %{hash: commit(repo_path, "change line 20")}
+    end
+
+    # Body lines only ("\n line N"): git also echoes the line before a hunk
+    # in its "@@ … @@ line 16" header.
+    test "defaults to git's 3 lines around the change", %{repo_path: repo_path, hash: hash} do
+      assert {:ok, %{patch: patch}} = GitDiff.file_diff(repo_path, hash, "big.txt")
+
+      assert patch =~ "\n line 17\n"
+      refute patch =~ "\n line 16\n"
+    end
+
+    test "shows exactly `context` lines on each side", %{repo_path: repo_path, hash: hash} do
+      assert {:ok, %{patch: one}} = GitDiff.file_diff(repo_path, hash, "big.txt", 1)
+      assert one =~ "\n line 19\n"
+      refute one =~ "\n line 18\n"
+
+      assert {:ok, %{patch: twelve}} = GitDiff.file_diff(repo_path, hash, "big.txt", 12)
+      assert twelve =~ "\n line 8\n"
+      refute twelve =~ "\n line 7\n"
+    end
+  end
 end
