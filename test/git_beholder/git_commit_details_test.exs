@@ -122,6 +122,40 @@ defmodule GitBeholder.GitCommitDetailsTest do
              )
   end
 
+  describe "branches of an older commit" do
+    setup %{repo_path: repo_path} do
+      old = commit(repo_path, "A")
+      tip = commit(repo_path, "B")
+      main = git(repo_path, ["rev-parse", "--abbrev-ref", "HEAD"])
+
+      # Branches created later also *contain* A in their history.
+      git(repo_path, ["branch", "feature"])
+      git(repo_path, ["checkout", "-q", "feature"])
+      feature_tip = commit(repo_path, "C")
+      git(repo_path, ["checkout", "-q", main])
+      git(repo_path, ["branch", "other"])
+      git(repo_path, ["update-ref", "refs/remotes/origin/#{main}", tip])
+
+      %{old: old, tip: tip, feature_tip: feature_tip, main: main}
+    end
+
+    test "lists only the nearest branch and its remote, not every branch containing it",
+         %{repo_path: repo_path, old: old, main: main} do
+      assert {:ok, %{branches: branches}} = GitCommitDetails.get(repo_path, old)
+
+      assert Enum.sort_by(branches, & &1.name) == [
+               %{name: main, remote: false, current: true},
+               %{name: "origin/#{main}", remote: true, current: false}
+             ]
+    end
+
+    test "a branch tip lists exactly the branches pointing at it",
+         %{repo_path: repo_path, feature_tip: feature_tip} do
+      assert {:ok, %{branches: [%{name: "feature", remote: false}]}} =
+               GitCommitDetails.get(repo_path, feature_tip)
+    end
+  end
+
   test "returns an error for an unknown commit", %{repo_path: repo_path} do
     commit(repo_path, "first")
 

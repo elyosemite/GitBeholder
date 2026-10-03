@@ -3,7 +3,7 @@ defmodule GitBeholder.GitCommitDetails do
   Full metadata of one commit, for the commit panel and the commit hover
   card: parents, author and committer (each with their own date — they
   differ after a rebase or cherry-pick), co-authors, the complete message,
-  change stats and the branches that contain it.
+  change stats and the branch(es) the commit is on.
   """
 
   @field_sep "\x1f"
@@ -22,8 +22,8 @@ defmodule GitBeholder.GitCommitDetails do
         which are reported in `co_authors` instead
       - `stats`: `%{files_changed, insertions, deletions}` (all 0 for a
         merge, which git shows without a diff)
-      - `branches`: `[%{name, remote, current}]`, local and remote
-        branches that contain the commit
+      - `branches`: `[%{name, remote, current}]`, the branch(es) the
+        commit is on — usually one local and its remote (see branches/2)
     * `{:error, :invalid_hash}` — not a (possibly abbreviated) hex hash;
       checked before reaching git so a value like `--output=…` can never
       be read as an option.
@@ -38,7 +38,7 @@ defmodule GitBeholder.GitCommitDetails do
   end
 
   defp run(repo_path, hash) do
-    # `git branch --contains` walks history: run it alongside `git show`.
+    # The branch lookup walks history: run it alongside `git show`.
     branches_task = Task.async(fn -> branches(repo_path, hash) end)
     show_result = show(repo_path, hash)
     branches = Task.await(branches_task, :infinity)
@@ -120,10 +120,60 @@ defmodule GitBeholder.GitCommitDetails do
     }
   end
 
+  # The branch(es) the commit is *on* — not every branch whose history
+  # contains it, which for an old commit is nearly all of them:
+  #   1. branches whose tip is exactly this commit (local and remote), else
+  #   2. the nearest branch that contains it (`git name-rev`: "main~3" ->
+  #      main) plus its same-named remote branches that contain it too.
+  # Git doesn't record where a commit was made, so (2) is the usual
+  # approximation clients like Fork or GitKraken make.
   defp branches(repo_path, hash) do
+    case list_branches(repo_path, ["--points-at", hash]) do
+      [] -> nearest_branches(repo_path, hash)
+      tips -> tips
+    end
+  end
+
+  defp nearest_branches(repo_path, hash) do
+    case nearest_branch_name(repo_path, hash, "refs/heads/*") ||
+           nearest_branch_name(repo_path, hash, "refs/remotes/*") do
+      nil ->
+        []
+
+      short_name ->
+        repo_path
+        |> list_branches(["--contains", hash])
+        |> Enum.filter(&same_branch?(&1, short_name))
+    end
+  end
+
+  # "main~3" / "remotes/origin/main^2" -> "main"
+  defp nearest_branch_name(repo_path, hash, refs) do
+    args = ["name-rev", "--name-only", "--no-undefined", "--refs=#{refs}", hash]
+
+    case System.cmd("git", args, cd: repo_path, stderr_to_stdout: true) do
+      {name, 0} ->
+        name = name |> String.trim() |> String.replace(~r/[~^].*$/, "")
+
+        case name do
+          "remotes/" <> remote_ref -> remote_ref |> String.split("/", parts: 2) |> List.last()
+          local -> local
+        end
+
+      _ ->
+        nil
+    end
+  end
+
+  defp same_branch?(%{remote: false, name: name}, short_name), do: name == short_name
+
+  defp same_branch?(%{remote: true, name: name}, short_name),
+    do: String.ends_with?(name, "/" <> short_name)
+
+  defp list_branches(repo_path, filter_args) do
     # `git branch --format` doesn't expand %x1f; refnames can't contain a
     # space, so the first character is the HEAD marker ("*" or " ").
-    args = ["branch", "--all", "--contains", hash, "--format=%(HEAD)%(refname)"]
+    args = ["branch", "--all"] ++ filter_args ++ ["--format=%(HEAD)%(refname)"]
 
     case System.cmd("git", args, cd: repo_path, stderr_to_stdout: true) do
       {output, 0} ->
