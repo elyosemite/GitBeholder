@@ -8,7 +8,8 @@ export type DataScope =
   | "tags"
   | "sync"
   | "repositories"
-  | "integrations";
+  | "integrations"
+  | "me";
 
 export type MainView = "commits" | "graph";
 

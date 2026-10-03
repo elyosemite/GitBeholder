@@ -9,6 +9,7 @@ export const initialRevisions: SessionState["revisions"] = {
   sync: 0,
   repositories: 0,
   integrations: 0,
+  me: 0,
 };
 
 export function bump(revisions: SessionState["revisions"], ...scopes: DataScope[]) {
