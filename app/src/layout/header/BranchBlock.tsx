@@ -54,11 +54,11 @@ export function BranchBlock() {
         >
           <span className="flex min-w-0 items-center gap-icon">
             {isCheckingOut ? (
-              <Loader2 aria-hidden="true" className="size-4 shrink-0 animate-spin text-muted-foreground" />
+              <Loader2 aria-hidden="true" className="size-icon-md shrink-0 animate-spin text-muted-foreground" />
             ) : (
               <SelectedIcon
                 aria-hidden="true"
-                className={`size-4 shrink-0 ${!selected?.local ? "text-remote" : "text-muted-foreground"}`}
+                className="size-icon-md shrink-0 text-muted-foreground"
               />
             )}
             <span className="flex-none text-meta font-medium uppercase tracking-wide text-muted-foreground">
@@ -68,7 +68,7 @@ export function BranchBlock() {
           </span>
           <ChevronsUpDown
             aria-hidden="true"
-            className="size-4 shrink-0 text-muted-foreground opacity-50"
+            className="size-icon-md shrink-0 text-muted-foreground opacity-50"
           />
         </PopoverTrigger>
         <PopoverContent align="start" className="w-64 p-0">
@@ -92,7 +92,7 @@ export function BranchBlock() {
                     >
                       <Icon
                         aria-hidden="true"
-                        className={b.local ? "text-muted-foreground" : "text-remote"}
+                        className="text-muted-foreground"
                       />
                       <span className="truncate">{b.name}</span>
                     </CommandItem>

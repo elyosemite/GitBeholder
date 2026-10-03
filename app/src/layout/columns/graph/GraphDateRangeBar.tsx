@@ -28,7 +28,7 @@ function DatePickerField({
       </span>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger className="flex h-7 items-center gap-icon rounded-md border border-input bg-transparent px-2 text-sm outline-none transition-colors select-none hover:bg-muted">
-          <CalendarIcon aria-hidden="true" className="size-3.5 text-ink-faint" />
+          <CalendarIcon aria-hidden="true" className="size-icon-sm text-ink-faint" />
           {formatDate(date)}
         </PopoverTrigger>
         <PopoverContent align="start" className="w-auto p-0">

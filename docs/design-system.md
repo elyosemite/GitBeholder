@@ -45,7 +45,8 @@ do AA. Por isso:
 
 | Token | Para quê | Escuro | Claro |
 |---|---|---|---|
-| `accent` | texto, ícone, borda, trilho de seleção, anel de foco | `brand-500` (5,3–6,2:1) | `brand-700` (5,4–6,0:1) |
+| `accent` | ícone, borda, trilho, barra da aba ativa, anel de foco | `brand-500` | `brand-500` |
+| `accent-text` | **só texto** azul | `brand-500` (5,3–6,2:1) | `brand-700` (5,4–6,0:1) |
 | `accent-fill` | preenchimento sólido (botão primário) | `brand-500` | `brand-500` |
 | `on-accent` | texto sobre `accent-fill` | quase preto `#0a0f14` (6,2:1) | idem |
 | `accent-fill-hover` | hover do preenchimento — **clareia** | `brand-400` (7,8:1 com `on-accent`) | idem |
@@ -55,6 +56,14 @@ Botão primário = `#2196F3` com texto escuro. O hover clareia em vez de
 escurecer: escurecer o fundo derrubaria o texto escuro para baixo do AA
 (por isso o hover usa `hover:bg-accent-fill-hover`, não `bg-primary/80`).
 Não use texto branco sobre `accent-fill`.
+
+**Uma cor só.** Botões, ícones, barras e foco são o mesmo `#2196F3` nos dois
+temas; a única variação é o texto azul no tema claro (`accent-text`), que
+precisa de 4,5:1. No tema claro, `accent` como indicador fica em 3,1:1 no
+`panel`, 2,97:1 no `canvas` e 2,8:1 no `surface` — um pouco abaixo dos 3:1
+de não-texto (WCAG 1.4.11) em canvas/surface, aceito de propósito para a
+marca ler como uma cor só. As versões transparentes (`accent-soft`,
+`bg-accent/40`, `ring-ring/50`) são tintas intencionais.
 
 ### Neutros
 
@@ -92,14 +101,16 @@ Cor de status nunca vem sozinha: acompanhe de ícone ou texto.
 
 | Token | Uso | Escuro | Claro |
 |---|---|---|---|
-| `author-1` … `author-6` | cor estável por autor (avatar, chip) | tons 400 | tons 800 |
+| `author-1` … `author-6` | cor estável por autor (avatar, chip) | teal, violeta, esmeralda, âmbar, rosa, ardósia — tons 400 | tons 800 (violeta 700, ardósia 600) |
 | `tag` | ícone e chip de tag | `#fbbf24` | `#92400e` |
-| `remote` | branch remota | `#38bdf8` | `#075985` |
 
 A cor de autor sai de um hash do nome (`authorColor` em `CommitsColumn`) —
 nunca de um mapa de nomes. Cada tom passa AA como texto no `panel` e sobre a
 própria tinta a 20% (`bg-author-n/20 text-author-n`): ≥5,2:1 no escuro,
 ≥4,8:1 no claro.
+
+Nenhuma cor categórica é azul: um segundo azul ao lado da marca lê como
+erro. Branch remota usa ícone de nuvem neutro (`ink-secondary`), não cor.
 
 ## 2. Tipografia
 
@@ -216,7 +227,8 @@ para o `ink`, não preto puro.
       nunca cores da paleta do Tailwind (`sky-500`, `amber-400`…) nem `#hex`
 - [ ] Ícones com `size-icon-*`, nunca `size={n}`
 - [ ] Números de layout em JS via `pxToken`, nunca constantes duplicadas
-- [ ] Azul como texto/ícone → `accent`; como fundo com texto → `accent-fill`
+- [ ] Azul: ícone/borda/indicador → `accent`; texto → `accent-text`;
+      fundo de botão → `accent-fill` (texto `on-accent`)
 - [ ] Texto na escala (`text-row`, `text-caption`…), nada abaixo de 11px
 - [ ] Altura de linha `h-row`, de controle `h-control`
 - [ ] Raio e sombra da tabela acima

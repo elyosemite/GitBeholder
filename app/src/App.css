@@ -40,8 +40,11 @@
   --color-ink-faint: #8a939d; /* metadata, timestamps — 5.9:1 */
 
   /* ── Accent ───────────────────────────────────────────────────────────
-     accent      — blue as text, icons, borders, selection rails, focus.
-                   #2196F3 itself on dark (5.3–6.2:1); brand-700 on light.
+     accent      — blue for icons, borders, rails, the active-tab bar,
+                   focus: #2196F3 in both themes, so every blue indicator
+                   is the same color as the buttons.
+     accent-text — blue *text* only: #2196F3 on dark (5.3–6.2:1),
+                   brand-700 on light (#2196F3 is 3.1:1 on white).
      accent-fill — solid fills (primary buttons). Always #2196F3.
      on-accent   — text on accent-fill: near-black, 6.2:1. White would be
                    only 3.1:1 on #2196F3, under AA.
@@ -49,6 +52,7 @@
                    would drop the dark text under AA.
      accent-soft — tinted background for selected rows. */
   --color-accent: var(--color-brand-500);
+  --color-accent-text: var(--color-brand-500);
   --color-accent-fill: var(--color-brand-500);
   --color-accent-fill-hover: var(--color-brand-400);
   --color-accent-soft: rgb(33 150 243 / 0.2);
@@ -64,15 +68,15 @@
      author-1..6: stable per-author color (avatars, author chips); pick by
      hashing the name, never by hard-coding names. Each is AA as text on
      the panel and on its own 20% tint (bg-author-n/20).
-     tag / remote: ref kinds in branch and tag lists. */
-  --color-author-1: #38bdf8;
+     tag: tag icons and chips. (Remote branches use a neutral icon — a
+     second blue next to the brand read as a mismatch.) */
+  --color-author-1: #2dd4bf;
   --color-author-2: #a78bfa;
   --color-author-3: #34d399;
   --color-author-4: #fbbf24;
   --color-author-5: #fb7185;
   --color-author-6: #94a3b8;
   --color-tag: #fbbf24;
-  --color-remote: #38bdf8;
 
   /* ── Overlays ─────────────────────────────────────────────────────── */
   --color-overlay-hover: rgb(255 255 255 / 0.04);
@@ -191,8 +195,12 @@
     --color-ink-secondary: #495561; /* 7.6:1 */
     --color-ink-faint: #626d78; /* 5.3:1 */
 
-    /* #2196F3 is only 3.1:1 on white: blue text uses brand-700 (6.0:1) */
-    --color-accent: var(--color-brand-700);
+    /* Blue text needs 4.5:1 and #2196F3 is 3.1:1 on white: brand-700
+       (6.0:1). Indicators keep #2196F3 (accent is not overridden): 3.1:1
+       on panel, 2.97:1 on canvas, 2.8:1 on surface — a deliberate,
+       imperceptible shortfall of the 3:1 non-text guideline, chosen so
+       blue reads as one color across the app. */
+    --color-accent-text: var(--color-brand-700);
     --color-accent-soft: rgb(33 150 243 / 0.1);
     --color-brand-to: #7c3aed;
 
@@ -200,14 +208,13 @@
     --color-warning: #b45309;
     --color-danger: #dc2626;
 
-    --color-author-1: #075985;
+    --color-author-1: #115e59;
     --color-author-2: #6d28d9;
     --color-author-3: #065f46;
     --color-author-4: #92400e;
     --color-author-5: #9f1239;
     --color-author-6: #475569;
     --color-tag: #92400e;
-    --color-remote: #075985;
 
     --color-overlay-hover: rgb(20 29 38 / 0.04);
     --color-overlay-press: rgb(20 29 38 / 0.07);

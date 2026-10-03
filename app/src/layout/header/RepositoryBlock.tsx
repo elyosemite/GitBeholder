@@ -29,7 +29,7 @@ import { InitRepositoryDialog } from "./InitRepositoryDialog"
 type RepositoryDialog = "open" | "clone" | "init" | null
 
 const actionItemClassName =
-  "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-foreground outline-hidden transition-colors select-none hover:bg-muted focus-visible:bg-muted [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
+  "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-foreground outline-hidden transition-colors select-none hover:bg-muted focus-visible:bg-muted [&_svg]:pointer-events-none [&_svg]:size-icon-md [&_svg]:shrink-0 [&_svg]:text-muted-foreground"
 
 function RepositoryActionButton({
   icon: Icon,
@@ -72,7 +72,7 @@ export function RepositoryBlock() {
           <span className="flex min-w-0 items-center gap-icon">
             <FolderGit2
               aria-hidden="true"
-              className="size-4 shrink-0 text-muted-foreground"
+              className="size-icon-md shrink-0 text-muted-foreground"
             />
             <span className="flex-none text-meta font-medium uppercase tracking-wide text-muted-foreground">
               Repo
@@ -81,7 +81,7 @@ export function RepositoryBlock() {
           </span>
           <ChevronsUpDown
             aria-hidden="true"
-            className="size-4 shrink-0 text-muted-foreground opacity-50"
+            className="size-icon-md shrink-0 text-muted-foreground opacity-50"
           />
         </PopoverTrigger>
         <PopoverContent align="start" className="w-72 p-0">

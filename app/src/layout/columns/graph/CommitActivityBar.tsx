@@ -10,7 +10,7 @@ const MAX_HEIGHT = 150;
 const DEFAULT_HEIGHT = 80;
 
 const AUTHOR_BADGE_CLASS = "inline-block rounded bg-ink/10 px-1.5 py-0.5 text-micro font-medium text-ink";
-const BRANCH_BADGE_CLASS = "inline-block rounded bg-accent-soft px-1.5 py-0.5 text-micro font-medium text-accent";
+const BRANCH_BADGE_CLASS = "inline-block rounded bg-accent-soft px-1.5 py-0.5 text-micro font-medium text-accent-text";
 
 function toDateKey(date: Date): string {
   return date.toISOString().slice(0, 10);

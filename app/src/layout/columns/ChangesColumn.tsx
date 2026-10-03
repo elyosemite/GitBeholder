@@ -6,7 +6,7 @@ import { useStagingActions, useStatus, type FileStatus } from "@/features/stagin
 import { splitPath } from "@/lib/paths";
 
 const STATUS_STYLES: Record<FileStatus, string> = {
-  M: "text-accent",
+  M: "text-accent-text",
   A: "text-success",
   D: "text-danger",
   U: "text-ink-faint",
@@ -144,7 +144,7 @@ export function ChangesColumn() {
               type="button"
               onClick={() => void handleCommit()}
               disabled={!canCommit}
-              className="mt-2 w-full rounded-lg bg-accent-soft px-2 py-2 text-row font-semibold text-accent disabled:opacity-50"
+              className="mt-2 w-full rounded-lg bg-accent-soft px-2 py-2 text-row font-semibold text-accent-text disabled:opacity-50"
             >
               Commit
             </button>

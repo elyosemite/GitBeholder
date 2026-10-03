@@ -93,7 +93,7 @@ export function GitOperationBlock() {
             badge !== undefined && (
               <Badge
                 variant="outline"
-                className="-ml-1 h-4 px-1.5 font-mono text-micro font-normal text-accent"
+                className="-ml-1 h-4 px-1.5 font-mono text-micro font-normal text-accent-text"
               >
                 {badge}
               </Badge>

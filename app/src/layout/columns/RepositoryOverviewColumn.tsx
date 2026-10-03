@@ -111,10 +111,10 @@ function BranchRow({
       ) : (
         <Icon
           aria-hidden="true"
-          className={"size-icon-sm flex-none " + (!branch.local ? "text-remote" : branch.current ? "text-accent" : "text-ink-faint")}
+          className={"size-icon-sm flex-none " + (!branch.local ? "text-ink-secondary" : branch.current ? "text-accent" : "text-ink-faint")}
         />
       )}
-      <span className={"truncate " + (branch.current ? "font-semibold text-accent" : "text-ink-secondary")}>
+      <span className={"truncate " + (branch.current ? "font-semibold text-accent-text" : "text-ink-secondary")}>
         {branch.local ? branch.name : `${branch.remote}/${branch.name}`}
       </span>
       {branch.current && (
@@ -172,7 +172,7 @@ const GraphToggle = memo(function GraphToggle() {
       type="button"
       onClick={() => setMainView(mainView === "graph" ? "commits" : "graph")}
       className={`flex items-center gap-icon border-b border-line-subtle px-3 py-2 text-row hover:bg-overlay-hover ${
-        mainView === "graph" ? "font-semibold text-accent" : "text-ink-secondary"
+        mainView === "graph" ? "font-semibold text-accent-text" : "text-ink-secondary"
       }`}
     >
       <GitGraph aria-hidden="true" className="size-icon-sm flex-none" />
