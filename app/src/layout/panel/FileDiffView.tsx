@@ -48,11 +48,13 @@ export function FileDiffView({
             {contextLabel(context)}
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-auto">
-            <DropdownMenuLabel>Unchanged lines around each change</DropdownMenuLabel>
+            {/* The label must sit inside the group: Base UI's GroupLabel
+                throws without a Menu.Group / Menu.RadioGroup around it. */}
             <DropdownMenuRadioGroup
               value={String(context)}
               onValueChange={(value) => onContextChange(Number(value) as DiffContext)}
             >
+              <DropdownMenuLabel>Unchanged lines around each change</DropdownMenuLabel>
               {DIFF_CONTEXT_OPTIONS.map((lines) => (
                 <DropdownMenuRadioItem key={lines} value={String(lines)}>
                   {lines}
