@@ -56,6 +56,20 @@
   --color-warning: #fbbf24;
   --color-danger: #f87171;
 
+  /* ── Categorical ──────────────────────────────────────────────────────
+     author-1..6: stable per-author color (avatars, author chips); pick by
+     hashing the name, never by hard-coding names. Each is AA as text on
+     the panel and on its own 20% tint (bg-author-n/20).
+     tag / remote: ref kinds in branch and tag lists. */
+  --color-author-1: #38bdf8;
+  --color-author-2: #a78bfa;
+  --color-author-3: #34d399;
+  --color-author-4: #fbbf24;
+  --color-author-5: #fb7185;
+  --color-author-6: #94a3b8;
+  --color-tag: #fbbf24;
+  --color-remote: #38bdf8;
+
   /* ── Overlays ─────────────────────────────────────────────────────── */
   --color-overlay-hover: rgb(255 255 255 / 0.04);
   --color-overlay-press: rgb(255 255 255 / 0.07);
@@ -95,6 +109,9 @@
   --text-display-lg--font-weight: 700;
   --text-display-lg--letter-spacing: -0.01em;
 
+  /* Uppercase section labels (text-meta + uppercase + tracking-caps). */
+  --tracking-caps: 0.08em;
+
   /* Tailwind's default steps, remapped onto the scale above so shadcn
      components (text-xs / text-sm / text-base) follow the system. */
   --text-xs: 12px;
@@ -117,6 +134,9 @@
   --spacing-panel-x: 16px; /* horizontal padding of panel sections */
   --spacing-panel-y: 12px; /* vertical padding of panel sections */
   --spacing-icon: 8px; /* gap between an icon and its text */
+  --spacing-icon-xs: 12px; /* icon size inside chips and badges — size-icon-xs */
+  --spacing-icon-sm: 14px; /* icon size in list rows — size-icon-sm */
+  --spacing-icon-md: 16px; /* icon size in buttons, header — size-icon-md */
   --spacing-row: 28px; /* list row height — h-row */
   --spacing-control: 28px; /* buttons, inputs, selects — h-control */
   --spacing-control-sm: 24px; /* inline/icon buttons inside rows */
@@ -173,6 +193,15 @@
     --color-success: #15803d;
     --color-warning: #b45309;
     --color-danger: #dc2626;
+
+    --color-author-1: #075985;
+    --color-author-2: #6d28d9;
+    --color-author-3: #065f46;
+    --color-author-4: #92400e;
+    --color-author-5: #9f1239;
+    --color-author-6: #475569;
+    --color-tag: #92400e;
+    --color-remote: #075985;
 
     --color-overlay-hover: rgb(24 27 38 / 0.04);
     --color-overlay-press: rgb(24 27 38 / 0.07);
