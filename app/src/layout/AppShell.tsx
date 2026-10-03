@@ -3,13 +3,15 @@ import { Header } from "./header/Header";
 import { Footer } from "./footer/Footer";
 import { TabBar } from "./tabs/TabBar";
 import { SettingsView } from "./settings/SettingsView";
+import { LauncherView } from "./launcher/LauncherView";
 import { RepositoryOverviewColumn } from "./columns/RepositoryOverviewColumn";
 import { CommitsColumn } from "./columns/CommitsColumn";
 import { GraphColumn } from "./columns/GraphColumn";
 import { DiffColumn } from "./columns/DiffColumn";
 import { ChangesColumn } from "./columns/ChangesColumn";
 import { useSessionValue } from "@/features/session";
-import { useTabs } from "@/features/tabs";
+import { useRestoreLastRepository, useTabs } from "@/features/tabs";
+import { useTrackRepositoryOpened } from "@/features/repositories";
 import { useResizableWidth } from "@/lib/hooks/useResizableWidth";
 import { useZoom } from "@/lib/hooks/useZoom";
 import { onRender } from "@/lib/perf";
@@ -26,7 +28,10 @@ export function AppShell() {
     CHANGES_COLUMN_MAX_WIDTH,
   );
   const zoom = useZoom();
-  const { activeId } = useTabs();
+  const { tabs, activeId } = useTabs();
+  const activeKind = tabs.find((tab) => tab.id === activeId)?.kind ?? "new";
+  const restoring = useRestoreLastRepository();
+  useTrackRepositoryOpened();
 
   return (
     <div className="flex flex-col h-screen bg-canvas">
@@ -34,9 +39,15 @@ export function AppShell() {
       <Profiler id="Header" onRender={onRender}>
         <Header />
       </Profiler>
-      {activeId === "settings" ? (
+      {activeKind === "settings" ? (
         <main className="flex-1 min-w-0 min-h-0" style={{ zoom: `${zoom.zoom}%` }}>
           <SettingsView />
+        </main>
+      ) : activeKind === "new" ? (
+        // The launcher spans all three columns. Blank while startup decides
+        // whether to reopen the last repository, so it doesn't flash.
+        <main className="flex-1 min-w-0 min-h-0" style={{ zoom: `${zoom.zoom}%` }}>
+          {!restoring && <LauncherView />}
         </main>
       ) : (
         <main

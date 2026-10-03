@@ -1,4 +1,4 @@
-import { FolderGit2, LayoutGrid, Settings, X } from "lucide-react"
+import { FolderGit2, LayoutGrid, Plus, Settings, X } from "lucide-react"
 
 import { useRepositoryTabSync, useTabActions, useTabs, type Tab } from "@/features/tabs"
 
@@ -25,11 +25,11 @@ function TabIcon({ tab }: { tab: Tab }) {
 export function TabBar() {
   useRepositoryTabSync()
   const { tabs, activeId } = useTabs()
-  const { activate, close } = useTabActions()
+  const { activate, close, openNew } = useTabActions()
 
   return (
     <div className="flex h-control-lg flex-none items-stretch border-b border-line-subtle bg-panel">
-      <div role="tablist" aria-label="Open tabs" className="flex min-w-0 flex-1 items-stretch overflow-x-auto">
+      <div role="tablist" aria-label="Open tabs" className="flex min-w-0 items-stretch overflow-x-auto">
         {tabs.map((tab) => {
           const active = tab.id === activeId
           const label = tabLabel(tab)
@@ -73,6 +73,17 @@ export function TabBar() {
           )
         })}
       </div>
+
+      {/* Right after the last tab, like a browser: always room for a new one. */}
+      <button
+        type="button"
+        aria-label="New tab"
+        title="New tab"
+        onClick={openNew}
+        className="flex w-control-lg flex-none items-center justify-center text-ink-secondary outline-none hover:bg-overlay-hover hover:text-ink focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset"
+      >
+        <Plus aria-hidden="true" className="size-icon-md" />
+      </button>
     </div>
   )
 }
