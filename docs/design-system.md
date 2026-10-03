@@ -86,6 +86,19 @@ acima de 4,5:1 também.)
 
 Cor de status nunca vem sozinha: acompanhe de ícone ou texto.
 
+### Categóricas
+
+| Token | Uso | Escuro | Claro |
+|---|---|---|---|
+| `author-1` … `author-6` | cor estável por autor (avatar, chip) | tons 400 | tons 800 |
+| `tag` | ícone e chip de tag | `#fbbf24` | `#92400e` |
+| `remote` | branch remota | `#38bdf8` | `#075985` |
+
+A cor de autor sai de um hash do nome (`authorColor` em `CommitsColumn`) —
+nunca de um mapa de nomes. Cada tom passa AA como texto no `panel` e sobre a
+própria tinta a 20% (`bg-author-n/20 text-author-n`): ≥5,2:1 no escuro,
+≥4,8:1 no claro.
+
 ## 2. Tipografia
 
 - **Inter** (variável) para toda a interface.
@@ -109,6 +122,9 @@ Piso de **11px** — nada no app é menor.
 | `text-heading` | 16 / 24 | 600 | títulos de seção, estado vazio |
 | `text-display` | 20 / 28 | 600 | título de página |
 | `text-display-lg` | 24 / 32, −0,01em | 700 | onboarding, números de destaque |
+
+Rótulos de seção em caixa alta: `text-meta font-bold uppercase
+tracking-caps` (`--tracking-caps` = 0,08em).
 
 As classes padrão do Tailwind foram remapeadas para a mesma escala
 (`text-xs` = 12, `text-sm` = 13, `text-base` = 14, `text-lg` = 16,
@@ -135,11 +151,29 @@ Grade de 4px. Use a escala do Tailwind (`1` = 4px) e os tokens nomeados:
 | `panel-x` / `panel-y` | 16 / 12 | padding de seções de painel |
 | `icon` | 8 | espaço entre ícone e texto (`gap-icon`) |
 | `row` | 28 | altura de linha de lista (`h-row`) |
+| `row-gap` | 4 | espaço entre linhas de lista |
 | `control` | 28 | botões, inputs, selects (`h-control`) |
 | `control-sm` | 24 | botões dentro de linhas |
 | `control-lg` | 32 | ação principal de diálogo |
 
-Ícones: 14px em linhas, 16px em botões e header — sempre Lucide.
+### Ícones
+
+Sempre Lucide (ou `PlatformIcon` para marcas), dimensionados por token —
+nunca `size={14}`:
+
+| Classe | Valor | Uso |
+|---|---|---|
+| `size-icon-xs` | 12 | dentro de chips e badges |
+| `size-icon-sm` | 14 | linhas de lista |
+| `size-icon-md` | 16 | botões, header |
+
+`PlatformIcon` recebe `size="xs" | "sm" | "md"`.
+
+### Tokens no JavaScript
+
+Quando a conta de layout precisa acontecer em JS (lista virtualizada,
+posição de alça de redimensionar), leia o token com `pxToken("--spacing-row")`
+(`src/lib/designTokens.ts`) — não repita o número como constante.
 
 ## 4. Raio
 
@@ -176,7 +210,10 @@ para o `ink`, não preto puro.
 
 ## 7. Checklist para componente novo
 
-- [ ] Cores só por token (`bg-panel`, `text-ink-faint`, `border-line-subtle`…)
+- [ ] Cores só por token (`bg-panel`, `text-ink-faint`, `border-line-subtle`…) —
+      nunca cores da paleta do Tailwind (`sky-500`, `amber-400`…) nem `#hex`
+- [ ] Ícones com `size-icon-*`, nunca `size={n}`
+- [ ] Números de layout em JS via `pxToken`, nunca constantes duplicadas
 - [ ] Azul como texto/ícone → `accent`; como fundo com texto → `accent-fill`
 - [ ] Texto na escala (`text-row`, `text-caption`…), nada abaixo de 11px
 - [ ] Altura de linha `h-row`, de controle `h-control`
