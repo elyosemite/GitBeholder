@@ -42,7 +42,8 @@ defmodule GitBeholder.GitLogTest do
            ] = commits
 
     for commit <- commits do
-      assert %{hash: hash, author: "Test", timestamp: timestamp, description: ""} = commit
+      assert %{hash: hash, author: "Test", author_email: "test@test.com", timestamp: timestamp, description: ""} =
+               commit
       assert String.match?(hash, ~r/^[0-9a-f]+$/)
       assert String.match?(timestamp, ~r/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)
     end

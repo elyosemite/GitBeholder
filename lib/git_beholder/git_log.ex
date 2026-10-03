@@ -15,7 +15,7 @@ defmodule GitBeholder.GitLog do
         branch,
         "-n",
         Integer.to_string(limit),
-        "--pretty=format:%H#{@field_sep}%an#{@field_sep}%ad#{@field_sep}%s#{@field_sep}%b#{@record_sep}",
+        "--pretty=format:%H#{@field_sep}%an#{@field_sep}%ae#{@field_sep}%ad#{@field_sep}%s#{@field_sep}%b#{@record_sep}",
         "--date=format:%Y-%m-%d %H:%M"
       ]
 
@@ -41,13 +41,15 @@ defmodule GitBeholder.GitLog do
     |> Enum.map(&String.trim/1)
     |> Enum.reject(&(&1 == ""))
     |> Enum.map(fn record ->
-      [hash, author, timestamp, subject, body] = String.split(record, @field_sep, parts: 5)
+      [hash, author, email, timestamp, subject, body] = String.split(record, @field_sep, parts: 6)
 
       %{
         hash: hash,
         message: subject,
         description: flatten(body),
         author: author,
+        # Matches the author to a GitBeholder user (photo, team).
+        author_email: email,
         timestamp: timestamp,
         refs: Map.get(decorations, hash, [])
       }
