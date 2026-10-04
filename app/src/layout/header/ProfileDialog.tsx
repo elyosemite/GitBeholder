@@ -2,7 +2,7 @@ import * as React from "react"
 import { ImageUp, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { IdentityAvatar } from "@/components/IdentityAvatar"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -16,16 +16,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useUpdateCurrentUser, type User } from "@/features/users"
 import { resizeImageToDataUrl } from "@/lib/resizeImage"
-
-export function userInitials(name: string) {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((word) => word[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase()
-}
 
 export function ProfileDialog({
   user,
@@ -91,12 +81,13 @@ function ProfileForm({ user, onDone }: { user: User; onDone: () => void }) {
   return (
     <form onSubmit={(event) => void handleSave(event)} className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <Avatar size="lg">
-          {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
-          <AvatarFallback className="bg-accent-fill font-semibold text-on-accent">
-            {userInitials(name || user.name)}
-          </AvatarFallback>
-        </Avatar>
+        {/* Live preview: follows the photo and the email being edited. */}
+        <IdentityAvatar
+          size="lg"
+          name={name || user.name}
+          email={email || user.email}
+          photoUrl={avatarUrl}
+        />
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
             <ImageUp />

@@ -1,10 +1,9 @@
 import type { ReactNode } from "react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { IdentityAvatar } from "@/components/IdentityAvatar"
 import type { CommitDetails, CommitPerson } from "@/features/commits"
 import { useSessionActions } from "@/features/session"
 import { useUsersByEmail } from "@/features/users"
-import { authorColor, authorInitials } from "@/lib/authorColor"
 import { formatRelativeTime } from "@/lib/formatRelativeTime"
 
 const DATE_FORMAT = new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" })
@@ -45,12 +44,7 @@ export function CommitInfo({ details }: { details: CommitDetails }) {
   return (
     <div className="flex flex-col gap-3 p-panel-x">
       <div className="flex items-center gap-3">
-        <Avatar size="lg">
-          {photo && <AvatarImage src={photo} alt="" />}
-          <AvatarFallback className={"font-semibold " + authorColor(author.name)}>
-            {authorInitials(author.name)}
-          </AvatarFallback>
-        </Avatar>
+        <IdentityAvatar size="lg" name={author.name} email={author.email} photoUrl={photo} />
         <div className="min-w-0">
           <div className="truncate text-title text-ink">{author.name}</div>
           <div className="truncate text-caption text-ink-faint">

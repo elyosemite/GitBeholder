@@ -1,8 +1,9 @@
 import * as React from "react"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { IdentityAvatar } from "@/components/IdentityAvatar"
+import { Avatar } from "@/components/ui/avatar"
 import { useCurrentUser } from "@/features/users"
-import { ProfileDialog, userInitials } from "./ProfileDialog"
+import { ProfileDialog } from "./ProfileDialog"
 
 // Header entry point to the local user's profile.
 export function UserBlock() {
@@ -22,12 +23,7 @@ export function UserBlock() {
         title={`${user.name} · ${user.email}`}
         className="flex size-control items-center justify-center rounded-full outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
       >
-        <Avatar size="sm">
-          {user.avatar_url && <AvatarImage src={user.avatar_url} alt="" />}
-          <AvatarFallback className="bg-accent-fill font-semibold text-on-accent">
-            {userInitials(user.name)}
-          </AvatarFallback>
-        </Avatar>
+        <IdentityAvatar size="sm" name={user.name} email={user.email} photoUrl={user.avatar_url} />
       </button>
       <ProfileDialog user={user} open={open} onOpenChange={setOpen} />
     </>

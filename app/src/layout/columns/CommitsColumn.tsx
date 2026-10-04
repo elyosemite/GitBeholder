@@ -1,7 +1,7 @@
 import { memo, useRef, useState } from "react";
 import { Check, GitBranch, Monitor, Tag } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { IdentityAvatar } from "@/components/IdentityAvatar";
 import { useCommits, type Commit, type CommitRef } from "@/features/commits";
 import { useUsersByEmail, type User } from "@/features/users";
 import { useSessionActions, useSessionValue } from "@/features/session";
@@ -9,7 +9,6 @@ import { PlatformIcon } from "@/components/icons/brand-icons";
 import { daysAgo } from "@/lib/daysAgo";
 import { useElementSize } from "@/lib/hooks/useElementSize";
 import { pxToken } from "@/lib/designTokens";
-import { authorColor, authorInitials } from "@/lib/authorColor";
 import { CommitActivityBar } from "./graph/CommitActivityBar";
 import { CommitHoverCard } from "./CommitHoverCard";
 
@@ -157,16 +156,15 @@ const CommitRow = memo(function CommitRow({
       >
         <div className={"absolute left-1/2 w-0.5 -translate-x-1/2 bg-accent " + railPosition} />
         {hasRefs && <div className="absolute top-1/2 right-1/2 left-0 h-px bg-line-default" />}
-        {/* Opaque disc: the initials fallback is a 20% author tint, which
-            let the rail show through avatars without a photo. */}
-        <Avatar size="sm" className="z-10 border-2 border-accent bg-canvas">
-          {user?.avatar_url && <AvatarImage src={user.avatar_url} alt={commit.author} />}
-          <AvatarFallback
-            className={"text-micro font-semibold " + authorColor(commit.author)}
-          >
-            {authorInitials(commit.author)}
-          </AvatarFallback>
-        </Avatar>
+        {/* IdentityAvatar is an opaque disc, so the rail stays behind it. */}
+        <IdentityAvatar
+          size="sm"
+          name={commit.author}
+          email={commit.author_email}
+          photoUrl={user?.avatar_url}
+          className="z-10 border-2 border-accent"
+          fallbackClassName="text-micro"
+        />
       </div>
 
       <div className="flex min-w-0 flex-1 items-baseline gap-icon px-row-x">

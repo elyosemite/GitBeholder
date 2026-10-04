@@ -2,11 +2,10 @@ import * as React from "react"
 import { Check, Clock, Cloud, Copy, GitBranch, GitCommitVertical, Target, User } from "lucide-react"
 import { toast } from "sonner"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { IdentityAvatar } from "@/components/IdentityAvatar"
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { useCommitDetails, type CommitBranch, type CommitDetails, type CommitStats } from "@/features/commits"
 import { useUsersByEmail } from "@/features/users"
-import { authorColor, authorInitials } from "@/lib/authorColor"
 import { formatRelativeTime } from "@/lib/formatRelativeTime"
 
 // Long enough that sweeping the mouse across the list opens nothing; the
@@ -104,12 +103,7 @@ function AuthorLine({ details }: { details: CommitDetails }) {
 
   return (
     <div className="flex items-center gap-3 p-3">
-      <Avatar size="lg" className="bg-canvas">
-        {photo && <AvatarImage src={photo} alt="" />}
-        <AvatarFallback className={"font-semibold " + authorColor(author.name)}>
-          {authorInitials(author.name)}
-        </AvatarFallback>
-      </Avatar>
+      <IdentityAvatar size="lg" name={author.name} email={author.email} photoUrl={photo} />
       <div className="flex min-w-0 flex-col">
         <span className="truncate text-title text-ink" title={author.email}>
           {author.name}
